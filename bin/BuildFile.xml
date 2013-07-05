@@ -1,0 +1,6 @@
+<use name = "root" />
+
+<bin name = "addWeights" file = "*.cpp">
+    <use name = "PhysicsTools/Utilities" />
+    <flags cxxflags = "-std=c++0x -O -Wno-sign-compare" />
+</bin>
