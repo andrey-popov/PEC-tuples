@@ -329,8 +329,10 @@ def DefineMETs(process, paths, runOnData, jecLevel):
         process.pfMEtSysShiftCorr.src = process.pfMEtSysShiftCorr.srcMEt
         process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorr.parameter[0]
         
+        # Insert missing modules into the sequence
         process.patPF2PATSequence.replace(process.patType1CorrectedPFMet,
-         process.pfMEtSysShiftCorrSequence * process.patType1CorrectedPFMet)
+            process.type0PFMEtCorrection + process.patPFMETtype0Corr + \
+            process.pfMEtSysShiftCorrSequence + process.patType1CorrectedPFMet)
     
     else:  # in case of MC the runMEtUncertainties tool takes care of the corrections
         METCollections.extend(['patMETs', 'patType1CorrectedPFMet'])
