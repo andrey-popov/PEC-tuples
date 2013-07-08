@@ -61,20 +61,22 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
      process.elPFIsoValueEA03 * process.pfIsolatedElectrons)
     
     
-    # Adjust the parameters for the rho correction (*). The cut on the isolation value is set in
-    # accordance with (**)
-    # (*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
-    # (**) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
+    # Adjust parameters for the rho correction [1]. The cut on the isolation value is set in
+    # accordance with [2]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
     process.pfIsolatedElectrons.doDeltaBetaCorrection = True
     process.pfIsolatedElectrons.deltaBetaFactor = -1.
     process.pfIsolatedElectrons.isolationCut = 0.15
     
     
-    # Load the MVA electron ID modules
-    process.load('EGamma.EGammaAnalysisTools.electronIdMVAProducer_cfi')
+    # Load electron MVA ID modules. See an example in [1], which is referenced from [2]
+    # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/test/patTuple_electronId_cfg.py?view=markup&pathrev=SE_PhotonIsoProducer_MovedIn
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification?rev=45#Recipe_for_53X
+    process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
     
-    # Insert a module to filter electrons based on their ID. See (*)
-    # (*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
+    # Insert a module to filter electrons based on their ID. See [1] as an example
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
     process.pfIdentifiedElectrons = cms.EDFilter('ElectronIDPFCandidateSelector',
         recoGsfElectrons = cms.InputTag('gsfElectrons'),
         electronIdMap = cms.InputTag('mvaTrigV0'),
