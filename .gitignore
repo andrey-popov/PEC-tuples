@@ -15,3 +15,5 @@
 # Python precompiled files
 *.pyc
 
+# CMSSW-specific auxiliary files
+__init__.py
