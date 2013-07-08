@@ -372,9 +372,17 @@ def DefineMETs(process, paths, runOnData, jecLevel):
                 module.jetCorrInputFileName = cms.FileInPath(
                  'UserCode/SingleTop/data/Summer13_V4_MC_Uncertainty_AK5PFchs.txt')
         
-        # Correct for the mismatch between the python configurations and CMSSW plugins (similar to the
-        # case of the real data above)
+        # Correct for the mismatch between the python configurations and CMSSW plugins (similar to
+        # the case of the real data above)
         process.pfMEtSysShiftCorr.src = process.pfMEtSysShiftCorr.srcMEt
+        
+        # Insert modules to perform type-0 and phi-modulation corrections into the sequence (for
+        # some reason MET uncertainty tool does not do it automatically)
+        process.metUncertaintySequence.replace(process.patType1CorrectedPFMet,
+            process.type0PFMEtCorrection + process.patPFMETtype0Corr + process.pfMEtSysShiftCorr + \
+            process.patType1CorrectedPFMet)
+        #^ Some collections are created several times under different names (good primary vertices,
+        # for example), but it should not impose a significant overhead
         
         paths.append(process.metUncertaintySequence)
     
