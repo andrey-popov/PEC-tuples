@@ -187,7 +187,7 @@ process.countTightPatMuons = process.countPatMuons.clone(
     minNumber = 1, maxNumber = 999)
 process.countHighPtPatJets = process.countPatJets.clone(
     src = 'patJetsForEventSelection',
-    minNumber = 1, maxNumber = 999)
+    minNumber = 2, maxNumber = 999)
 
 if elChan:
     process.elPath += process.countTightPatElectrons

@@ -251,27 +251,27 @@ def DefineMuons(process, PFRecoSequence, runOnData):
 
 
 def DefineJets(process, paths, runOnData):
-    """ Adjusts the jet reconstruction. The function must be called after the MET uncertainty tool.
+    """ Adjusts jet reconstruction. The function must be called after the MET uncertainty tool.
         The user is expected to operate with the following collections:
         
-        1. analysisPatJets: jets subjected to the recommended quality selection; to be used in the
+        1. analysisPatJets: jets subjected to recommended quality selection; to be used in the
         analysis.
         
-        2. patJetsForEventSelection: a hard subset of the above collection needed to perform the
+        2. patJetsForEventSelection: a hard subset of the above collection needed to perform an
         event selection.
         
         3. selectedPatJets: jets from PFBRECO embedded in pat::Jet class; to be used with the MET
         uncertainty tool.
     """
     
-    # Jet identification criteria as recommended in (*)
-    # (*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
+    # Jet identification criteria as recommended in [1]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
     jetQualityCut = 'numberOfDaughters > 1 & neutralHadronEnergyFraction < 0.99 & '\
      'neutralEmEnergyFraction < 0.99 & (abs(eta) < 2.4 & chargedEmEnergyFraction < 0.99 & '\
      'chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 | abs(eta) >= 2.4)'
     
     
-    # The collection selectedPatJets encodes the jets reconstructed in the PFBRECO framework; they
+    # The collection selectedPatJets encorporates jets reconstructed in the PFBRECO framework; they
     # are used in the MET uncertainty tool
     
     
@@ -284,14 +284,14 @@ def DefineJets(process, paths, runOnData):
     # Jets used in the event selection
     process.patJetsForEventSelection = process.analysisPatJets.clone(
         src = 'analysisPatJets',
-        cut = 'pt > 40.')
+        cut = 'pt > 30.')
     
     
     paths.append(process.selectedPatJets, process.analysisPatJets, process.patJetsForEventSelection)
     
     
-    # Finally, switch on the tag infos. It is needed to access the secondary vertex (*)
-    # (*) https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714/2/1/1.html
+    # Finally, switch on the tag infos. It is needed to access the secondary vertex [1]
+    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714/2/1/1.html
     process.patJets.addTagInfos = True
 
 
