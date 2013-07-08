@@ -4,13 +4,13 @@ __email__ = 'Andrey.Popov@cern.ch'
 
 import FWCore.ParameterSet.Config as cms
 
-# Function to set the filters up in accordance with the process
+# Function to set up appropriate filters for the actual process
 def ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices', runOnFastSim = False,
     run53XFilters = True):
     """ The function initialises a number of filters to reject anomalous events. It packs them into
         sequence 'eventFilterSequence' which is added to the process (but the user has to insert it
-        into the appropriate paths). Some of the filters depend on the PAT collections, therefore
-        the prepared sequence must be added after the PAT one. All the filters are applied to both
+        into appropriate paths). Some of the filters depend on PAT collections; therefore, the
+        constructed sequence must be added after the PAT one. All the filters are applied to both
         real data and MC simulation on identical basis.
         
         The arguments:
@@ -22,7 +22,7 @@ def ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices', runO
         runOnFastSim: Indicates whether the code processes a dataset produced with FastSimulation.
             Some of the filters cannot be evaluated in this case and are switched off.
         
-        run53XFilters: Indicated whether to run the filters which require information stored in 53X
+        run53XFilters: Indicates whether to run the filters which require information stored in 53X
             only but not in 52X. Since the RelVals are reconstructed in 52X, these filters ought to
             be turned off in test runs.
         """
@@ -47,21 +47,18 @@ def ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices', runO
         eventFiltersSequence += process.CSCTightHaloFilter
     
     
-    # HBHE noise filter. MET TWiki states (*) that requirements for noise isolation are needed despite
-    # HBHE noise TWiki switches them off (**)
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#HBHE_Noise_Filter
-    # (**) https://twiki.cern.ch/twiki/bin/view/CMS/HBHEAnomalousSignals2011
+    # HBHE noise filter
+    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#HBHE_Noise_Filter
     if not runOnFastSim:
         process.load('CommonTools.RecoAlgos.HBHENoiseFilter_cfi')
         eventFiltersSequence += process.HBHENoiseFilter
     
     
     # HCAL laser events
-    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#HCAL_laser_events
-    # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVKnowFeatures#HCAL_laser_events_in_prompt_2012
-    process.load("EventFilter.HcalRawToDigi.hcallasereventfilter2012_cff")
+    # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVKnowFeatures#Datasets_from_the_2013_rereco_an
+    process.load('EventFilter.HcalRawToDigi.hcallaserFilterFromTriggerResult_cff')
     
-    eventFiltersSequence += process.hcallLaserEvent2012Filter
+    eventFiltersSequence += process.hcalfilter
     
     
     # ECAL dead cell filter
@@ -102,9 +99,11 @@ def ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices', runO
     eventFiltersSequence += process.ecalLaserCorrFilter
     
     
-    # Tracking POG filters
-    # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Tracking_odd_events_filters_trac
-    # https://twiki.cern.ch/twiki/bin/view/CMS/TrackingPOGFilters#Filters
+    # Tracking POG filters. They are talked about in [1-2], but the actual filters are never
+    # mentioned explicitly. The code below is motivated by the example [3].
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters#Tracking_odd_events_filters_trac
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/TrackingPOGFilters#Filters
+    # [3] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/RecoMET/METFilters/python/metFilters_cff.py?view=markup&pathrev=CMSSW_5_3_11
     if not runOnFastSim and run53XFilters:
         process.load('RecoMET.METFilters.trackingPOGFilters_cff')
         eventFiltersSequence += process.trkPOGFilters

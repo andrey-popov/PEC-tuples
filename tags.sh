@@ -8,7 +8,8 @@ scramv1 project CMSSW $release  # cmsrel alias expanded
 cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
-# Use this interface to determine which tags are included in the release if needed:
+# Use this interface to determine which tags are included in the release if needed (go to "Release
+# management" section):
 # https://cmstags.cern.ch/tc/#Releases
 
 
@@ -49,6 +50,16 @@ cat download.url | xargs wget
 cd -
 
 
+# MET filters
+# https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters?rev=61#A_Central_Filter_Package_RecoMET
+#addpkg RecoMET/METFilters       V00-00-13-01  # same version in the release
+addpkg RecoMET/METAnalyzers     V00-00-08
+#addpkg CommonTools/RecoAlgos    V00-03-23  # a newer version in the release
+#addpkg DPGAnalysis/Skims        V01-00-11-01  # a newer version in the release
+addpkg DPGAnalysis/SiStripTools V00-11-17
+#addpkg DataFormats/TrackerCommon V00-00-08  # same version in the release
+#addpkg RecoLocalTracker/SubCollectionProducers V01-09-05  # same version in the release
+
 
 
 # WHAT IS BELOW THIS LINE HAS NOT BEEN CHECKED
@@ -75,12 +86,6 @@ cd -
 #cvs co -r $release PhysicsTools/PatUtils/data/pfJetResolutionMCtoDataCorrLUT.root
 #^ Aldready checked out
 
-# MET filters
-# https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters
-#cvs co -r V00-00-13 RecoMET/METFilters
-#cvs co -r V00-00-08 RecoMET/METAnalyzers
-#cvs co -r V01-00-11-01 DPGAnalysis/Skims  # superceded by HCAL laser filer's dependencies
-#cvs co -r V00-11-17 DPGAnalysis/SiStripTools
 
 # HCAL-laser-polluted event filter requires CMSSW_5_3_7_patch5. These are the relevant packages
 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVKnowFeatures#HCAL_laser_events_in_prompt_2012
