@@ -297,40 +297,32 @@ def DefineJets(process, paths, runOnData):
 
 def DefineMETs(process, paths, runOnData, jecLevel):
     """ The function adjusts MET reconstruction. The following corrections are included: type-I
-        (switched on by PF2PAT function), type-0, and phi modulation correction.
+        (switched on by PF2PAT function), type-0, and phi-modulation correction.
     """
     
     METCollections = ['patPFMet', 'patMETs']
     #^ MET collections to store. The first one is raw PF MET, the second one includes the type-I and
-    # type-0 corrections as well as the MET phi modulation correction
+    # type-0 corrections as well as the MET phi-modulation correction. Type-I correction is
+    # performed with selectedPatJets collection
     process.load('JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi')
 
     if runOnData:
-        # Include the type-0 MET correction (*)
-        # (*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_II_0_with_PF2PAT
+        # Include the type-0 MET correction. The code is inspired by [1]
+        # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_II_0_with_PF2PAT
         process.patType1CorrectedPFMet.srcType1Corrections.append(
             cms.InputTag('patPFMETtype0Corr'))
         
-        # Include the MET phi correction. The code is inspired by the implementation (*) of the
-        # runMEtUncertainties tool and (**)
-        # (*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatUtils/python/tools/metUncertaintyTools.py?revision=1.25&view=markup
-        # (**) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#MET_x_y_Shift_Correction_for_mod
-        process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCvsNvtx_data
+        # Correct for MET phi modulation. The code is inspired by the implementation [1] of the
+        # runMEtUncertainties tool and [2]
+        # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatUtils/python/tools/metUncertaintyTools.py?revision=1.25&view=markup
+        # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#MET_x_y_Shift_Correction_for_mod
+        process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_data
         process.patType1CorrectedPFMet.srcType1Corrections.append(
             cms.InputTag('pfMEtSysShiftCorr'))
-        #^ The jet collection used for the type-I corrections is selectedPatJets
-        
-        # There is some mismatch between the python configurations and CMSSW plugins in the current
-        # setup (*), (**). This is corrected below
-        # (*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/JetMETCorrections/Type1MET/plugins/SysShiftMETcorrInputProducer.cc?revision=1.2&view=markup
-        # (**) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/JetMETCorrections/Type1MET/plugins/SysShiftMETcorrInputProducer.cc?revision=1.3&view=markup
-        process.pfMEtSysShiftCorr.src = process.pfMEtSysShiftCorr.srcMEt
-        process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorr.parameter[0]
         
         process.patPF2PATSequence.replace(process.patType1CorrectedPFMet,
          process.pfMEtSysShiftCorrSequence * process.patType1CorrectedPFMet)
-        #paths.append(process.pfMEtSysShiftCorrSequence)
-
+    
     else:  # in case of MC the runMEtUncertainties tool takes care of the corrections
         # Produce the corrected MET and systematic shifts for it (*)
         # (*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools#METSysTools

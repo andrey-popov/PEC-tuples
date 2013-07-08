@@ -130,10 +130,10 @@ if runOnData:
     inputJetCorrLabel[1].append('L2L3Residual')
 
 
-# PF2PAT setup. The code snippet is taken from (*). In order to make the life simplier the postfix
-# is hard-coded. See (**) for the information on the MET corrections in PFBRECO
-# (*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatExamples/test/patTuple_52x_jec_cfg.py?revision=1.1&view=markup
-# (**) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_II_0_with_PF2PAT
+# PF2PAT setup. The code snippet is inspired by [1]. In order to make life simplier, the (empty)
+# postfix is hard-coded. See [2] for information on MET corrections with PFBRECO and PAT
+# [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatExamples/test/patTuple_52x_jec_cfg.py?revision=1.1&view=markup
+# [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_II_0_with_PF2PAT
 from PhysicsTools.PatAlgos.tools.pfTools import usePF2PAT
 usePF2PAT(process, runPF2PAT = True, runOnMC = not runOnData, postfix = '',
     jetAlgo = 'AK5', jetCorrections = inputJetCorrLabel,
@@ -143,11 +143,11 @@ usePF2PAT(process, runPF2PAT = True, runOnMC = not runOnData, postfix = '',
 
 # The recommended settings for the JEC with the CHS. Note that it is not needed to compute the mean
 # jet pt per unit area (rho) as it is done in the standard reconstruction sequence
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCor2012Fall12
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
 process.pfPileUp.checkClosestZVertex = False
 
 
-# We do not consider the tau-leptons in the analysis (they are included in the jets)
+# We do not consider tau-leptons in the analysis (they are included in jets)
 process.pfNoTau.enable = False
 
 

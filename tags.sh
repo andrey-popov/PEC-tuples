@@ -50,6 +50,12 @@ cat download.url | xargs wget
 cd -
 
 
+# Latest MET phi-modulation corrections. Althogh a single file is needed, one has to check out the
+# whole python directory since python configuration fragments will be searched for locally
+cvs co -r $release JetMETCorrections/Type1MET/python
+cvs co -r 1.7 JetMETCorrections/Type1MET/python/pfMETsysShiftCorrections_cfi.py
+
+
 # MET filters
 # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETOptionalFilters?rev=61#A_Central_Filter_Package_RecoMET
 #addpkg RecoMET/METFilters       V00-00-13-01  # same version in the release
