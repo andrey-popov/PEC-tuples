@@ -38,6 +38,16 @@ addpkg RecoParticleFlow/PFProducer V15-02-06
 addpkg RecoLuminosity/LumiDB   V04-02-08
 
 
+# Recommendations for electron MVA ID
+# https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Recipe_for_53X
+addpkg RecoEgamma/EgammaTools       V09-00-01
+addpkg EgammaAnalysis/ElectronTools SE_PhotonIsoProducer_MovedIn
+cvs co -r SE_PhotonIsoProducer_MovedOut -d EGamma/EGammaAnalysisTools UserCode/EGamma/EGammaAnalysisTools
+
+cd EgammaAnalysis/ElectronTools/data/
+cat download.url | xargs wget
+cd -
+
 
 
 
@@ -76,15 +86,6 @@ addpkg RecoLuminosity/LumiDB   V04-02-08
 # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVKnowFeatures#HCAL_laser_events_in_prompt_2012
 #cvs co -r V01-00-03-10 EventFilter/HcalRawToDigi
 #cvs co -r V01-00-15 DPGAnalysis/Skims
-
-# MVA electron ID in PAT and effective-area rho correction to the isolation
-# https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
-# https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#MVA_based_Id_in_PAT
-# https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-#cvs co -r V00-00-31-EA02 -d EGamma/EGammaAnalysisTools UserCode/EGamma/EGammaAnalysisTools
-#cd EGamma/EGammaAnalysisTools/data
-#cat download.url | xargs wget
-#cd -
 
 
 # B-tagging
