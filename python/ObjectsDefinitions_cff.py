@@ -264,9 +264,11 @@ def DefineJets(process, paths, runOnData):
         uncertainty tool.
     """
     
-    # Jet identification criteria as recommended in [1]
+    # Jet identification criteria as recommended in [1-2]
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
-    jetQualityCut = 'numberOfDaughters > 1 & neutralHadronEnergyFraction < 0.99 & '\
+    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1429.html
+    jetQualityCut = 'numberOfDaughters > 1 & '\
+     '(neutralHadronEnergy + HFHadronEnergy) / energy < 0.99 & '\
      'neutralEmEnergyFraction < 0.99 & (abs(eta) < 2.4 & chargedEmEnergyFraction < 0.99 & '\
      'chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 | abs(eta) >= 2.4)'
     
