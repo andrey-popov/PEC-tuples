@@ -300,13 +300,15 @@ def DefineMETs(process, paths, runOnData, jecLevel):
         (switched on by PF2PAT function), type-0, and phi-modulation correction.
     """
     
-    METCollections = ['patPFMet', 'patMETs']
-    #^ MET collections to store. The first one is raw PF MET, the second one includes the type-I and
-    # type-0 corrections as well as the MET phi-modulation correction. Type-I correction is
-    # performed with selectedPatJets collection
+    METCollections = []
+    #^ MET collections to store. The first one will be raw PF MET, the second one will include the
+    # type-I and type-0 corrections as well as the MET phi-modulation correction. Type-I correction
+    # is performed with selectedPatJets collection
     process.load('JetMETCorrections.Type1MET.pfMETsysShiftCorrections_cfi')
 
     if runOnData:
+        METCollections.extend(['patPFMet', 'patMETs'])
+        
         # Include the type-0 MET correction. The code is inspired by [1]
         # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_II_0_with_PF2PAT
         process.patType1CorrectedPFMet.srcType1Corrections.append(
@@ -320,12 +322,21 @@ def DefineMETs(process, paths, runOnData, jecLevel):
         process.patType1CorrectedPFMet.srcType1Corrections.append(
             cms.InputTag('pfMEtSysShiftCorr'))
         
+        # There is some mismatch between the python configurations and CMSSW plugins in the current
+        # setup (*), (**). This is corrected below
+        # (*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/JetMETCorrections/Type1MET/plugins/SysShiftMETcorrInputProducer.cc?revision=1.2&view=markup
+        # (**) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/JetMETCorrections/Type1MET/plugins/SysShiftMETcorrInputProducer.cc?revision=1.3&view=markup
+        process.pfMEtSysShiftCorr.src = process.pfMEtSysShiftCorr.srcMEt
+        process.pfMEtSysShiftCorr.parameter = process.pfMEtSysShiftCorr.parameter[0]
+        
         process.patPF2PATSequence.replace(process.patType1CorrectedPFMet,
          process.pfMEtSysShiftCorrSequence * process.patType1CorrectedPFMet)
     
     else:  # in case of MC the runMEtUncertainties tool takes care of the corrections
-        # Produce the corrected MET and systematic shifts for it (*)
-        # (*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools#METSysTools
+        METCollections.extend(['patMETs', 'patType1CorrectedPFMet'])
+        
+        # Produce the corrected MET and perform systematical shifts [1]
+        # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools#METSysTools
         from PhysicsTools.PatUtils.tools.metUncertaintyTools import runMEtUncertainties
         runMEtUncertainties(process,
             electronCollection = 'selectedPatElectrons', muonCollection = 'selectedPatMuons',
@@ -333,7 +344,7 @@ def DefineMETs(process, paths, runOnData, jecLevel):
             jetCorrLabel = jecLevel,
             makeType1corrPFMEt = True, makeType1p2corrPFMEt = False,
             doApplyType0corr = True, doApplySysShiftCorr = True,
-            sysShiftCorrParameter = process.pfMEtSysShiftCorrParameters_2012runABCvsNvtx_mc[0],
+            sysShiftCorrParameter = process.pfMEtSysShiftCorrParameters_2012runABCDvsNvtx_mc[0],
             #dRjetCleaning = -1,  # this parameter is never used by the function
             addToPatDefaultSequence = False, outputModule = '')
         
@@ -341,24 +352,25 @@ def DefineMETs(process, paths, runOnData, jecLevel):
         del(process.patJetsNotOverlappingWithLeptonsForMEtUncertainty.checkOverlaps.electrons)
         del(process.patJetsNotOverlappingWithLeptonsForMEtUncertainty.checkOverlaps.muons)
         
-        # Add the systematic variations
+        # Add systematical variations
         METCollections.extend(['patType1CorrectedPFMetJetEnUp', 'patType1CorrectedPFMetJetEnDown',
             'patType1CorrectedPFMetJetResUp', 'patType1CorrectedPFMetJetResDown',
             'patType1CorrectedPFMetUnclusteredEnUp', 'patType1CorrectedPFMetUnclusteredEnDown',
             'patType1CorrectedPFMetElectronEnUp', 'patType1CorrectedPFMetElectronEnDown',
             'patType1CorrectedPFMetMuonEnUp', 'patType1CorrectedPFMetMuonEnDown'])
-        #^ MET variations corresponding to the individual JEC uncertainty sources are not considered
-        # anymore
         
-        # Update the files with the individual JEC uncertainty sources (*) and correct the name of the
-        # source as it has changed
-        # (*) https://twiki.cern.ch/twiki/bin/view/CMS/JECUncertaintySources#Example_implementation
+        # Update files with individual JEC uncertainty sources [1] and correct name of subtotal
+        # uncertainty as it is outdated in the default configuraion. There are two files with jet
+        # energy corrections and uncertainties: for data and for simulation; the difference
+        # originate from L1FastJet corrections [2]
+        # [1] https://twiki.cern.ch/twiki/bin/view/CMS/JECUncertaintySources?rev=17#2012_JEC
+        # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=115#JetEnCor2012Summer13
         for moduleName in process.metUncertaintySequence.moduleNames():
             module = getattr(process, moduleName)
             if ['jetCorrUncertaintyTag', 'jetCorrInputFileName'] in dir(module):
                 module.jetCorrUncertaintyTag = 'SubTotalMC'
                 module.jetCorrInputFileName = cms.FileInPath(
-                 'UserCode/SingleTop/data/Fall12_V6_DATA_UncertaintySources_AK5PFchs.txt')
+                 'UserCode/SingleTop/data/Summer13_V4_MC_Uncertainty_AK5PFchs.txt')
         
         # Correct for the mismatch between the python configurations and CMSSW plugins (similar to the
         # case of the real data above)
