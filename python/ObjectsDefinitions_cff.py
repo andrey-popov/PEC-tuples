@@ -1,6 +1,6 @@
-""" The module contains the definitions of the physical objects including the required adjustments
-    to the reconstruction process. The functions defined here must be called after usePF2PAT, the
-    names of the modules are hard-coded.
+""" The module contains definitions of physical objects including required adjustments to the
+    reconstruction process. Functions defined here must be called after usePF2PAT, name of the
+    modules are hard-coded.
     """
 
 
@@ -13,7 +13,7 @@ import FWCore.ParameterSet.Config as cms
 
 
 def DefineElectrons(process, PFRecoSequence, runOnData):
-    """ This function adjusts the electron reconstruction. Among all the fields being added to the
+    """ This function adjusts electron reconstruction. Among all the fields being added to the
         process, the user is expected to use the following only:
         
         1. nonIsolatedLoosePatElectrons: maximally loose collection of electrons to be saved in the
@@ -28,18 +28,28 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
         be used for the MET uncertainty tool.
     """
     
-    # Load the modules to perform the effective-area (rho) isolation correction for the
-    # electrons (*), (**). It allows to implement the rho correction with the very same module used
-    # to apply the delta-beta corrections
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection
-    # (**) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
-    process.load('EGamma.EGammaAnalysisTools.electronIsolatorFromEffectiveArea_cfi')
+    # Define a module to produce a value map with rho correction of electron isolation. The
+    # configuration fragment is copied from [1] because it is not included in the current tag of
+    # UserCode/EGamma/EGammaAnalysisTools. General outline of configuration is inspired by [2].
+    # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/python/electronIsolatorFromEffectiveArea_cfi.py?hideattic=0&revision=1.1.2.2&view=markup
+    # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
+    # 
+    # In both real data and simulation an effective area derived from real data (2012 HCP dataset)
+    # is applied. Possible difference between data and simulation is belived to be small [3-4]
+    # [3] https://hypernews.cern.ch/HyperNews/CMS/get/top/1607.html
+    # [4] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1263/1/2/1.html
+    process.elPFIsoValueEA03 = cms.EDFilter('ElectronIsolatorFromEffectiveArea',
+        gsfElectrons = cms.InputTag('gsfElectrons'),
+        pfElectrons = cms.InputTag('pfSelectedElectrons'),
+        rhoIso = cms.InputTag('kt6PFJets', 'rho'),
+        EffectiveAreaType = cms.string('kEleGammaAndNeutralHadronIso03'),
+        EffectiveAreaTarget = cms.string('kEleEAData2012'))
     
     
-    # Change the isolation cone used in pfIsolatedElectrons to 0.3, as recommended in (*) and (**).
+    # Change the isolation cone used in pfIsolatedElectrons to 0.3, as recommended in [1] and [2].
     # The parameter for the delta-beta correction is initialized with the map for the rho correction
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/EgammaCutBasedIdentification?rev=17#Particle_Flow_Isolation
-    # (**) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaCutBasedIdentification?rev=17#Particle_Flow_Isolation
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
     process.pfIsolatedElectrons.isolationValueMapsCharged = cms.VInputTag(
         cms.InputTag('elPFIsoValueCharged03PFId'))
     process.pfIsolatedElectrons.deltaBetaIsolationValueMap = cms.InputTag('elPFIsoValuePU03PFId')
@@ -49,10 +59,6 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     
     PFRecoSequence.replace(process.pfIsolatedElectrons,
      process.elPFIsoValueEA03 * process.pfIsolatedElectrons)
-    
-    # Note that the module elPFIsoValueEA03 exploits the data-driven effective areas. The areas for
-    # MC are not included in the provider class (*) (see the targets)
-    # (*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/interface/ElectronEffectiveArea.h?view=markup
     
     
     # Adjust the parameters for the rho correction (*). The cut on the isolation value is set in
