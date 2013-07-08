@@ -84,10 +84,10 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
         src = cms.InputTag('pfIsolatedElectrons'))
     
     
-    # Apply the rest cuts for the veto electrons as required in (*). It is implemented via an
+    # Apply remaining cuts that define veto electrons as required in [1]. It is implemented via an
     # additional module and not in pfSelectedElectrons, becase all the isolation maps are associated
     # with the latter collection, and they will be needed also for a looser electron selection
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
     process.pfElectronsForTopProjection = process.pfSelectedElectrons.clone(
         src = 'pfIdentifiedElectrons',
         cut = 'pt > 20. & abs(eta) < 2.5')
@@ -99,22 +99,22 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     
     
     
-    # The collection pfElectronsForTopProjection, which contains the isolated and identified
-    # electrons passing the basic kinematic cuts, is used in the top projections. It needs also be
-    # provided to the MET uncertainty tool (in case of MC simulated data), however the latter
-    # expects the PAT electrons. Since they cannot be constructed from pfElectronsForTopProjection
+    # Collection pfElectronsForTopProjection, which contains isolated and identified electrons
+    # passing basic kinematical cuts, is used in the top projections. It should also be
+    # provided to the MET uncertainty tool (in case of MC simulated data); however, the latter
+    # expects PAT electrons. Since they cannot be constructed from pfElectronsForTopProjection
     # collection (isolation ValueMap issues), they should be subjected to an additional selection.
     
-    # Set the accessor of the ID (*), (**)
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-    # (**) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/patTuple_electronId_cfg.py?revision=1.2&view=markup&pathrev=V00-00-16
+    # Set an accessor for the MVA ID [1-2]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
+    # [2] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/patTuple_electronId_cfg.py?revision=1.2&view=markup&pathrev=V00-00-16
     process.patElectrons.electronIDSources = cms.PSet(mvaTrigV0 = cms.InputTag('mvaTrigV0'))
     
-    # Change the size of the isolation cone
+    # Change the size of the isolation cone for PAT electrons
     from PhysicsTools.PatAlgos.tools.pfTools import adaptPFIsoElectrons
     adaptPFIsoElectrons(process, process.patElectrons, '', '03')
     
-    # Insert the effective-area isolation
+    # Insert the effective-area isolation correction as a user isolation
     process.patElectrons.isolationValues.user = cms.VInputTag(cms.InputTag('elPFIsoValueEA03'))
     
     # Selection to mimic the pfElectronsForTopProjection collection
@@ -124,7 +124,7 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     
     
     # Although the "good" electrons are a subset of the patElectrons collection defined above, it is
-    # usefull to save all the electrons in the event (especially for the QCD studies). Duplicat the
+    # usefull to save all the electrons in the event (especially for the QCD studies). Duplicate the
     # patElectrons module to perform it
     process.nonIsolatedLoosePatElectrons = process.patElectrons.clone(
         pfElectronSource = 'pfSelectedElectrons')
@@ -143,10 +143,10 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     
     
     
-    # Finally, a collection for the event selection is needed. It is based on the pure kinematic
+    # Finally, a collection for the event selection is needed. It is based on pure kinematical
     # properties only (the electron is allowed to be non-isolated or be poorly identified). Note
-    # that it is recommended (*) to use momentum of the associated GSF electron
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/B2GRefEventSel#Isolation_and_Corrections_to_Iso
+    # that it is recommended [1] to use momentum of the associated GSF electron
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/B2GRefEventSel#Isolation_and_Corrections_to_Iso
     process.patElectronsForEventSelection = process.selectedPatElectrons.clone(
         src = 'nonIsolatedLoosePatElectrons',
         cut = 'ecalDrivenMomentum.pt > 30. & (ecalDrivenMomentum.eta < 2.5)')

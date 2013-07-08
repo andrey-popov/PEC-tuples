@@ -13,13 +13,13 @@ eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
 
 # Tags for the latest PAT release V08-09-62. Tags recommended for tau reconstruction are ignored
-#as tau leptons are not used in the analysis
+# as tau leptons are not used in the analysis
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATReleaseNotes52X
 addpkg DataFormats/PatCandidates V06-05-06-12
 addpkg PhysicsTools/PatAlgos     V08-09-62
 addpkg PhysicsTools/PatUtils
 #^ The last command checks a package out of release. It must be recompiled due to dependencies of
-#other packages. See an example in
+# other packages. See an example in
 # https://hypernews.cern.ch/HyperNews/CMS/get/physTools/3021/1.html
 
 # Latest b-tagging (recommended in the PAT recipe cited above)
