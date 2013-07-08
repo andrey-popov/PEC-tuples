@@ -21,7 +21,7 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
         
         2. eleQualityCuts: vector of quality cuts to be applied to the above collection.
         
-        3. patElectronsForEventSelection: collection to be exploited for the event selection, 
+        3. patElectronsForEventSelection: collection to be exploited for an event selection, 
         contains all the electrons passing a simple pure-kinematic selection.
         
         4. selectedPatElectrons: electrons passing loose cuts in isolation, ID, and kinematics; to
@@ -161,30 +161,29 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
 
 
 def DefineMuons(process, PFRecoSequence, runOnData):
-    """ This function adjuts the muon reconstruction. The following collections and variables are
+    """ This function adjusts muon reconstruction. The following collections and variables are
         expected to be used by the user:
         
-        1. nonIsolatedLoosePatMuons: maximally loose collection of the muons to be stored in the
-        tuples.
+        1. nonIsolatedLoosePatMuons: maximally loose collection of muons to be stored in the tuples.
         
-        2. muQualityCuts: vector of the quality cuts to be applied to be above collection.
+        2. muQualityCuts: vector of quality cuts to be applied to the above collection.
         
-        3. patMuonsForEventSelection: collection of loose-quality muons that pass basic kinematic
-        requirements; to be used for the event selection.
+        3. patMuonsForEventSelection: collection of loose-quality muons that pass basic kinematical
+        requirements; to be used for an event selection.
         
         4. selectedPatMuons: loosely identified and isolated muons, which are expected by the MET
         uncertainty tool.
     """
     
-    # Eneable the delta-beta correction for the muon isolation and set the the recommended cat (*)
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId
+    # Enable delta-beta correction for the muon isolation and set the recommended cut [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Muon_Isolation
     process.pfIsolatedMuons.doDeltaBetaCorrection = True
     process.pfIsolatedMuons.deltaBetaFactor = -0.5
     process.pfIsolatedMuons.isolationCut = 0.2
     
     
-    # Apply the rest cuts recommended for the veto muons (*)
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Muons
+    # Apply remaining cuts that are recommended for loose/veto muons [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Muons
     process.pfMuonsForTopProjection = process.pfSelectedMuons.clone(
         src = 'pfIsolatedMuons',
         cut = 'pt > 10. & abs(eta) < 2.5')
@@ -194,18 +193,22 @@ def DefineMuons(process, PFRecoSequence, runOnData):
      process.pfIsolatedMuons * process.pfMuonsForTopProjection)
     
     
-    # The collection pfMuonsForTopProjection is used for the top projection and contains the
-    # (loosely) isolated muons passing some loose identification and isolation requirements. This
-    # collection is also needed to be fed into the MET uncertainty tool, which requires embedding in
-    # pat::Muon. The loose selection should be reimplemented since the patMuons module starts from
-    # the pfIsolatedMuons collection
+    # Collection pfMuonsForTopProjection is used for the top projection and contains (loosely)
+    # isolated muons satisfying some loose identification criteria. A collection that refers to the
+    # same physics objects is expected to be fed into the MET uncertainty tool, but the latter works
+    # with PAT muons and not with PF candidates. For this reason selection adopted for
+    # pfMuonsForTopProjection is reimplemented for selectedPatMuons. In addition, identification
+    # requirements from [1], which cannot be applied to PF candidates, are checked. The first one,
+    # pat::Muon::isPFMuon is expected to return true always since PFBRECO is used, and it is
+    # provided for completeness only
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Loose_Muon
     process.selectedPatMuons.cut = '(' + process.pfMuonsForTopProjection.cut.value() + \
      ') & isPFMuon & (isGlobalMuon | isTrackerMuon)'
     
     
     # The "good" muons are contained in the above collection, but it is advantageous to save all the
-    # muons in the event, including the loose ones, in order to allow QCD studies. It is conducted
-    # with a duplicate of patMuons module
+    # muons in the event, including the loose ones, in order to allow QCD studies. The task is
+    # performed with a duplicate of patMuons module
     process.nonIsolatedLooseMuonMatch = process.muonMatch.clone(
         src = 'pfSelectedMuons')
     process.nonIsolatedLoosePatMuons = process.patMuons.clone(
@@ -218,11 +221,11 @@ def DefineMuons(process, PFRecoSequence, runOnData):
         PFRecoSequence.remove(process.nonIsolatedLooseMuonMatch)
     
     
-    # The above collection of the muons is saved in the tuples. It is needed to store the informaion
-    # about the quality criteria the muons meet. A part of it is encoded in the dedicated variables
-    # such as pt, eta, isolation, impact-parameter. The others are included in the selection strings
-    # below. They follow the recommendations in (*)
-    # (*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#The2012Data
+    # The above collection of muons is saved in the tuples. It is needed to store informaion about
+    # quality criteria the muons meet. A part of it is encoded in dedicated variables such as pt,
+    # eta, isolation, or impact-parameter. The others are included in the selection strings
+    # below. They follow recommendations in [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#The2012Data
     muQualityCuts = cms.vstring(
         # loose muons for veto
         'isPFMuon & (isGlobalMuon | isTrackerMuon)',
@@ -233,7 +236,7 @@ def DefineMuons(process, PFRecoSequence, runOnData):
         'track.hitPattern.trackerLayersWithMeasurement > 5')
     
     
-    # Finally, a collection for the event selection is needed. It is based on the pure kinematic
+    # Finally, a collection for an event selection is needed. It is based on pure kinematical
     # properties only (the muon is allowed to be non-isolated or be poorly identified)
     process.patMuonsForEventSelection = process.selectedPatMuons.clone(
         src = 'nonIsolatedLoosePatMuons',
