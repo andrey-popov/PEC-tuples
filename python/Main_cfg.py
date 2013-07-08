@@ -165,7 +165,7 @@ paths.append(process.patPF2PATSequence)
 
 # Include the event filters
 from UserCode.SingleTop.EventFilters_cff import ApplyEventFilters
-ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices',
+ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
     runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
 paths.append(process.eventFiltersSequence)
 

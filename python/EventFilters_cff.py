@@ -5,17 +5,19 @@ __email__ = 'Andrey.Popov@cern.ch'
 import FWCore.ParameterSet.Config as cms
 
 # Function to set up appropriate filters for the actual process
-def ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices', runOnFastSim = False,
-    run53XFilters = True):
+def ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
+    runOnFastSim = False, run53XFilters = True):
     """ The function initialises a number of filters to reject anomalous events. It packs them into
         sequence 'eventFilterSequence' which is added to the process (but the user has to insert it
         into appropriate paths). Some of the filters depend on PAT collections; therefore, the
-        constructed sequence must be added after the PAT one. All the filters are applied to both
-        real data and MC simulation on identical basis.
+        constructed sequence must be added after the PAT one. Most of the filters are applied to
+        both real data and MC simulation on identical basis.
         
         The arguments:
         
         process: An instance of cms.Process which the filters are added to.
+        
+        runOnData: Indicates whether real data is being processed.
         
         goodVertices: The collection of the selected ("good") primary vertices.
         
@@ -56,9 +58,9 @@ def ApplyEventFilters(process, goodVertices = 'goodOfflinePrimaryVertices', runO
     
     # HCAL laser events
     # https://twiki.cern.ch/twiki/bin/view/CMS/PdmVKnowFeatures#Datasets_from_the_2013_rereco_an
-    process.load('EventFilter.HcalRawToDigi.hcallaserFilterFromTriggerResult_cff')
-    
-    eventFiltersSequence += process.hcalfilter
+    if runOnData:
+        process.load('EventFilter.HcalRawToDigi.hcallaserFilterFromTriggerResult_cff')
+        eventFiltersSequence += process.hcalfilter
     
     
     # ECAL dead cell filter
