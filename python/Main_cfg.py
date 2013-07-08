@@ -67,10 +67,23 @@ muChan = (options.channels.find('m') != -1)
 # Set the default global tag
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = 'FT_53_V6_AN2'
+        options.globalTag = 'FT_53_V21_AN4'
     else:
-        options.globalTag = 'START53_V14'
+        options.globalTag = 'START53_V25'
 process.GlobalTag.globaltag = options.globalTag + '::All'
+
+
+# Rerun jet probability calibration when running over simulation [1-2]. Real data form 22Jan2013
+# rereco is fine
+# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG?rev=169#2012_Data_and_MC_EPS13_prescript
+# [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagJetProbabilityCalibration?rev=24#Calibration_in_53x_Data_and_MC
+process.GlobalTag.toGet = cms.VPSet(
+    cms.PSet(record = cms.string('BTagTrackProbability2DRcd'),
+       tag = cms.string('TrackProbabilityCalibration_2D_MC53X_v2'),
+       connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')),
+    cms.PSet(record = cms.string('BTagTrackProbability3DRcd'),
+       tag = cms.string('TrackProbabilityCalibration_3D_MC53X_v2'),
+       connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')))
 
 
 # Define the input files to be used for testing
