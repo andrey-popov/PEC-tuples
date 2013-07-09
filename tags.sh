@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Use the latest release recommended for 2012 data
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATRecipes#CMSSW_5_3_X_pro2012
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATRecipes?rev=302#CMSSW_5_3_X_pro2012
 release="CMSSW_5_3_11"
 scramv1 project CMSSW $release  # cmsrel alias expanded
 
@@ -15,7 +15,7 @@ eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
 # Tags for the latest PAT release V08-09-62. Tags recommended for tau reconstruction are ignored
 # as tau leptons are not used in the analysis
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATReleaseNotes52X
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATReleaseNotes52X?rev=148#V08_09_62
 addpkg DataFormats/PatCandidates V06-05-06-12
 addpkg PhysicsTools/PatAlgos     V08-09-62
 addpkg PhysicsTools/PatUtils
