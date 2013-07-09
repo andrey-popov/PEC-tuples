@@ -182,8 +182,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetJBP", jetJBP, "jetJBP[jetSize]/F");
     basicInfoTree->Branch("jetJP", jetJP, "jetJP[jetSize]/F");
     
-    // The secondary vertex mass cannot be calculated due to unknown problems in the configuration
-    //basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
+    basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
     
     basicInfoTree->Branch("jetPUCutBasedDiscr", jetPUCutBasedDiscr, "jetPUCutBasedDiscr[jetSize]/F");
     basicInfoTree->Branch("jetPUCutBasedID", jetPUCutBasedID, "jetPUCutBasedID[jetSize]/I");
@@ -494,9 +493,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             jetJP[jetSize] = j.bDiscriminator("jetProbabilityBJetTags");
             
             
-            // Calculate the secondary vertex mass (*), (**)
-            //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPATExampleTrackBJet#ExerCise5
-            //(**) https://hypernews.cern.ch/HyperNews/CMS/get/btag/718/1.html
+            // Calculate the secondary vertex mass [1-3]
+            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPATExampleTrackBJet#ExerCise5
+            //[2] https://hypernews.cern.ch/HyperNews/CMS/get/btag/718/1.html
+            //[3] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714.html
             reco::SecondaryVertexTagInfo const *svTagInfo = j.tagInfoSecondaryVertex();
             
             if (svTagInfo  &&  svTagInfo->nVertices() > 0)
