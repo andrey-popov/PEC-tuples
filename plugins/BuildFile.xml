@@ -24,7 +24,7 @@
 <use   name="EgammaAnalysis/ElectronTools" />
 <use   name="LHAPDF"/>
 
-<library  name = "1" file = "*.cc">
-    <flags  EDM_PLUGIN = "UserCodeSingleTop_plugins" />
+<library  name = "UserCodeSingleTop_plugins" file = "*.cc">
+    <flags  EDM_PLUGIN = "1" />
     <flags  CXXFLAGS = "-O2" />
 </library>
