@@ -4,7 +4,7 @@
  * Description: see the header file.
  */
 
-#include <UserCode/SingleTop/interface/FirstVertexFilter.h>
+#include <UserCode/SingleTop/plugins/FirstVertexFilter.h>
 
 #include <DataFormats/VertexReco/interface/Vertex.h>
 #include <DataFormats/VertexReco/interface/VertexFwd.h>

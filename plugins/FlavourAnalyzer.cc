@@ -4,8 +4,8 @@
  * Description: see the header file.
  */
 
-#include <UserCode/SingleTop/interface/FlavourAnalyzer.h>
-#include <UserCode/SingleTop/interface/HFClass.h>
+#include <UserCode/SingleTop/plugins/FlavourAnalyzer.h>
+#include <UserCode/SingleTop/plugins/HFClass.h>
 
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>

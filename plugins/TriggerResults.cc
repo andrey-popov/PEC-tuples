@@ -4,7 +4,7 @@
  * Description: see the header file.
  */
 
-#include <UserCode/SingleTop/interface/TriggerResults.h>
+#include <UserCode/SingleTop/plugins/TriggerResults.h>
 
 #include <FWCore/Common/interface/TriggerResultsByName.h>
 #include <FWCore/Utilities/interface/EDMException.h>

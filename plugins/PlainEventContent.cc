@@ -4,7 +4,7 @@
  * Description: see the header file.
  */
 
-#include <UserCode/SingleTop/interface/PlainEventContent.h>
+#include <UserCode/SingleTop/plugins/PlainEventContent.h>
 
 #include <FWCore/Framework/interface/EventSetup.h>
 #include <FWCore/Framework/interface/ESHandle.h>
