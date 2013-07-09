@@ -1,9 +1,9 @@
-""" This module defines the general configuration for the UCL+MSU single-top t-channel analysis. It
-    performs a very loose event selection (at least one semi-tight lepton, at least one jet with
-    pt > 30 GeV/c). The required event cleaning (mostly recommended for MET analysis) is applied and
-    quality cuts for different physical objects are defined. Corrected MET as well as all the
-    corresponding systematics is calculated. The isolation requirement for the charged leptons is
-    dropped (it is applied only for the jet clustering and MET systematics due to lepton energy
+""" This module defines a general configuration for analyses involving t-channel single top-quark
+    production. It performs a very loose event selection (at least one semi-tight lepton, at least
+    two jet with pt > 30 GeV/c). Necessary event cleaning (mostly recommended for MET analyses) is
+    applied and quality cuts for different physical objects are defined. Corrected MET as well as
+    all the corresponding systematics are calculated. Isolation requirements for charged leptons are
+    dropped (they are applied only for jet clustering and MET systematics due to lepton energy
     scale).
     
     The results are saved with the help of dedicated EDAnalyzer's. No EDM output is produced.
@@ -25,9 +25,9 @@ from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
 
 # The configuration supports options that can be given in the command line or pycfg_params in the
-# [CMSSW] section of the CRAB configuration. See (*). An example of calling syntax:
-#    cmsRun Moscow_cfg.py runOnData=False,HLTProcess=REDIGI311X
-# (*) http://cmsdoc.cern.ch/cms/ccs/wm/www/Crab/Docs/crab-v2.7.8.html#pycfg_params__
+# [CMSSW] section of the CRAB configuration. See [1]. An example of calling syntax:
+#    cmsRun Main_cfg.py runOnData=False,HLTProcess=REDIGI311X
+# [1] http://cmsdoc.cern.ch/cms/ccs/wm/www/Crab/Docs/crab-v2.7.8.html#pycfg_params__
 from UserCode.SingleTop.VarParsing import VarParsing  # multicrab bugfix
 options = VarParsing ('python')
 
@@ -97,10 +97,10 @@ else:
 if len(options.sourceFile) > 0:
     process.source.fileNames = cms.untracked.vstring(options.sourceFile)
 
-# Set a specific event range here
+# Set a specific event range here (useful for debuggin)
 #process.source.eventsToProcess = cms.untracked.VEventRange('1:2807803')
 
-# Set the maximum number of events to process for a local run
+# Set the maximum number of events to process for a local run (it is overidenned by CRAB)
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 # Reduce the verbosity for a local run
@@ -128,8 +128,8 @@ class PathManager:
 paths = PathManager(process.elPath, process.muPath)
 
 
-# Filter on the first vertex properties. The produced vertex collection is the same as in (*)
-# (*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCor2012Fall12
+# Filter on the first vertex properties. The produced vertex collection is the same as in [1]
+# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
     src = cms.InputTag('offlinePrimaryVertices'),
     cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.'))
@@ -154,8 +154,7 @@ usePF2PAT(process, runPF2PAT = True, runOnMC = not runOnData, postfix = '',
     typeIMetCorrections = runOnData,  # in case of MC the corrections are added with MET unc. tool
     outputModules = [])
 
-# The recommended settings for the JEC with the CHS. Note that it is not needed to compute the mean
-# jet pt per unit area (rho) as it is done in the standard reconstruction sequence
+# A recommended setting for JEC with CHS
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
 process.pfPileUp.checkClosestZVertex = False
 
