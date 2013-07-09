@@ -187,6 +187,13 @@ void PlainEventContent::beginJob()
     // The secondary vertex mass cannot be calculated due to unknown problems in the configuration
     //basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
     
+    basicInfoTree->Branch("jetPUCutBasedDiscr", jetPUCutBasedDiscr, "jetPUCutBasedDiscr[jetSize]/F");
+    basicInfoTree->Branch("jetPUCutBasedID", jetPUCutBasedID, "jetPUCutBasedID[jetSize]/I");
+    basicInfoTree->Branch("jetPUSimpleDiscr", jetPUSimpleDiscr, "jetPUSimpleDiscr[jetSize]/F");
+    basicInfoTree->Branch("jetPUSimpleID", jetPUSimpleID, "jetPUSimpleID[jetSize]/I");
+    basicInfoTree->Branch("jetPUFullDiscr", jetPUFullDiscr, "jetPUFullDiscr[jetSize]/F");
+    basicInfoTree->Branch("jetPUFullID", jetPUFullID, "jetPUFullID[jetSize]/I");
+    
     for (unsigned i = 0; i < jetSelection.size(); ++i)
     {
         string branchName("jetSelection");
@@ -400,6 +407,28 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     Handle<View<pat::Jet>> jetsJERUp, jetsJERDown;
     
+    
+    // Jet PU ID maps [1]
+    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
+    Handle<ValueMap<float>> jetPUCutBasedDiscrHandle;
+    iEvent.getByLabel("cutbasedDiscriminant", jetPUCutBasedDiscrHandle);
+    
+    Handle<ValueMap<int>> jetPUCutBasedIDHandle;
+    iEvent.getByLabel("cutbased", jetPUCutBasedIDHandle);
+    
+    Handle<ValueMap<float>> jetPUSimpleDiscrHandle;
+    iEvent.getByLabel("simpleDiscriminant", jetPUSimpleDiscrHandle);
+    
+    Handle<ValueMap<int>> jetPUSimpleIDHandle;
+    iEvent.getByLabel("simpleId", jetPUSimpleIDHandle);
+    
+    Handle<ValueMap<float>> jetPUFullDiscrHandle;
+    iEvent.getByLabel("fullDiscriminant", jetPUFullDiscrHandle);
+    
+    Handle<ValueMap<int>> jetPUFullIDHandle;
+    iEvent.getByLabel("fullId", jetPUFullIDHandle);
+    
+    
     if (!runOnData)
     {
         event.getByLabel(JERSystJetsSrc[0], jetsJERUp);
@@ -419,6 +448,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     TLorentzVector softJetSumP4, softJetSumP4JERUp, softJetSumP4JERDown;
     softJetHt = softJetHtJERUp = softJetHtJERDown = 0.;
     TLorentzVector softJetSumP4JECUnc = 0.;
+    
     
     // Loop through the jet collection and fill the relevant variables
     for (unsigned int i = 0; i < jets->size(); ++i)
@@ -465,6 +495,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             jetJBP[jetSize] = j.bDiscriminator("jetBProbabilityBJetTags");
             jetJP[jetSize] = j.bDiscriminator("jetProbabilityBJetTags");
             
+            
             // Calculate the secondary vertex mass (*), (**)
             //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPATExampleTrackBJet#ExerCise5
             //(**) https://hypernews.cern.ch/HyperNews/CMS/get/btag/718/1.html
@@ -474,6 +505,18 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jetSecVertexMass[jetSize] = svTagInfo->secondaryVertex(0).p4().mass();
             else
                 jetSecVertexMass[jetSize] = -100.;
+            
+            
+            // PU jet ID [1]
+            //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
+            jetPUCutBasedDiscr[jetSize] = (*jetPUCutBasedDiscrHandle)[jets->RefAt(jetSize)];
+            jetPUCutBasedID[jetSize] = (*jetPUCutBasedIDHandle)[jets->RefAt(jetSize)];
+            
+            jetPUSimpleDiscr[jetSize] = (*jetPUSimpleDiscrHandle)[jets->RefAt(jetSize)];
+            jetPUSimpleID[jetSize] = (*jetPUSimpleIDHandle)[jets->RefAt(jetSize)];
+            
+            jetPUFullDiscr[jetSize] = (*jetPUFullDiscrHandle)[jets->RefAt(jetSize)];
+            jetPUFullID[jetSize] = (*jetPUFullIDHandle)[jets->RefAt(jetSize)];
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)

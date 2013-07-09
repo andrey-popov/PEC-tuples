@@ -146,6 +146,20 @@ class PlainEventContent: public edm::EDAnalyzer
         Float_t jetJP[MAX_LEN];    //
         Float_t jetSecVertexMass[MAX_LEN];  // mass of the secondary vertex (a'la SHyFT)
         
+        // PU jet ID [1]. There are three discriminators supported: a cut-based one, simple and full
+        //BDT. For each discriminator its continuous value is stored as well as an integer that
+        //encodes evaluation of three working points. (ID & (1 << 0)) != 0 if a jet passes the tight
+        //working point and (ID & (1 << 2)) != 0 if it passes loose working point (see code of
+        //passJetId method in [2])
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
+        //[2] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/CMG/CMGTools/External/interface/PileupJetIdentifier.h?view=markup&pathrev=V00-03-04
+        Float_t jetPUCutBasedDiscr[MAX_LEN];  // value of discriminator for cut-based selection
+        Int_t jetPUCutBasedID[MAX_LEN];       // flag encoding evaluaton of working points
+        Float_t jetPUSimpleDiscr[MAX_LEN];  // output of simple BDT discriminator
+        Int_t jetPUSimpleID[MAX_LEN];       // evaluation of working points for simple BDT
+        Float_t jetPUFullDiscr[MAX_LEN];  // output of full BDT discriminator
+        Int_t jetPUFullID[MAX_LEN];       // evaluation of working points for full BDT
+        
         Bool_t **jetSelectionBits;  // results of the additional selection
         
         Int_t metSize;  // number of different METs stored in the event
