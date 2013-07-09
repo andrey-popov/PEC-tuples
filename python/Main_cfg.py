@@ -100,7 +100,7 @@ if len(options.sourceFile) > 0:
 # Set a specific event range here (useful for debuggin)
 #process.source.eventsToProcess = cms.untracked.VEventRange('1:2807803')
 
-# Set the maximum number of events to process for a local run (it is overidenned by CRAB)
+# Set the maximum number of events to process for a local run (it is overiden by CRAB)
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 # Reduce the verbosity for a local run

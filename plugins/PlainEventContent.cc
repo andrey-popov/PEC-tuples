@@ -32,9 +32,7 @@
 #include <sstream>
 
 
-using edm::Handle;
-using edm::View;
-using std::auto_ptr;
+using namespace edm;
 using std::abs;
 
 
@@ -408,25 +406,25 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<View<pat::Jet>> jetsJERUp, jetsJERDown;
     
     
-    // Jet PU ID maps [1]
+    // Jet PU ID maps. See [1]; though, the actual code differs from what is written in the TWiki
     //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
     Handle<ValueMap<float>> jetPUCutBasedDiscrHandle;
-    iEvent.getByLabel("cutbasedDiscriminant", jetPUCutBasedDiscrHandle);
+    event.getByLabel("puJetMvaChs", "cutbasedDiscriminant", jetPUCutBasedDiscrHandle);
     
     Handle<ValueMap<int>> jetPUCutBasedIDHandle;
-    iEvent.getByLabel("cutbased", jetPUCutBasedIDHandle);
+    event.getByLabel("puJetMvaChs", "cutbasedId", jetPUCutBasedIDHandle);
     
     Handle<ValueMap<float>> jetPUSimpleDiscrHandle;
-    iEvent.getByLabel("simpleDiscriminant", jetPUSimpleDiscrHandle);
+    event.getByLabel("puJetMvaChs", "simpleDiscriminant", jetPUSimpleDiscrHandle);
     
     Handle<ValueMap<int>> jetPUSimpleIDHandle;
-    iEvent.getByLabel("simpleId", jetPUSimpleIDHandle);
+    event.getByLabel("puJetMvaChs", "simpleId", jetPUSimpleIDHandle);
     
     Handle<ValueMap<float>> jetPUFullDiscrHandle;
-    iEvent.getByLabel("fullDiscriminant", jetPUFullDiscrHandle);
+    event.getByLabel("puJetMvaChs", "fullDiscriminant", jetPUFullDiscrHandle);
     
     Handle<ValueMap<int>> jetPUFullIDHandle;
-    iEvent.getByLabel("fullId", jetPUFullIDHandle);
+    event.getByLabel("puJetMvaChs", "fullId", jetPUFullIDHandle);
     
     
     if (!runOnData)
@@ -509,14 +507,14 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             // PU jet ID [1]
             //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-            jetPUCutBasedDiscr[jetSize] = (*jetPUCutBasedDiscrHandle)[jets->RefAt(jetSize)];
-            jetPUCutBasedID[jetSize] = (*jetPUCutBasedIDHandle)[jets->RefAt(jetSize)];
+            jetPUCutBasedDiscr[jetSize] = (*jetPUCutBasedDiscrHandle)[jets->refAt(jetSize)];
+            jetPUCutBasedID[jetSize] = (*jetPUCutBasedIDHandle)[jets->refAt(jetSize)];
             
-            jetPUSimpleDiscr[jetSize] = (*jetPUSimpleDiscrHandle)[jets->RefAt(jetSize)];
-            jetPUSimpleID[jetSize] = (*jetPUSimpleIDHandle)[jets->RefAt(jetSize)];
+            jetPUSimpleDiscr[jetSize] = (*jetPUSimpleDiscrHandle)[jets->refAt(jetSize)];
+            jetPUSimpleID[jetSize] = (*jetPUSimpleIDHandle)[jets->refAt(jetSize)];
             
-            jetPUFullDiscr[jetSize] = (*jetPUFullDiscrHandle)[jets->RefAt(jetSize)];
-            jetPUFullID[jetSize] = (*jetPUFullIDHandle)[jets->RefAt(jetSize)];
+            jetPUFullDiscr[jetSize] = (*jetPUFullDiscrHandle)[jets->refAt(jetSize)];
+            jetPUFullID[jetSize] = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)
