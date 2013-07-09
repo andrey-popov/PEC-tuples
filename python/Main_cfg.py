@@ -25,9 +25,8 @@ from PhysicsTools.PatAlgos.patTemplate_cfg import *
 
 
 # The configuration supports options that can be given in the command line or pycfg_params in the
-# [CMSSW] section of the CRAB configuration. See [1]. An example of calling syntax:
+# [CMSSW] section of the CRAB configuration. An example of calling syntax:
 #    cmsRun Main_cfg.py runOnData=False,HLTProcess=REDIGI311X
-# [1] http://cmsdoc.cern.ch/cms/ccs/wm/www/Crab/Docs/crab-v2.7.8.html#pycfg_params__
 from UserCode.SingleTop.VarParsing import VarParsing  # multicrab bugfix
 options = VarParsing ('python')
 

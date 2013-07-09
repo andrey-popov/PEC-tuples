@@ -1,5 +1,7 @@
 # This is a modified version of FWCore.ParameterSet.VarParsing needed to get round the multicrab
-# bug in reading pycfg_params. See the implementation of parseArguments() function.
+# bug in reading pycfg_params [1-2]. See the implementation of parseArguments() function.
+# [1] https://hypernews.cern.ch/HyperNews/CMS/get/crabFeedback/4720.html
+# [2] https://hypernews.cern.ch/HyperNews/CMS/get/crabFeedback/3677.html
 
 import sys
 import os
