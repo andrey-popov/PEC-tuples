@@ -76,13 +76,14 @@ process.GlobalTag.globaltag = options.globalTag + '::All'
 # rereco is fine
 # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG?rev=169#2012_Data_and_MC_EPS13_prescript
 # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagJetProbabilityCalibration?rev=24#Calibration_in_53x_Data_and_MC
-process.GlobalTag.toGet = cms.VPSet(
-    cms.PSet(record = cms.string('BTagTrackProbability2DRcd'),
-       tag = cms.string('TrackProbabilityCalibration_2D_MC53X_v2'),
-       connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')),
-    cms.PSet(record = cms.string('BTagTrackProbability3DRcd'),
-       tag = cms.string('TrackProbabilityCalibration_3D_MC53X_v2'),
-       connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')))
+if not runOnData:
+    process.GlobalTag.toGet = cms.VPSet(
+        cms.PSet(record = cms.string('BTagTrackProbability2DRcd'),
+           tag = cms.string('TrackProbabilityCalibration_2D_MC53X_v2'),
+           connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')),
+        cms.PSet(record = cms.string('BTagTrackProbability3DRcd'),
+           tag = cms.string('TrackProbabilityCalibration_3D_MC53X_v2'),
+           connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')))
 
 
 # Define the input files to be used for testing
