@@ -149,7 +149,7 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/B2GRefEventSel#Isolation_and_Corrections_to_Iso
     process.patElectronsForEventSelection = process.selectedPatElectrons.clone(
         src = 'nonIsolatedLoosePatElectrons',
-        cut = 'ecalDrivenMomentum.pt > 30. & (ecalDrivenMomentum.eta < 2.5)')
+        cut = 'ecalDrivenMomentum.pt > 27. & (ecalDrivenMomentum.eta < 2.5)')
     
     PFRecoSequence.replace(process.nonIsolatedLoosePatElectrons,
      process.nonIsolatedLoosePatElectrons + process.patElectronsForEventSelection)
@@ -224,7 +224,7 @@ def DefineMuons(process, PFRecoSequence, runOnData):
     # properties only (the muon is allowed to be non-isolated or be poorly identified)
     process.patMuonsForEventSelection = process.selectedPatMuons.clone(
         src = 'nonIsolatedLoosePatMuons',
-        cut = 'pt > 24. & abs(eta) < 2.1')
+        cut = 'pt > 17. & abs(eta) < 2.1')
     
     PFRecoSequence.replace(process.nonIsolatedLoosePatMuons,
      process.nonIsolatedLoosePatMuons + process.patMuonsForEventSelection)
