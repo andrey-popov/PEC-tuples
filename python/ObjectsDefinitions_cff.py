@@ -182,7 +182,7 @@ def DefineMuons(process, PFRecoSequence, runOnData):
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Muons
     # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=46#Loose_Muon
     process.pfSelectedMuons.cut = 'pt > 10. & abs(eta) < 2.5 & muonRef.isAvailable & '\
-     '(muonRef.isGlobalMuon | isTrackerMuon)'
+     'muonRef.isPFMuon & (muonRef.isGlobalMuon | isTrackerMuon)'
     
     
     # Enable delta-beta correction for the muon isolation and set the recommended cut [1]
