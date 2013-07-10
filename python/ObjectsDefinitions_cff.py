@@ -213,8 +213,6 @@ def DefineMuons(process, PFRecoSequence, runOnData):
     # below. They follow recommendations in [1]
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=46#The2012Data
     muQualityCuts = cms.vstring(
-        # loose muons for veto
-        'isPFMuon & (isGlobalMuon | isTrackerMuon)',
         # tight muons
         'isPFMuon & isGlobalMuon & globalTrack.normalizedChi2 < 10 & '\
         'globalTrack.hitPattern.numberOfValidMuonHits > 0 & numberOfMatchedStations > 1 & '\
