@@ -429,13 +429,14 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         muCharge[muSize] = (mu.charge() == -1) ? true : false;
         muDB[muSize] = mu.dB();
         
-        // Relative isolation with delta-beta correction (*). The logic of the calculation agrees
-        //also with (**)
-        //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Accessing_PF_Isolation_from_reco
-        //(**) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/interface/IsolatedPFCandidateSelectorDefinition.h?revision=1.4&view=markup
-        reco::MuonPFIsolation const &iso = mu.pfIsolationR04();
-        muRelIso[muSize] = (iso.sumChargedHadronPt +
-         std::max(iso.sumNeutralHadronEt + iso.sumPhotonEt - 0.5 * iso.sumPUPt, 0.)) / mu.pt();
+        // Relative isolation with delta-beta correction. Logic of the calculation follows [1]. Note
+        //that it is calculated differently from [2], but the adopted recipe is more natural for
+        //PFBRECO
+        //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/interface/IsolatedPFCandidateSelectorDefinition.h?revision=1.4&view=markup
+        //[2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Accessing_PF_Isolation_from_reco
+        muRelIso[muSize] = (mu.chargedHadronIso() +
+         std::max(mu.neutralHadronIso() + mu.photonIso() - 0.5 * mu.puChargedHadronIso(), 0.)) /
+         mu.pt();
         
         for (unsigned i = 0; i < muSelectors.size(); ++i)
             muSelectionBits[i][muSize] = muSelectors[i](mu);
