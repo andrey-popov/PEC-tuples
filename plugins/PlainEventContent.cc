@@ -370,7 +370,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
          el.dr03HcalTowerSumEt() / el.pt() < 0.2 and
          el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() == 0)
         {
-            // Calculate a corrected ECAL-based isolation as described in [1]
+            // Calculate a corrected ECAL-based isolation as described in [1]. The corrected
+            //isolation might be negative (confirmed by Matteo Sani privately)
             //[1] https://twiki.cern.ch/twiki/bin/view/CMS/EcalIsolationCorrection2012Data
             float correctedECALIso;
             
@@ -384,11 +385,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 eleTriggerPreselection[eleSize] =  (fabs(el.superCluster()->eta()) < 1.479) ?
                  (el.sigmaIetaIeta() < 0.014 and el.hadronicOverEm() < 0.15) :
                  (el.sigmaIetaIeta() < 0.035 and el.hadronicOverEm() < 0.10);
-            
-            /**/ //DEBUG
-            std::cout << "Electron with pt = " << el.pt() << " and eta = " << el.eta() << '\n';
-            std::cout << "Uncorrected rel. ECAL isolation: " << el.dr03EcalRecHitSumEt() / el.pt();
-            std::cout << "\nCorrected rel. ECAL isolation: " << correctedECALIso / el.pt() << '\n';
         }
         
         
