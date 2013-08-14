@@ -18,6 +18,8 @@
 #include <DataFormats/VertexReco/interface/Vertex.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 
+#include <EgammaAnalysis/ElectronTools/interface/EcalIsolationCorrector.h>
+
 #include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
 #include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
 
@@ -130,6 +132,8 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("eleCharge", eleCharge, "eleCharge[eleSize]/O");
     basicInfoTree->Branch("eleDB", eleDB, "eleDB[eleSize]/F");
     basicInfoTree->Branch("eleRelIso", eleRelIso, "eleRelIso[eleSize]/F");
+    basicInfoTree->Branch("eleTriggerPreselection", eleTriggerPreselection,
+     "eleTriggerPreselection[eleSize]/F");
     basicInfoTree->Branch("eleMVAID", eleMVAID, "eleMVAID[eleSize]/F");
     basicInfoTree->Branch("elePassConversion", elePassConversion, "elePassConversion[eleSize]/O");
     
@@ -322,6 +326,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<View<pat::Electron>> electrons;
     event.getByLabel(eleSrc, electrons);
     
+    
     // Construct the electron selectors (s. SWGuidePhysicsCutParser)
     vector<StringCutObjectSelector<pat::Electron>> eleSelectors;
     
@@ -329,10 +334,17 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
      ++sel)
         eleSelectors.push_back(*sel);
     
+    
+    // A corrector for ECAL-based electron isolation [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMS/EcalIsolationCorrection2012Data
+    EcalIsolationCorrector ecalIsoCorr(true);
+    
+    
     // Loop through the electron collection and fill the relevant variables
     for (eleSize = 0; eleSize < int(electrons->size())  &&  eleSize < MAX_LEN; ++eleSize)
     {
         pat::Electron const &el = electrons->at(eleSize);
+        
         
         elePt[eleSize] = el.ecalDrivenMomentum().pt();
         eleEta[eleSize] = el.ecalDrivenMomentum().eta();
@@ -343,12 +355,43 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         eleCharge[eleSize] = (el.charge() == -1) ? true : false;
         eleDB[eleSize] = el.dB();
         
+        
         // Effective-area (rho) correction to isolation (*)
         //(*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
         eleRelIso[eleSize] = (el.chargedHadronIso() + std::max(el.neutralHadronIso() +
          el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / el.pt();
         
+        
+        // Trigger-emulating preselection for MVA ID [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
+        eleTriggerPreselection[eleSize] = false;
+        
+        if (el.dr03TkSumPt() / el.pt() < 0.2 and /* ECAL-based isolation is addressed later */
+         el.dr03HcalTowerSumEt() / el.pt() < 0.2 and
+         el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() == 0)
+        {
+            // Calculate a corrected ECAL-based isolation as described in [1]. The corrected
+            //isolation might be negative (confirmed by Matteo Sani privately)
+            //[1] https://twiki.cern.ch/twiki/bin/view/CMS/EcalIsolationCorrection2012Data
+            float correctedECALIso;
+            
+            if (runOnData)
+                correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, runNumber, true);
+            else
+                correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, false);
+            
+            // Check the rest of requirements for trigger-emulating preselection
+            if (correctedECALIso / el.pt() < 0.2)
+                eleTriggerPreselection[eleSize] =  (fabs(el.superCluster()->eta()) < 1.479) ?
+                 (el.sigmaIetaIeta() < 0.014 and el.hadronicOverEm() < 0.15) :
+                 (el.sigmaIetaIeta() < 0.035 and el.hadronicOverEm() < 0.10);
+        }
+        
+        
+        // Triggering MVA ID [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification
         eleMVAID[eleSize] = el.electronID("mvaTrigV0");
+        
         
         elePassConversion[eleSize] = el.passConversionVeto()
          and (el.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0);
@@ -357,6 +400,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         //from the photon conversion is set according to (**).
         //(*) https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
         //(**) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel#Electrons
+        
         
         for (unsigned i = 0; i < eleSelectors.size(); ++i)
             eleSelectionBits[i][eleSize] = eleSelectors[i](el);
