@@ -17,3 +17,6 @@
 
 # CMSSW-specific auxiliary files
 __init__.py
+
+# ROOT files from test runs
+/*.root
