@@ -66,9 +66,9 @@ muChan = (options.channels.find('m') != -1)
 # Set the default global tag
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = 'FT_53_V21_AN4'
+        options.globalTag = 'FT53_V21A_AN6'
     else:
-        options.globalTag = 'START53_V25'
+        options.globalTag = 'START53_V27'
 process.GlobalTag.globaltag = options.globalTag + '::All'
 
 
