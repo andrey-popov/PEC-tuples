@@ -70,32 +70,17 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     process.pfIsolatedElectrons.isolationCut = 0.15
     
     
-    # Load electron MVA ID modules. See an example in [1], which is referenced from [2]
-    # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/test/patTuple_electronId_cfg.py?view=markup&pathrev=SE_PhotonIsoProducer_MovedIn
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification?rev=45#Recipe_for_53X
-    process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
-    
-    # Insert a module to filter electrons based on their ID. See [1] as an example
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
-    process.pfIdentifiedElectrons = cms.EDFilter('ElectronIDPFCandidateSelector',
-        recoGsfElectrons = cms.InputTag('gsfElectrons'),
-        electronIdMap = cms.InputTag('mvaTrigV0'),
-        electronIdCut = cms.double(0.),
-        src = cms.InputTag('pfIsolatedElectrons'))
-    
-    
     # Apply remaining cuts that define veto electrons as required in [1]. It is implemented via an
     # additional module and not in pfSelectedElectrons, becase all the isolation maps are associated
     # with the latter collection, and they will be needed also for a looser electron selection
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
     process.pfElectronsForTopProjection = process.pfSelectedElectrons.clone(
-        src = 'pfIdentifiedElectrons',
+        src = 'pfIsolatedElectrons',
         cut = 'pt > 20. & abs(eta) < 2.5')
     process.pfNoElectron.topCollection = 'pfElectronsForTopProjection'
     
     PFRecoSequence.replace(process.pfIsolatedElectrons,
-     process.pfIsolatedElectrons * process.mvaTrigV0 * process.pfIdentifiedElectrons *
-     process.pfElectronsForTopProjection)
+     process.pfIsolatedElectrons * process.pfElectronsForTopProjection)
     
     
     
@@ -104,6 +89,14 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     # provided to the MET uncertainty tool (in case of MC simulated data); however, the latter
     # expects PAT electrons. Since they cannot be constructed from pfElectronsForTopProjection
     # collection (isolation ValueMap issues), they should be subjected to an additional selection.
+    
+    
+    # Load electron MVA ID modules. See an example in [1], which is referenced from [2]
+    # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/test/patTuple_electronId_cfg.py?view=markup&pathrev=SE_PhotonIsoProducer_MovedIn
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification?rev=45#Recipe_for_53X
+    process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
+    
+    PFRecoSequence.replace(process.patElectrons, process.mvaTrigV0 * process.patElectrons)
     
     # Set an accessor for the MVA ID [1-2]
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
