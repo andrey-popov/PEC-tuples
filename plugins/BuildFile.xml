@@ -1,5 +1,6 @@
 <use  name = "CondFormats/JetMETObjects" />
 <use  name = "DataFormats/PatCandidates" />
+<use  name = "EgammaAnalysis/ElectronTools" />
 <use  name = "HLTrigger/HLTcore" />
 <use  name = "JetMETCorrections/Objects" />
 
