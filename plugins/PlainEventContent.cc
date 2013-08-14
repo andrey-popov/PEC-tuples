@@ -181,9 +181,7 @@ void PlainEventContent::beginJob()
      "jetEleMultiplicity[jetSize]/I");
     basicInfoTree->Branch("jetMuMultiplicity", jetMuMultiplicity, "jetMuMultiplicity[jetSize]/I");
     basicInfoTree->Branch("jetTCHP", jetTCHP, "jetTCHP[jetSize]/F");
-    basicInfoTree->Branch("jetTCHE", jetTCHE, "jetTCHE[jetSize]/F");
     basicInfoTree->Branch("jetCSV", jetCSV, "jetCSV[jetSize]/F");
-    basicInfoTree->Branch("jetJBP", jetJBP, "jetJBP[jetSize]/F");
     basicInfoTree->Branch("jetJP", jetJP, "jetJP[jetSize]/F");
     
     basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
@@ -532,9 +530,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             jetMuMultiplicity[jetSize] = j.muonMultiplicity();
             
             jetTCHP[jetSize] = j.bDiscriminator("trackCountingHighPurBJetTags");
-            jetTCHE[jetSize] = j.bDiscriminator("trackCountingHighEffBJetTags");
             jetCSV[jetSize] = j.bDiscriminator("combinedSecondaryVertexBJetTags");
-            jetJBP[jetSize] = j.bDiscriminator("jetBProbabilityBJetTags");
             jetJP[jetSize] = j.bDiscriminator("jetProbabilityBJetTags");
             
             

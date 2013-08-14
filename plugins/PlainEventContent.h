@@ -148,9 +148,7 @@ class PlainEventContent: public edm::EDAnalyzer
         Int_t jetMuMultiplicity[MAX_LEN];   //
         
         Float_t jetTCHP[MAX_LEN];  // b-tagging discriminators
-        Float_t jetTCHE[MAX_LEN];  //
         Float_t jetCSV[MAX_LEN];   //
-        Float_t jetJBP[MAX_LEN];    //
         Float_t jetJP[MAX_LEN];    //
         Float_t jetSecVertexMass[MAX_LEN];  // mass of the secondary vertex (a'la SHyFT)
         
