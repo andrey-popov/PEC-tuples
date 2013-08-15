@@ -52,7 +52,6 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     # [2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
     process.pfIsolatedElectrons.isolationValueMapsCharged = cms.VInputTag(
         cms.InputTag('elPFIsoValueCharged03PFId'))
-    process.pfIsolatedElectrons.deltaBetaIsolationValueMap = cms.InputTag('elPFIsoValuePU03PFId')
     process.pfIsolatedElectrons.isolationValueMapsNeutral = cms.VInputTag(
         cms.InputTag('elPFIsoValueNeutral03PFId'), cms.InputTag('elPFIsoValueGamma03PFId'))
     process.pfIsolatedElectrons.deltaBetaIsolationValueMap = cms.InputTag('elPFIsoValueEA03')
