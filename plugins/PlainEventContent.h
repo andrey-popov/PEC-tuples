@@ -109,7 +109,7 @@ class PlainEventContent: public edm::EDAnalyzer
         // Trigger-emulating preselection required for triggering MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
         //[2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72.html
-        Float_t eleTriggerPreselection[MAX_LEN];
+        Bool_t eleTriggerPreselection[MAX_LEN];
         
         // Electron MVA ID
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons

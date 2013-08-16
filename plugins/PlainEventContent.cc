@@ -133,7 +133,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("eleDB", eleDB, "eleDB[eleSize]/F");
     basicInfoTree->Branch("eleRelIso", eleRelIso, "eleRelIso[eleSize]/F");
     basicInfoTree->Branch("eleTriggerPreselection", eleTriggerPreselection,
-     "eleTriggerPreselection[eleSize]/F");
+     "eleTriggerPreselection[eleSize]/O");
     basicInfoTree->Branch("eleMVAID", eleMVAID, "eleMVAID[eleSize]/F");
     basicInfoTree->Branch("elePassConversion", elePassConversion, "elePassConversion[eleSize]/O");
     
