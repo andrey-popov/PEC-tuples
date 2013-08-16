@@ -97,11 +97,13 @@ else:
 if len(options.sourceFile) > 0:
     process.source.fileNames = cms.untracked.vstring(options.sourceFile)
 
+process.source.fileNames = cms.untracked.vstring('file:/afs/cern.ch/user/s/sfink/public/8425E88A-AED7-E211-8067-002481E14F5C.root')
+
 # Set a specific event range here (useful for debuggin)
 #process.source.eventsToProcess = cms.untracked.VEventRange('1:2807803')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(-1))
 
 # Reduce the verbosity for a local run
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -179,7 +181,7 @@ paths.append(process.patPF2PATSequence)
 from UserCode.SingleTop.EventFilters_cff import ApplyEventFilters
 ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
     runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
-paths.append(process.eventFiltersSequence)
+# paths.append(process.eventFiltersSequence)
 
 
 # Define the MET
@@ -193,13 +195,13 @@ DefineJets(process, paths, runOnData)
 # The loose event selection
 process.countTightPatElectrons = process.countPatElectrons.clone(
     src = 'patElectronsForEventSelection',
-    minNumber = 1, maxNumber = 999)
+    minNumber = 0, maxNumber = 999)
 process.countTightPatMuons = process.countPatMuons.clone(
     src = 'patMuonsForEventSelection',
-    minNumber = 1, maxNumber = 999)
+    minNumber = 0, maxNumber = 999)
 process.countHighPtPatJets = process.countPatJets.clone(
     src = 'patJetsForEventSelection',
-    minNumber = 2, maxNumber = 999)
+    minNumber = 0, maxNumber = 999)
 
 if elChan:
     process.elPath += process.countTightPatElectrons
@@ -220,7 +222,7 @@ process.trigger = cms.EDFilter('TriggerResults',
         r'_PFMHT\\d+_', r'Acoplanarity', r'_L1', r'_Track', r'Displaced', r'Dimuon', r'_Deta',
         r'_PFHT\\d+_', r'_Rsq', r'_Mass', r'_trackless_', r'_HFT\\d+', r'_PFMET', r'_WCand',
         r'_FJHT\\d+'),
-    filter = cms.bool(True),
+    filter = cms.bool(False),
     dumper = cms.bool(True),
     orMode = cms.bool(False),
     triggerProcessName = cms.string(options.HLTProcess))
