@@ -27,6 +27,13 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
         4. selectedPatElectrons: electrons passing loose cuts in isolation, ID, and kinematics; to
         be used for the MET uncertainty tool.
     """
+    # Release cuts on compatibility with the first primary vertex, as recommended in [1]
+    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72/1.html
+    process.pfElectronsFromVertex.d0Cut = 9999.
+    process.pfElectronsFromVertex.d0SigCut = 9999.
+    process.pfElectronsFromVertex.dzCut = 9999.
+    process.pfElectronsFromVertex.dzSigCut = 9999.
+    
     
     # Define a module to produce a value map with rho correction of electron isolation. The
     # configuration fragment is copied from [1] because it is not included in the current tag of
@@ -167,6 +174,13 @@ def DefineMuons(process, PFRecoSequence, runOnData):
         4. selectedPatMuons: loosely identified and isolated muons, which are expected by the MET
         uncertainty tool.
     """
+    
+    # Release cuts on compatibility with the first primary vertex (similar to electrons)
+    process.pfMuonsFromVertex.d0Cut = 9999.
+    process.pfMuonsFromVertex.d0SigCut = 9999.
+    process.pfMuonsFromVertex.dzCut = 9999.
+    process.pfMuonsFromVertex.dzSigCut = 9999.
+    
     
     # Update definition of loose muons to match [1-2]; isolation is addressed later. It needs to be
     # confirmed, but it looks like muonRef().isAvailable() returns true always and is required for
