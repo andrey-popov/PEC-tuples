@@ -152,6 +152,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("muCharge", muCharge, "muCharge[muSize]/O");
     basicInfoTree->Branch("muDB", muDB, "muDB[muSize]/F");
     basicInfoTree->Branch("muRelIso", muRelIso, "muRelIso[muSize]/F");
+    basicInfoTree->Branch("muQualityTight", muQualityTight, "muQualityTight[muSize]/O");
     
     for (unsigned i = 0; i < muSelection.size(); ++i)
     {
@@ -319,6 +320,20 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
 	lumiSection = event.luminosityBlock();
     
     
+    // Read the primary vertices
+    Handle<reco::VertexCollection> vertices;
+    event.getByLabel(primaryVerticesSrc, vertices);
+    
+    PVSize = vertices->size();
+    
+    if (PVSize == 0)
+    {
+        edm::Exception excp(edm::errors::LogicError);
+        excp << "Event contains zero good primary vertices.\n";
+        excp.raise();
+    }
+    
+    
     // Fill the tree with basic information
     // Read the electron collection
     Handle<View<pat::Electron>> electrons;
@@ -435,6 +450,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         muRelIso[muSize] = (mu.chargedHadronIso() +
          std::max(mu.neutralHadronIso() + mu.photonIso() - 0.5 * mu.puChargedHadronIso(), 0.)) /
          mu.pt();
+        
+        // Tight muons are defined according to [1]. Note it does not imply selection on isolation
+        //or kinematics
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
+        muQualityTight[muSize] = mu.isTightMuon(vertices->front());
         
         for (unsigned i = 0; i < muSelectors.size(); ++i)
             muSelectionBits[i][muSize] = muSelectors[i](mu);
@@ -728,16 +748,12 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         }
     }
     
-    // Read the primary vertices
-    Handle<reco::VertexCollection> vertices;
-    event.getByLabel(primaryVerticesSrc, vertices);
-    
-    PVSize = vertices->size();
-    
     // Read rho
     Handle<double> rho;
     event.getByLabel(rhoSrc, rho);
     PURho = *rho;
+    
+    // Primary vertices have already been read before
    
     
     // Fill all the trees

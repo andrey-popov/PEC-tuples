@@ -213,17 +213,11 @@ def DefineMuons(process, PFRecoSequence, runOnData):
         PFRecoSequence.remove(process.nonIsolatedLooseMuonMatch)
     
     
-    # The above collection of muons is saved in the tuples. It is needed to store informaion about
-    # quality criteria the muons meet. A part of it is encoded in dedicated variables such as pt,
-    # eta, isolation, or impact-parameter. The others are included in the selection strings
-    # below. They follow recommendations in [1]
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=46#The2012Data
-    muQualityCuts = cms.vstring(
-        # tight muons
-        'isPFMuon & isGlobalMuon & globalTrack.normalizedChi2 < 10 & '\
-        'globalTrack.hitPattern.numberOfValidMuonHits > 0 & numberOfMatchedStations > 1 & '\
-        'innerTrack.hitPattern.numberOfValidPixelHits > 0 & '\
-        'track.hitPattern.trackerLayersWithMeasurement > 5')
+    # The above collection of muons is saved in tuples. One can define several sets of quality cuts
+    # here; they would be evaluated for each muon and stored in boolean branches in plugin
+    # PlainEventContent. However, all such selection has been moved to the plugin's code, and the
+    # vector of cuts is empty.
+    muQualityCuts = cms.vstring()
     
     
     # Finally, a collection for an event selection is needed. It is based on pure kinematical

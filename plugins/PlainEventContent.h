@@ -126,6 +126,7 @@ class PlainEventContent: public edm::EDAnalyzer
         Bool_t muCharge[MAX_LEN];  // muon's charge (true for muon, false for anti-muon)
         Float_t muDB[MAX_LEN];  // impact-parameter in the transverse plane
         Float_t muRelIso[MAX_LEN];  // relative isolation
+        Bool_t muQualityTight[MAX_LEN];  // quality cuts to define tight muons
         Bool_t **muSelectionBits;  // results of the additional selection
         
         Int_t jetSize;  // actual size of the jet collection
