@@ -148,7 +148,7 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/B2GRefEventSel#Isolation_and_Corrections_to_Iso
     process.patElectronsForEventSelection = process.selectedPatElectrons.clone(
         src = 'nonIsolatedLoosePatElectrons',
-        cut = 'ecalDrivenMomentum.pt > 27. & (ecalDrivenMomentum.eta < 2.5)')
+        cut = 'ecalDrivenMomentum.pt > 27. & abs(ecalDrivenMomentum.eta) < 2.5')
     
     PFRecoSequence.replace(process.nonIsolatedLoosePatElectrons,
      process.nonIsolatedLoosePatElectrons + process.patElectronsForEventSelection)
