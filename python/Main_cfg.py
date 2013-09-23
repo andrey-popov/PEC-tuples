@@ -220,7 +220,7 @@ process.trigger = cms.EDFilter('TriggerResults',
         r'_PFMHT\\d+_', r'Acoplanarity', r'_L1', r'_Track', r'Displaced', r'Dimuon', r'_Deta',
         r'_PFHT\\d+_', r'_Rsq', r'_Mass', r'_trackless_', r'_HFT\\d+', r'_PFMET', r'_WCand',
         r'_FJHT\\d+'),
-    filter = cms.bool(True),
+    filter = cms.bool(False),
     dumper = cms.bool(True),
     orMode = cms.bool(False),
     triggerProcessName = cms.string(options.HLTProcess))
