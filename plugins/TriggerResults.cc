@@ -1,9 +1,3 @@
-/**
- * @author Andrey.Popov@cern.ch
- * 
- * Description: see the header file.
- */
-
 #include <UserCode/SingleTop/plugins/TriggerResults.h>
 
 #include <FWCore/Common/interface/TriggerResultsByName.h>

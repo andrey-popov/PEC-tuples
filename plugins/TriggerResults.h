@@ -1,5 +1,9 @@
 /**
- * @author Andrey.Popov@cern.ch
+ * \author Andrey Popov
+ * 
+ * \warning This plugin is depricated because it stores an array of trigger names in each event,
+ * which is very inefficient both from the point of view of disk space utilisation and CPU resources
+ * spent to read PEC files.
  * 
  * The plugin saves trigger results and performs filtering on them, depending on the set flags.
  * The triggers to store are selected with the help of two sets of POSIX regular expressions which

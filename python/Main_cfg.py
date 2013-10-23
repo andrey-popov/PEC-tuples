@@ -32,7 +32,7 @@ options = VarParsing ('python')
 
 options.register('runOnData', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether it runs on the real data')
-options.register('HLTProcess', 'HLT', VarParsing.multiplicity.singleton,
+options.register('hltProcess', 'HLT', VarParsing.multiplicity.singleton,
     VarParsing.varType.string, 'The name of the HLT process')
 options.register('globalTag', '', VarParsing.multiplicity.singleton,
     VarParsing.varType.string, 'The relevant global tag')
@@ -211,19 +211,20 @@ paths.append(process.countHighPtPatJets)
 
 # Modules to save the needed information to the ROOT file
 # Save the info on the specified triggers
-process.trigger = cms.EDFilter('TriggerResults',
-    whiteList = cms.vstring(
-        r'^HLT_(PF)?Jet\\d+_v\\d+$', r'^HLT_(Iso)?Mu\\d+_', r'^HLT_Ele\\d+_', r'^HLT_DoubleMu\\d+_',
-        r'^HLT_DoubleEle\\d+_', r'^HLT_RelIso\\d+'),
-    blackList = cms.vstring(
-        r'_Jpsi_', r'_PFMT\\d+', r'_R\\d+_', r'Photon\\d+_', r'PFTau\\d+', r'_HT\\d+_',
-        r'_PFMHT\\d+_', r'Acoplanarity', r'_L1', r'_Track', r'Displaced', r'Dimuon', r'_Deta',
-        r'_PFHT\\d+_', r'_Rsq', r'_Mass', r'_trackless_', r'_HFT\\d+', r'_PFMET', r'_WCand',
-        r'_FJHT\\d+'),
+process.trigger = cms.EDFilter('SlimTriggerResults',
+    triggers = cms.vstring(
+        'Mu17', 'Mu24', 'Mu24_eta2p1', 'Mu30', 'Mu30_eta2p1',
+        'IsoMu20_eta2p1', 'IsoMu24', 'IsoMu24_eta2p1', 'IsoMu30', 'IsoMu30_eta2p1',
+        'IsoMu34_eta2p1', 'IsoMu40_eta2p1',
+        'Ele17_CaloIdL_CaloIsoVL', 'Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL',
+        'Ele22_CaloIdL_CaloIsoVL', 'Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL', 'Ele27_WP80',
+        'Ele30_CaloIdVT_TrkIdT', 'Ele32_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL',
+        'IsoMu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'IsoMu17_eta2p1_CentralPFNoPUJet30',
+        'Mu17_eta2p1_CentralPFNoPUJet30_BTagIPIter',
+        'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30_BTagIPIter',
+        'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30'),
     filter = cms.bool(False),
-    dumper = cms.bool(True),
-    orMode = cms.bool(False),
-    triggerProcessName = cms.string(options.HLTProcess))
+    triggerProcessName = cms.string(options.hltProcess))
 
 # Save the event content
 process.eventContent = cms.EDAnalyzer('PlainEventContent',
