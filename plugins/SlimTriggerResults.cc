@@ -2,6 +2,7 @@
 
 #include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Common/interface/TriggerResultsByName.h>
+#include <DataFormats/Common/interface/HLTPathStatus.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
 #include <boost/algorithm/string/predicate.hpp>
@@ -121,14 +122,19 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
         
         
         // Update state of the current trigger
-        t.second.wasRun = resultsByName.wasrun(t.second.fullName);
-        t.second.accept = resultsByName.accept(t.second.fullName);
+        auto const &pathStatus = resultsByName[t.second.fullName];
+        t.second.wasRun = pathStatus.wasrun();
+        t.second.accept = pathStatus.accept();
         t.second.prescale = hltConfigProvider.prescaleValue(event, setup, t.second.fullName);
         
         
         if (t.second.wasRun and t.second.accept)
             result = true;
     }
+    
+    
+    // Fill the output tree
+    triggerTree->Fill();
     
     
     return (filterOn) ? result : true;
