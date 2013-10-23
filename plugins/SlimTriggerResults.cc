@@ -133,8 +133,9 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
     }
     
     
-    // Fill the output tree
-    triggerTree->Fill();
+    // Fill the output tree if the event is accepted
+    if (result or not filterOn)
+        triggerTree->Fill();
     
     
     return (filterOn) ? result : true;
