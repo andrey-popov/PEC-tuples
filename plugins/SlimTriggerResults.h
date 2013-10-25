@@ -10,6 +10,8 @@
 #include <FWCore/Framework/interface/EDFilter.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
+#include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
+#include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 #include <HLTrigger/HLTcore/interface/HLTConfigProvider.h>
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -68,6 +70,10 @@ public:
     
     /// Fills the output tree for each event
     bool filter(edm::Event &event, edm::EventSetup const &setup);
+    
+public:
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
 private:
     /// Strips the "HLT_" prefix and version postfix from a trigger name

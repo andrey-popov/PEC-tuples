@@ -142,6 +142,24 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
 }
 
 
+void SlimTriggerResults::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<vector<string>>("triggers")->
+     setComment("Names of triggers whose results are to be saved.");
+    desc.add<bool>("filter", false)->
+     setComment("Indicates if an event that does not fire any of the requested triggers should be "
+     "rejected.");
+    desc.add<string>("triggerProcessName", "HLT")->
+     setComment("Name of the process in which trigger decisions were evaluated.");
+    
+    descriptions.add("triggerInfo", desc);
+}
+
+
 string SlimTriggerResults::GetTriggerBasename(string const &name)
 {
     // The name might (or might not) contain a prefix "HLT_" and/or a postfix with version
