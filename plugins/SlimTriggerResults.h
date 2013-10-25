@@ -2,7 +2,28 @@
  * \file SlimTriggerResults.h
  * \author Andrey Popov
  * 
- * The module defines an EDM plugin to store information about selected trigger paths.
+ * The module defines an EDM plugin to store information about selected trigger paths. The user
+ * must provide a list of triggers in which (s)he is interested. Prefix "HLT_" and postfix with
+ * version number in a trigger name might be omitted; HLT_Mu15_v7, HLT_Mu15_v, HLT_Mu15, Mu15_v7,
+ * Mu15 all are valid inputs and refer to the same trigger (different trigger versions are not
+ * distinguished). No wildcards are allowed.
+ * 
+ * Results are stored in a plain ROOT tree, which contains three branches for each requested
+ * trigger: a boolean indicating if the trigger was executed in the current event, a boolean showing
+ * if the current event was accepted by the trigger, and an integer with the trigger's prescale.
+ * 
+ * The plugin can be configured in such a way that it rejects an event if it is not accepted by any
+ * of the selected triggers. The default behaviour is to reject no events.
+ * 
+ * An example configuration:
+ *   process.triggerInfo = cms.EDFilter('SlimTriggerResults',
+ *       triggers = cms.vstring('IsoMu17', 'IsoMu24', 'IsoMu24_eta2p1'),
+ *       filter = cms.bool(False),
+ *       triggerProcessName = cms.string('HLT'))
+ * Mandatory parameter 'triggers' is the list of names of selected triggers. The switch 'filter'
+ * controls if an event that is not accepted by any of the selected triggers is to be rejected
+ * (the parameter is optional, defaults to False). Optional parameter 'triggerProcessName' defines
+ * the name of process in which the triggers were evaluated; defaults to 'HLT'.
  */
 
 #pragma once
