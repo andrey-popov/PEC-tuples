@@ -97,6 +97,13 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     # collection (isolation ValueMap issues), they should be subjected to an additional selection.
     
     
+    # Load modules for cut-based electron ID [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+    process.load('ElectroWeakAnalysis.WENu.simpleEleIdSequence_cff')
+    
+    PFRecoSequence.replace(process.patElectrons, process.simpleEleIdSequence * process.patElectrons)
+    
+    
     # Load electron MVA ID modules. See an example in [1], which is referenced from [2]
     # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/test/patTuple_electronId_cfg.py?view=markup&pathrev=SE_PhotonIsoProducer_MovedIn
     # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification?rev=45#Recipe_for_53X
@@ -104,10 +111,13 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     
     PFRecoSequence.replace(process.patElectrons, process.mvaTrigV0 * process.patElectrons)
     
-    # Set an accessor for the MVA ID [1-2]
+    # Set an accessor for the MVA ID [1-2] and cut-based ID [3]
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
     # [2] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/patTuple_electronId_cfg.py?revision=1.2&view=markup&pathrev=V00-00-16
-    process.patElectrons.electronIDSources = cms.PSet(mvaTrigV0 = cms.InputTag('mvaTrigV0'))
+    # [3] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+    process.patElectrons.electronIDSources = cms.PSet(
+        mvaTrigV0 = cms.InputTag('mvaTrigV0'),
+        simpleEleId70cIso = cms.InputTag('simpleEleId70cIso'))
     
     # Change the size of the isolation cone for PAT electrons
     from PhysicsTools.PatAlgos.tools.pfTools import adaptPFIsoElectrons

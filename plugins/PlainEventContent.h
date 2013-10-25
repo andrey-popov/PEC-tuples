@@ -106,14 +106,18 @@ class PlainEventContent: public edm::EDAnalyzer
         Float_t eleDB[MAX_LEN];  // impact-parameter in the transverse plane
         Float_t eleRelIso[MAX_LEN];  // relative isolation
         
-        // Trigger-emulating preselection required for triggering MVA ID [1]
+        // Trigger-emulating preselection required for triggering MVA ID [1-2]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
         //[2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72.html
         Bool_t eleTriggerPreselection[MAX_LEN];
         
-        // Electron MVA ID
+        // Electron MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
         Float_t eleMVAID[MAX_LEN];
+        
+        // Old cut-based electron ID [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+        Int_t eleIDSimple70cIso[MAX_LEN];
         
         Bool_t elePassConversion[MAX_LEN];  // conversion veto (true for good electrons)
         Bool_t **eleSelectionBits;  // results of the additional selection

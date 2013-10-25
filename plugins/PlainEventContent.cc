@@ -135,6 +135,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("eleTriggerPreselection", eleTriggerPreselection,
      "eleTriggerPreselection[eleSize]/O");
     basicInfoTree->Branch("eleMVAID", eleMVAID, "eleMVAID[eleSize]/F");
+    basicInfoTree->Branch("eleIDSimple70cIso", eleIDSimple70cIso, "eleIDSimple70cIso[eleSize]/I");
     basicInfoTree->Branch("elePassConversion", elePassConversion, "elePassConversion[eleSize]/O");
     
     for (unsigned i = 0; i < eleSelection.size(); ++i)
@@ -404,6 +405,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         // Triggering MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification
         eleMVAID[eleSize] = el.electronID("mvaTrigV0");
+        
+        // Cut-based electron ID [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+        eleIDSimple70cIso[eleSize] = el.electronID("simpleEleId70cIso");
         
         
         elePassConversion[eleSize] = el.passConversionVeto()
