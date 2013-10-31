@@ -171,6 +171,14 @@ class PlainEventContent: public edm::EDAnalyzer
         Float_t jetPUFullDiscr[MAX_LEN];  // output of full BDT discriminator
         Int_t jetPUFullID[MAX_LEN];       // evaluation of working points for full BDT
         
+        // Electric charge of the jet
+        //It simply copies the value returned by pat::Jet::jetCharge(), which is calculated as a sum
+        //of electric charges of the jet's contituents weighted with their pt, as mentioned in [1].
+        //Note, however, that other definitions are possible [2].
+        //[1] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1425.html
+        //[2] http://arxiv.org/abs/1209.2421
+        Float_t jetCharge[MAX_LEN];
+        
         Bool_t **jetSelectionBits;  // results of the additional selection
         
         Int_t metSize;  // number of different METs stored in the event

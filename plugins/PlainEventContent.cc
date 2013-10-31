@@ -195,6 +195,8 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetPUFullDiscr", jetPUFullDiscr, "jetPUFullDiscr[jetSize]/F");
     basicInfoTree->Branch("jetPUFullID", jetPUFullID, "jetPUFullID[jetSize]/I");
     
+    basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
+    
     for (unsigned i = 0; i < jetSelection.size(); ++i)
     {
         string branchName("jetSelection");
@@ -581,6 +583,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             jetPUFullDiscr[jetSize] = (*jetPUFullDiscrHandle)[jets->refAt(jetSize)];
             jetPUFullID[jetSize] = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
+            
+            
+            // Jet electric charge
+            jetCharge[jetSize] = j.jetCharge();
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)
