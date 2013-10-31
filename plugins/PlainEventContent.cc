@@ -196,6 +196,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetPUFullID", jetPUFullID, "jetPUFullID[jetSize]/I");
     
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
+    basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
     {
@@ -587,6 +588,24 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             // Jet electric charge
             jetCharge[jetSize] = j.jetCharge();
+            
+            
+            // Calculate the jet pull angle
+            double const y = j.rapidity();
+            double const phi = j.phi();
+            double pullY = 0., pullPhi = 0.;  // projections of the pull vector (unnormalised)
+            
+            // Loop over constituents of the jet
+            for (reco::PFCandidatePtr const &p: j.getPFConstituents())
+            {
+                double const r = sqrt(pow(p->rapidity() - y, 2) + pow(p->phi() - phi, 2));
+                pullY += p->pt() * r * (p->rapidity() - y);
+                pullPhi += p->pt() * r * (p->phi() - phi);
+            }
+            //^ The pull vector should be normalised by the jet's pt, but since I'm interested in
+            //the polar angle only, it is not necessary
+            
+            jetPullAngle[jetSize] = atan2(pullPhi, pullY);
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)

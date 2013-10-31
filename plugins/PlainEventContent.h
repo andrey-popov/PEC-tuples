@@ -179,6 +179,12 @@ class PlainEventContent: public edm::EDAnalyzer
         //[2] http://arxiv.org/abs/1209.2421
         Float_t jetCharge[MAX_LEN];
         
+        // Jet pull angle (radians)
+        //The pull vector is defined in [1], Eq. (3.7). The pull angle is an angle between this
+        //vector and the rapidity axis
+        //[1] http://arxiv.org/abs/1010.3698
+        Float_t jetPullAngle[MAX_LEN];
+        
         Bool_t **jetSelectionBits;  // results of the additional selection
         
         Int_t metSize;  // number of different METs stored in the event
