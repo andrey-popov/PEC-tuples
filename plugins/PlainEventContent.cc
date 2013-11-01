@@ -188,13 +188,6 @@ void PlainEventContent::beginJob()
     
     basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
     
-    basicInfoTree->Branch("jetPUCutBasedDiscr", jetPUCutBasedDiscr, "jetPUCutBasedDiscr[jetSize]/F");
-    basicInfoTree->Branch("jetPUCutBasedID", jetPUCutBasedID, "jetPUCutBasedID[jetSize]/I");
-    basicInfoTree->Branch("jetPUSimpleDiscr", jetPUSimpleDiscr, "jetPUSimpleDiscr[jetSize]/F");
-    basicInfoTree->Branch("jetPUSimpleID", jetPUSimpleID, "jetPUSimpleID[jetSize]/I");
-    basicInfoTree->Branch("jetPUFullDiscr", jetPUFullDiscr, "jetPUFullDiscr[jetSize]/F");
-    basicInfoTree->Branch("jetPUFullID", jetPUFullID, "jetPUFullID[jetSize]/I");
-    
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
     basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
     
@@ -475,28 +468,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     Handle<View<pat::Jet>> jetsJERUp, jetsJERDown;
     
-    
-    // Jet PU ID maps. See [1]; though, the actual code differs from what is written in the TWiki
-    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-    Handle<ValueMap<float>> jetPUCutBasedDiscrHandle;
-    event.getByLabel("puJetMvaChs", "cutbasedDiscriminant", jetPUCutBasedDiscrHandle);
-    
-    Handle<ValueMap<int>> jetPUCutBasedIDHandle;
-    event.getByLabel("puJetMvaChs", "cutbasedId", jetPUCutBasedIDHandle);
-    
-    Handle<ValueMap<float>> jetPUSimpleDiscrHandle;
-    event.getByLabel("puJetMvaChs", "simpleDiscriminant", jetPUSimpleDiscrHandle);
-    
-    Handle<ValueMap<int>> jetPUSimpleIDHandle;
-    event.getByLabel("puJetMvaChs", "simpleId", jetPUSimpleIDHandle);
-    
-    Handle<ValueMap<float>> jetPUFullDiscrHandle;
-    event.getByLabel("puJetMvaChs", "fullDiscriminant", jetPUFullDiscrHandle);
-    
-    Handle<ValueMap<int>> jetPUFullIDHandle;
-    event.getByLabel("puJetMvaChs", "fullId", jetPUFullIDHandle);
-    
-    
+        
     if (!runOnData)
     {
         event.getByLabel(JERSystJetsSrc[0], jetsJERUp);
@@ -572,18 +544,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jetSecVertexMass[jetSize] = svTagInfo->secondaryVertex(0).p4().mass();
             else
                 jetSecVertexMass[jetSize] = -100.;
-            
-            
-            // PU jet ID [1]
-            //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-            jetPUCutBasedDiscr[jetSize] = (*jetPUCutBasedDiscrHandle)[jets->refAt(jetSize)];
-            jetPUCutBasedID[jetSize] = (*jetPUCutBasedIDHandle)[jets->refAt(jetSize)];
-            
-            jetPUSimpleDiscr[jetSize] = (*jetPUSimpleDiscrHandle)[jets->refAt(jetSize)];
-            jetPUSimpleID[jetSize] = (*jetPUSimpleIDHandle)[jets->refAt(jetSize)];
-            
-            jetPUFullDiscr[jetSize] = (*jetPUFullDiscrHandle)[jets->refAt(jetSize)];
-            jetPUFullID[jetSize] = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
             
             
             // Jet electric charge
