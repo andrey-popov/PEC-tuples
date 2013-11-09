@@ -35,7 +35,6 @@
 
 
 using namespace edm;
-using std::abs;
 
 
 PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
@@ -558,9 +557,16 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             // Loop over constituents of the jet
             for (reco::PFCandidatePtr const &p: j.getPFConstituents())
             {
-                double const r = sqrt(pow(p->rapidity() - y, 2) + pow(p->phi() - phi, 2));
+                double dPhi = p->phi() - phi;
+                
+                if (dPhi < -TMath::Pi())
+                    dPhi = 2 * TMath::Pi() + dPhi;
+                else if (dPhi > TMath::Pi())
+                    dPhi = -2 * TMath::Pi() + dPhi;
+                
+                double const r = hypot(p->rapidity() - y, dPhi);
                 pullY += p->pt() * r * (p->rapidity() - y);
-                pullPhi += p->pt() * r * (p->phi() - phi);
+                pullPhi += p->pt() * r * dPhi;
             }
             //^ The pull vector should be normalised by the jet's pt, but since I'm interested in
             //the polar angle only, it is not necessary
