@@ -258,11 +258,15 @@ def DefineJets(process, paths, runOnData):
         uncertainty tool.
     """
     
-    # Jet identification criteria as recommended in [1-2]
+    # Jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
+    # HF-hadron energy is defined below differently from the formula in [2]. However, the formula
+    # is written for uncorrected jets, while JEC-corrected ones are used below. One can rescale the
+    # jet energy in the formula, but the expression below yields the same result. All accessors to
+    # energy fractions from PAT jets account for the effect of JEC
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
     # [2] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1429.html
     jetQualityCut = 'numberOfDaughters > 1 & '\
-     '(neutralHadronEnergy + HFHadronEnergy) / energy < 0.99 & '\
+     '(neutralHadronEnergyFraction + HFHadronEnergyFraction) < 0.99 & '\
      'neutralEmEnergyFraction < 0.99 & (abs(eta) < 2.4 & chargedEmEnergyFraction < 0.99 & '\
      'chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 | abs(eta) >= 2.4)'
     
