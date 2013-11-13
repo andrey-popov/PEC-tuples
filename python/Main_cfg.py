@@ -17,7 +17,6 @@ import string
 
 # Metadata
 __author__ = 'Andrey Popov'
-__email__ = 'Andrey.Popov@cern.ch'
 
 
 # The skeleton PAT configuration

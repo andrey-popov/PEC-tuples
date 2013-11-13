@@ -1,5 +1,5 @@
 /**
- * @author Andrey.Popov@cern.ch
+ * \author Andrey Popov
  *
  * The plugin saves the information about b- and c-quarks in the event. It finds the genetically
  * connected consecutive chains of the same flavour, classifies them as parton shower, entering or

@@ -1,5 +1,5 @@
 /**
- * @author Andrey.Popov@cern.ch
+ * \author Andrey Popov
  * 
  * The class performs the classification of the event containing heavy flavour quarks.
  */

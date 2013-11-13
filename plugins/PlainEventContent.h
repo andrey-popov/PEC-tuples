@@ -1,5 +1,5 @@
 /**
- * @author Andrey.Popov@cern.ch
+ * \author Andrey Popov
  *
  * The plugin saves all the necessary information from the event to a set of flat ROOT trees. It
  * takes all the basic objects: charged leptons, jets, METs. User can specify arbitrary string-based

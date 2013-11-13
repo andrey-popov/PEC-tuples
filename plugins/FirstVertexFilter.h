@@ -1,5 +1,5 @@
 /**
- * @author Andrey.Popov@cern.ch
+ * \author Andrey Popov
  *
  * The plugin performs string-based filtering on the first vertex in the collection given. The
  * vertices that pass the selection are put into the event content in a separate collection.
