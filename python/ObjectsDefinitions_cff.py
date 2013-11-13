@@ -254,8 +254,8 @@ def DefineJets(process, paths, runOnData):
         2. patJetsForEventSelection: a hard subset of the above collection needed to perform an
         event selection.
         
-        3. selectedPatJets: jets from PFBRECO embedded in pat::Jet class; to be used with the MET
-        uncertainty tool.
+        3. selectedPatJets: jets from PFBRECO embedded in pat::Jet class and passing loose jet ID;
+        to be used with the MET uncertainty tool.
     """
     
     # Jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
@@ -270,15 +270,17 @@ def DefineJets(process, paths, runOnData):
      'neutralEmEnergyFraction < 0.99 & (abs(eta) < 2.4 & chargedEmEnergyFraction < 0.99 & '\
      'chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 | abs(eta) >= 2.4)'
     
+    # Apply the jet ID defined above to selected pat jets. It will be inherited by all the jet
+    # collections considered in the analysis, including those produced by the MET uncertainty tool.
+    # The latter is reasonable as we do not want to apply JEC variation, for instance, to fake jets
+    process.selectedPatJets.cut = jetQualityCut
     
-    # The collection selectedPatJets encorporates jets reconstructed in the PFBRECO framework; they
-    # are used in the MET uncertainty tool
     
-    
-    # Jets considered in the analysis are subjected to an additional selection
+    # Jets to be saved in PEC tuples are subjected to an additional selection on kinematics. Note
+    # that jet ID has already been applied
     process.analysisPatJets = process.selectedPatJets.clone(
         src = 'selectedPatJets' if runOnData else 'smearedPatJets',
-        cut = 'pt > 10. & abs(eta) < 4.7 & (' + jetQualityCut + ')')
+        cut = 'pt > 10. & abs(eta) < 4.7')
     
     
     # Jets used in the event selection
