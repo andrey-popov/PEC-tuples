@@ -368,15 +368,15 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         // Effective-area (rho) correction to isolation (*)
         //(*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
         eleRelIso[eleSize] = (el.chargedHadronIso() + std::max(el.neutralHadronIso() +
-         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / el.pt();
+         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / elePt[eleSize];
         
         
         // Trigger-emulating preselection for MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
         eleTriggerPreselection[eleSize] = false;
         
-        if (el.dr03TkSumPt() / el.pt() < 0.2 and /* ECAL-based isolation is addressed later */
-         el.dr03HcalTowerSumEt() / el.pt() < 0.2 and
+        if (el.dr03TkSumPt() / elePt[eleSize] < 0.2 and /* ECAL-based isolation is addressed later */
+         el.dr03HcalTowerSumEt() / elePt[eleSize] < 0.2 and
          el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() == 0)
         {
             // Calculate a corrected ECAL-based isolation as described in [1]. The corrected
@@ -388,9 +388,13 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, runNumber, true);
             else
                 correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, false);
+            //^ Code snippet in the reference above operates with a Gsf electron instead of a PAT
+            //one given here, but it only reads an isolation from it and check if it is in the
+            //barrel [1]; thus, a PAT electron is also suitable
+            //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/src/EcalIsolationCorrector.cc?view=markup
             
             // Check the rest of requirements for trigger-emulating preselection
-            if (correctedECALIso / el.pt() < 0.2)
+            if (correctedECALIso / elePt[eleSize] < 0.2)
                 eleTriggerPreselection[eleSize] =  (fabs(el.superCluster()->eta()) < 1.479) ?
                  (el.sigmaIetaIeta() < 0.014 and el.hadronicOverEm() < 0.15) :
                  (el.sigmaIetaIeta() < 0.035 and el.hadronicOverEm() < 0.10);
