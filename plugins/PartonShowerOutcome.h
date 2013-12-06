@@ -1,6 +1,34 @@
 /**
  * \file PartonShowerOutcome.h
  * \author Andrey Popov
+ * 
+ * The module defines a cmsRun plugin to save properties of selected particles in the final state
+ * after parton shower but before hadronisation. It is intended to be used for heavy-flavour quarks
+ * to allow classification of W+jets or ttbar+jets events, but it can be used for other particles
+ * as well.
+ * 
+ * User can choose particles to be saved by giving a list of absolute values of allowed PDG ID. In
+ * addition to the filtering on PDG ID, a particle must have status 2 and have a daughter that is
+ * either stable (has status 1) or is a special object (PDG ID from 81 to 100, which most notably
+ * includes strings and clusters).
+ * 
+ * For each particle that satisfies the above requirements several properties are stored in a plain
+ * ROOT tree. The plugins saves their PDG ID and three-momentum in parametrisation (pt, eta, phi).
+ * The mass (or energy) component is dropped to save space as it can be recovered easily from type
+ * of the particle and in most cases is not needed at all (for instance, to perform angular matching
+ * with reconstructed jets). In addition to it each particle is classified depending on its origin.
+ * If it is an immediate daughter of a beam particle, it is assigned code ParticleOrigin::Proton
+ * (see the corresponding enumeration defined below). If its first mother with status 3 is a
+ * granddaughter of a beam particle, the particle is from ISR. In all the rest cases it is
+ * attributed to FSR.
+ * 
+ * In order to fully classify a W+jets event, results of this plugin should be complemented with
+ * information about hard process.
+ * 
+ * Example configuration of the plugin:
+ *   heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
+ *       absPdgId = cms.vint32(4, 5),
+ *       genParticles = cms.InputTag('genParticles'))
  */
 
 #pragma once
