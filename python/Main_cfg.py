@@ -44,8 +44,8 @@ options.register('channels', 'em', VarParsing.multiplicity.singleton, VarParsing
 options.register('saveHardInteraction', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     'Save information about the status 3 particles, except for the initial section')
-options.register('runFlavourAnalyzer', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Run FlavourAnalyzer to save the info on heavy flavours')
+options.register('saveHeavyFlavours', False, VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool, 'Saves information about heavy-flavour quarks in parton shower')
 options.register('sourceFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'The name of the source file')
 options.register('runOnFastSim', False, VarParsing.multiplicity.singleton,
@@ -246,15 +246,12 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
 
 paths.append(process.trigger, process.eventContent)
 
-# Save the info on heavy flavour quarks
-if options.runFlavourAnalyzer:
-    process.flavourAnalyzer = cms.EDAnalyzer('FlavourAnalyzer',
-        genParticles = cms.InputTag('genParticles'),
-        generator = cms.InputTag('generator'),
-        genJets = cms.InputTag('ak5GenJets'),
-        saveGenJets = cms.bool(False),
-        saveMinimalisticChains = cms.bool(True))
-    paths.append(process.flavourAnalyzer)
+# Save the info on heavy-flavour quarks
+if options.saveHeavyFlavours:
+    process.heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
+        absPdgId = cms.vint32(4, 5),
+        genParticles = cms.InputTag('genParticles'))
+    paths.append(process.heavyFlavours)
 
 # In case one of the channels is not requested for the processing, remove it
 if not elChan:
