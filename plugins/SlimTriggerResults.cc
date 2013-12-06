@@ -22,7 +22,8 @@ TriggerState::TriggerState():
 
 SlimTriggerResults::SlimTriggerResults(edm::ParameterSet const &cfg):
     triggerProcessName(cfg.getParameter<string>("triggerProcessName")),
-    filterOn(cfg.getParameter<bool>("filter"))
+    filterOn(cfg.getParameter<bool>("filter")),
+    savePrescale(cfg.getParameter<bool>("savePrescale"))
 {
     // Loop over the names of triggers the user has provided
     auto const &triggerNames = cfg.getParameter<vector<string>>("triggers");
@@ -57,7 +58,9 @@ void SlimTriggerResults::beginJob()
     {
         triggerTree->Branch((t.first + "__wasRun").c_str(), &t.second.wasRun);
         triggerTree->Branch((t.first + "__accept").c_str(), &t.second.accept);
-        triggerTree->Branch((t.first + "__prescale").c_str(), &t.second.prescale);
+        
+        if (savePrescale)
+            triggerTree->Branch((t.first + "__prescale").c_str(), &t.second.prescale);
     }
 }
 
@@ -123,9 +126,12 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
         
         // Update state of the current trigger
         auto const &pathStatus = resultsByName[t.second.fullName];
+        
         t.second.wasRun = pathStatus.wasrun();
         t.second.accept = pathStatus.accept();
-        t.second.prescale = hltConfigProvider.prescaleValue(event, setup, t.second.fullName);
+        
+        if (savePrescale)
+            t.second.prescale = hltConfigProvider.prescaleValue(event, setup, t.second.fullName);
         
         
         if (t.second.wasRun and t.second.accept)
@@ -153,6 +159,8 @@ void SlimTriggerResults::fillDescriptions(edm::ConfigurationDescriptions &descri
     desc.add<bool>("filter", false)->
      setComment("Indicates if an event that does not fire any of the requested triggers should be "
      "rejected.");
+    desc.add<bool>("savePrescale", true)->
+     setComment("Specifies whether trigger prescales should be saved.");
     desc.add<string>("triggerProcessName", "HLT")->
      setComment("Name of the process in which trigger decisions were evaluated.");
     

@@ -223,6 +223,7 @@ process.trigger = cms.EDFilter('SlimTriggerResults',
         'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30_BTagIPIter',
         'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30'),
     filter = cms.bool(False),
+    savePrescale = cms.bool(options.runOnData),
     triggerProcessName = cms.string(options.hltProcess))
 
 # Save the event content

@@ -116,6 +116,9 @@ private:
     /// Specifies whether the plugins is to reject events that do not fire any of selected triggers
     bool const filterOn;
     
+    /// Specifies whether prescale column should be saved
+    bool const savePrescale;
+    
     /// An object to access information about each trigger
     HLTConfigProvider hltConfigProvider;
     
