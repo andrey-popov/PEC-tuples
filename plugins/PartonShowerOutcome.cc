@@ -136,4 +136,19 @@ PartonShowerOutcome::ParticleOrigin PartonShowerOutcome::DeduceOrigin(
 }
 
 
+void PartonShowerOutcome::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<edm::InputTag>("genParticles", edm::InputTag("genParticles"))->
+     setComment("Name of collection of generator particles.");
+    desc.add<std::vector<int>>("absPdgId")->
+     setComment("Absolute values of PDG ID of particles to be stored.");
+    
+    descriptions.add("heavyFlavours", desc);
+}
+
+
 DEFINE_FWK_MODULE(PartonShowerOutcome);

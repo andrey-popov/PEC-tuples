@@ -50,6 +50,9 @@ public:
     /// Processes the current event and fills the output tree
     virtual void analyze(edm::Event const &event, edm::EventSetup const &eventSetup);
     
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+    
 private:
     /**
      * \brief Identifies origin of the given particle
