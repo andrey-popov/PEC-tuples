@@ -177,13 +177,8 @@ void PlainEventContent::beginJob()
         basicInfoTree->Branch("jetMassJERDown", jetMassJERDown, "jetMassJERDown[jetSize]/F");
     }
     
-    basicInfoTree->Branch("jetNDaughters", jetNDaughters, "jetNDaughters[jetSize]/I");
-    basicInfoTree->Branch("jetEleMultiplicity", jetEleMultiplicity,
-     "jetEleMultiplicity[jetSize]/I");
-    basicInfoTree->Branch("jetMuMultiplicity", jetMuMultiplicity, "jetMuMultiplicity[jetSize]/I");
     basicInfoTree->Branch("jetTCHP", jetTCHP, "jetTCHP[jetSize]/F");
     basicInfoTree->Branch("jetCSV", jetCSV, "jetCSV[jetSize]/F");
-    basicInfoTree->Branch("jetJP", jetJP, "jetJP[jetSize]/F");
     
     basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
     
@@ -205,10 +200,6 @@ void PlainEventContent::beginJob()
     
     integralPropTree = fs->make<TTree>("IntegralProperties",
      "The tree keeps integral properties of the event");
-    
-    /*integralPropTree->Branch("sphericity", &sphericity);
-    integralPropTree->Branch("aplanarity", &aplanarity);
-    integralPropTree->Branch("planarity", &planarity);*/
     
     integralPropTree->Branch("softJetPt", &softJetPt);
     integralPropTree->Branch("softJetEta", &softJetEta);
@@ -528,13 +519,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jetMassJERDown[jetSize] = jJERDown->mass();
             }
             
-            jetNDaughters[jetSize] = j.numberOfDaughters();
-            jetEleMultiplicity[jetSize] = j.electronMultiplicity();
-            jetMuMultiplicity[jetSize] = j.muonMultiplicity();
-            
             jetTCHP[jetSize] = j.bDiscriminator("trackCountingHighPurBJetTags");
             jetCSV[jetSize] = j.bDiscriminator("combinedSecondaryVertexBJetTags");
-            jetJP[jetSize] = j.bDiscriminator("jetProbabilityBJetTags");
             
             
             // Calculate the secondary vertex mass [1-3]

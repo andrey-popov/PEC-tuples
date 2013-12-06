@@ -148,13 +148,8 @@ class PlainEventContent: public edm::EDAnalyzer
         Float_t jetPtJERDown[MAX_LEN];
         Float_t jetMassJERDown[MAX_LEN];
         
-        Int_t jetNDaughters[MAX_LEN];  // number of constituents
-        Int_t jetEleMultiplicity[MAX_LEN];  // number of charged PF lepton in the jet
-        Int_t jetMuMultiplicity[MAX_LEN];   //
-        
         Float_t jetTCHP[MAX_LEN];  // b-tagging discriminators
         Float_t jetCSV[MAX_LEN];   //
-        Float_t jetJP[MAX_LEN];    //
         Float_t jetSecVertexMass[MAX_LEN];  // mass of the secondary vertex (a'la SHyFT)
         
         // Electric charge of the jet
@@ -180,13 +175,6 @@ class PlainEventContent: public edm::EDAnalyzer
         
         // The tree to store the integral event characteristics
         TTree *integralPropTree;
-        
-        // Event shape. S. the definitions in (*)
-        //(*) http://cepa.fnal.gov/psm/simulation/mcgen/lund/pythia_manual/pythia6.3/pythia6301/node213.html
-        // No systematics is saved for these variables, hence they cannot be used in the analysis
-        /*Float_t sphericity;
-        Float_t aplanarity;
-        Float_t planarity;*/
         
         // The soft jets
         Float_t softJetPt;
