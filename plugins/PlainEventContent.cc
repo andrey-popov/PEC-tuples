@@ -134,7 +134,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("eleTriggerPreselection", eleTriggerPreselection,
      "eleTriggerPreselection[eleSize]/O");
     basicInfoTree->Branch("eleMVAID", eleMVAID, "eleMVAID[eleSize]/F");
-    basicInfoTree->Branch("eleIDSimple70cIso", eleIDSimple70cIso, "eleIDSimple70cIso[eleSize]/I");
+    basicInfoTree->Branch("eleIDSimple70cIso", eleIDSimple70cIso, "eleIDSimple70cIso[eleSize]/b");
     basicInfoTree->Branch("elePassConversion", elePassConversion, "elePassConversion[eleSize]/O");
     
     for (unsigned i = 0; i < eleSelection.size(); ++i)
@@ -238,9 +238,9 @@ void PlainEventContent::beginJob()
         generatorTree->Branch("genWeight", &genWeight);
         
         generatorTree->Branch("jetSize", &jetSize);  // it's a duplication from basicInfoTree
-        generatorTree->Branch("jetFlavour", jetFlavour, "jetFlavour[jetSize]/I");
+        generatorTree->Branch("jetFlavour", jetFlavour, "jetFlavour[jetSize]/B");
         generatorTree->Branch("jetGenPartonFlavour", jetGenPartonFlavour,
-         "jetGenPartonFlavour[jetSize]/I");
+         "jetGenPartonFlavour[jetSize]/B");
         
         generatorTree->Branch("pdfX1", &pdfX1);
         generatorTree->Branch("pdfX2", &pdfX2);
@@ -251,11 +251,11 @@ void PlainEventContent::beginJob()
         if (saveHardInteraction)
         {
             generatorTree->Branch("hardPartSize", &hardPartSize);
-            generatorTree->Branch("hardPartPdgId", hardPartPdgId, "hardPartPdgId[hardPartSize]/I");
+            generatorTree->Branch("hardPartPdgId", hardPartPdgId, "hardPartPdgId[hardPartSize]/B");
             generatorTree->Branch("hardPartFirstMother", hardPartFirstMother,
-             "hardPartFirstMother[hardPartSize]/I");
+             "hardPartFirstMother[hardPartSize]/B");
             generatorTree->Branch("hardPartLastMother", hardPartLastMother,
-             "hardPartLastMother[hardPartSize]/I");
+             "hardPartLastMother[hardPartSize]/B");
             generatorTree->Branch("hardPartPt", hardPartPt, "hardPartPt[hardPartSize]/F");
             generatorTree->Branch("hardPartEta", hardPartEta, "hardPartEta[hardPartSize]/F");
             generatorTree->Branch("hardPartPhi", hardPartPhi, "hardPartPhi[hardPartSize]/F");
@@ -272,8 +272,8 @@ void PlainEventContent::beginJob()
     {
         PUTree->Branch("PUTrueNumInteractions", &PUTrueNumInteractions);
         PUTree->Branch("PUSize", &PUSize);
-        PUTree->Branch("PUBunchCrossing", PUBunchCrossing, "PUBunchCrossing[PUSize]/I");
-        PUTree->Branch("PUNumInteractions", PUNumInteractions, "PUNumInteractions[PUSize]/I");
+        PUTree->Branch("PUBunchCrossing", PUBunchCrossing, "PUBunchCrossing[PUSize]/B");
+        PUTree->Branch("PUNumInteractions", PUNumInteractions, "PUNumInteractions[PUSize]/b");
     }
 }
 

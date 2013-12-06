@@ -97,7 +97,7 @@ class PlainEventContent: public edm::EDAnalyzer
         // The tree to store the basic kinematics, quality requirements, etc.
         TTree *basicInfoTree;
         
-        Int_t eleSize;  // actual size of the electron collection
+        UChar_t eleSize;  // actual size of the electron collection
         Float_t elePt[MAX_LEN];    // electron 4-momenta
         Float_t eleEta[MAX_LEN];   //
         Float_t elePhi[MAX_LEN];   //
@@ -117,12 +117,12 @@ class PlainEventContent: public edm::EDAnalyzer
         
         // Old cut-based electron ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-        Int_t eleIDSimple70cIso[MAX_LEN];
+        UChar_t eleIDSimple70cIso[MAX_LEN];
         
         Bool_t elePassConversion[MAX_LEN];  // conversion veto (true for good electrons)
         Bool_t **eleSelectionBits;  // results of the additional selection
         
-        Int_t muSize;  // actual size of the muon collection
+        UChar_t muSize;  // actual size of the muon collection
         Float_t muPt[MAX_LEN];    // muon 4-momenta
         Float_t muEta[MAX_LEN];   //
         Float_t muPhi[MAX_LEN];   //
@@ -133,7 +133,7 @@ class PlainEventContent: public edm::EDAnalyzer
         Bool_t muQualityTight[MAX_LEN];  // quality cuts to define tight muons
         Bool_t **muSelectionBits;  // results of the additional selection
         
-        Int_t jetSize;  // actual size of the jet collection
+        UChar_t jetSize;  // actual size of the jet collection
         Float_t jetPt[MAX_LEN];    // jet corrected 4-momenta
         Float_t jetEta[MAX_LEN];   //
         Float_t jetPhi[MAX_LEN];   //
@@ -168,7 +168,7 @@ class PlainEventContent: public edm::EDAnalyzer
         
         Bool_t **jetSelectionBits;  // results of the additional selection
         
-        Int_t metSize;  // number of different METs stored in the event
+        UChar_t metSize;  // number of different METs stored in the event
         Float_t metPt[MAX_LEN];   // MET absolute value
         Float_t metPhi[MAX_LEN];  // MET phi
         
@@ -209,23 +209,23 @@ class PlainEventContent: public edm::EDAnalyzer
         //filled if only runOnData is false, otherwise the tree is not event stored in the file
         TTree *generatorTree;
         
-        Int_t processID;  // the generator process ID
+        Short_t processID;  // the generator process ID
         Float_t genWeight;  // the generator weight for the event
         
-        Int_t jetFlavour[MAX_LEN];  // algorithmic jet flavour definition
-        Int_t jetGenPartonFlavour[MAX_LEN];  // flavour of the parton matched to jet (0 if no match)
+        Char_t jetFlavour[MAX_LEN];  // algorithmic jet flavour definition
+        Char_t jetGenPartonFlavour[MAX_LEN];  // flavour of the parton matched to jet (0 if no match)
         //^ See here (*) for the motivation of using the both flavour definitions
         //(*) https://hypernews.cern.ch/HyperNews/CMS/get/b2g-selections/103.html
                 
         Float_t pdfX1, pdfX2;  // momenta fraction carried by initial-state partons
         Float_t pdfQ;  // scale used to evaluate PDF
-        Int_t pdfId1, pdfId2;  // ID of the initial-state partons
+        Char_t pdfId1, pdfId2;  // ID of the initial-state partons
         
         // Information about the hard interaction (status-3 particles). The initial section (i.e.
         //the first 6 entries in genParticles) is skipped
-        Int_t hardPartSize;  // number of the saved particles
-        Int_t hardPartPdgId[MAX_LEN];  // their PDG ID
-        Int_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];  // indices of mothers
+        UChar_t hardPartSize;  // number of the saved particles
+        Char_t hardPartPdgId[MAX_LEN];  // their PDG ID
+        Char_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];  // indices of mothers
         Float_t hardPartPt[MAX_LEN];    // 4-momenta of the particles
         Float_t hardPartEta[MAX_LEN];   //
         Float_t hardPartPhi[MAX_LEN];   //
@@ -235,10 +235,10 @@ class PlainEventContent: public edm::EDAnalyzer
         // The tree to store pile-up information
         TTree *PUTree;
         
-        Int_t PVSize;  // number of primary vertices
+        UChar_t PVSize;  // number of primary vertices
         Float_t PURho;  // mean energy density
         Float_t PUTrueNumInteractions;  // true mean number of PU interactions in the event
-        Int_t PUSize;  // number of stored pile-up bunch crossings
-        Int_t PUBunchCrossing[MAX_LEN];  // indices for the bunch crossings
-        Int_t PUNumInteractions[MAX_LEN];  // number of PU interactions in each crossing
+        UChar_t PUSize;  // number of stored pile-up bunch crossings
+        Char_t PUBunchCrossing[MAX_LEN];  // indices for the bunch crossings
+        UChar_t PUNumInteractions[MAX_LEN];  // number of PU interactions in each crossing
 };
