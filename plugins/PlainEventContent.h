@@ -75,6 +75,10 @@ class PlainEventContent: public edm::EDAnalyzer
         vector<string> const eleSelection, muSelection, jetSelection;
         bool const runOnData;    // indicated whether generator info is availible
         bool const saveHardInteraction;  // whether to save info on status-3 particles
+        
+        /// Determines if integral properties for soft jets should be saved
+        bool const saveIntegralSoftJets;
+        
         // Generator information sources. They are not read for real data
         InputTag const generatorSrc, genParticlesSrc;
         InputTag const primaryVerticesSrc;  // collection of reconstructed PV

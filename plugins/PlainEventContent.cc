@@ -56,6 +56,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     runOnData(cfg.getParameter<bool>("runOnData")),
     saveHardInteraction(cfg.exists("saveHardInteraction") ?
      cfg.getParameter<bool>("saveHardInteraction") : false),
+    saveIntegralSoftJets(cfg.getParameter<bool>("saveIntegralSoftJets")),
     
     generatorSrc(cfg.getParameter<InputTag>("generator")),
     genParticlesSrc(cfg.getParameter<InputTag>("genParticles")),
@@ -198,34 +199,37 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("metPhi", metPhi, "metPhi[metSize]/F");
     
     
-    integralPropTree = fs->make<TTree>("IntegralProperties",
-     "The tree keeps integral properties of the event");
-    
-    integralPropTree->Branch("softJetPt", &softJetPt);
-    integralPropTree->Branch("softJetEta", &softJetEta);
-    integralPropTree->Branch("softJetPhi", &softJetPhi);
-    integralPropTree->Branch("softJetMass", &softJetMass);
-    integralPropTree->Branch("softJetHt", &softJetHt);
-    
-    if (!runOnData)
+    if (saveIntegralSoftJets)
     {
-        integralPropTree->Branch("softJetPtJECUnc", &softJetPtJECUnc);
-        integralPropTree->Branch("softJetEtaJECUnc", &softJetEtaJECUnc);
-        integralPropTree->Branch("softJetPhiJECUnc", &softJetPhiJECUnc);
-        integralPropTree->Branch("softJetMassJECUnc", &softJetMassJECUnc);
-        integralPropTree->Branch("softJetHtJECUnc", &softJetHtJECUnc);
+        integralPropTree = fs->make<TTree>("IntegralProperties",
+         "The tree keeps integral properties of the event");
         
-        integralPropTree->Branch("softJetPtJERUp", &softJetPtJERUp);
-        integralPropTree->Branch("softJetEtaJERUp", &softJetEtaJERUp);
-        integralPropTree->Branch("softJetPhiJERUp", &softJetPhiJERUp);
-        integralPropTree->Branch("softJetMassJERUp", &softJetMassJERUp);
-        integralPropTree->Branch("softJetHtJERUp", &softJetHtJERUp);
+        integralPropTree->Branch("softJetPt", &softJetPt);
+        integralPropTree->Branch("softJetEta", &softJetEta);
+        integralPropTree->Branch("softJetPhi", &softJetPhi);
+        integralPropTree->Branch("softJetMass", &softJetMass);
+        integralPropTree->Branch("softJetHt", &softJetHt);
         
-        integralPropTree->Branch("softJetPtJERDown", &softJetPtJERDown);
-        integralPropTree->Branch("softJetEtaJERDown", &softJetEtaJERDown);
-        integralPropTree->Branch("softJetPhiJERDown", &softJetPhiJERDown);
-        integralPropTree->Branch("softJetMassJERDown", &softJetMassJERDown);
-        integralPropTree->Branch("softJetHtJERDown", &softJetHtJERDown);
+        if (!runOnData)
+        {
+            integralPropTree->Branch("softJetPtJECUnc", &softJetPtJECUnc);
+            integralPropTree->Branch("softJetEtaJECUnc", &softJetEtaJECUnc);
+            integralPropTree->Branch("softJetPhiJECUnc", &softJetPhiJECUnc);
+            integralPropTree->Branch("softJetMassJECUnc", &softJetMassJECUnc);
+            integralPropTree->Branch("softJetHtJECUnc", &softJetHtJECUnc);
+            
+            integralPropTree->Branch("softJetPtJERUp", &softJetPtJERUp);
+            integralPropTree->Branch("softJetEtaJERUp", &softJetEtaJERUp);
+            integralPropTree->Branch("softJetPhiJERUp", &softJetPhiJERUp);
+            integralPropTree->Branch("softJetMassJERUp", &softJetMassJERUp);
+            integralPropTree->Branch("softJetHtJERUp", &softJetHtJERUp);
+            
+            integralPropTree->Branch("softJetPtJERDown", &softJetPtJERDown);
+            integralPropTree->Branch("softJetEtaJERDown", &softJetEtaJERDown);
+            integralPropTree->Branch("softJetPhiJERDown", &softJetPhiJERDown);
+            integralPropTree->Branch("softJetMassJERDown", &softJetMassJERDown);
+            integralPropTree->Branch("softJetHtJERDown", &softJetHtJERDown);
+        }
     }
     
    
@@ -580,7 +584,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             ++jetSize;
         }
-        else if (softJetSelector(j))
+        else if (saveIntegralSoftJets and softJetSelector(j))
         {
             TLorentzVector p4(j.px(), j.py(), j.pz(), j.energy());
             softJetSumP4 += p4;
@@ -606,27 +610,30 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         }
     }
     
-    softJetPt = softJetSumP4.Pt();
-    softJetEta = (softJetPt > 0.) ? softJetSumP4.Eta() : 10.e10;
-    softJetPhi = softJetSumP4.Phi();
-    softJetMass = softJetSumP4.M();
-    
-    if (!runOnData)
+    if (saveIntegralSoftJets)
     {
-        softJetPtJECUnc = softJetSumP4JECUnc.Pt();
-        softJetEtaJECUnc = (softJetSumP4JECUnc.Pt() > 0.) ? softJetSumP4JECUnc.Eta() : 10.e10;
-        softJetPhiJECUnc = softJetSumP4JECUnc.Phi();
-        softJetMassJECUnc = softJetSumP4JECUnc.M();
+        softJetPt = softJetSumP4.Pt();
+        softJetEta = (softJetPt > 0.) ? softJetSumP4.Eta() : 10.e10;
+        softJetPhi = softJetSumP4.Phi();
+        softJetMass = softJetSumP4.M();
         
-        softJetPtJERUp = softJetSumP4JERUp.Pt();
-        softJetEtaJERUp = (softJetPtJERUp > 0.) ? softJetSumP4JERUp.Eta() : 10.e10;
-        softJetPhiJERUp = softJetSumP4JERUp.Phi();
-        softJetMassJERUp = softJetSumP4JERUp.M();
-        
-        softJetPtJERDown = softJetSumP4JERDown.Pt();
-        softJetEtaJERDown = (softJetPtJERDown > 0.) ? softJetSumP4JERDown.Eta() : 10.e10;
-        softJetPhiJERDown = softJetSumP4JERDown.Phi();
-        softJetMassJERDown = softJetSumP4JERDown.M();
+        if (!runOnData)
+        {
+            softJetPtJECUnc = softJetSumP4JECUnc.Pt();
+            softJetEtaJECUnc = (softJetSumP4JECUnc.Pt() > 0.) ? softJetSumP4JECUnc.Eta() : 10.e10;
+            softJetPhiJECUnc = softJetSumP4JECUnc.Phi();
+            softJetMassJECUnc = softJetSumP4JECUnc.M();
+            
+            softJetPtJERUp = softJetSumP4JERUp.Pt();
+            softJetEtaJERUp = (softJetPtJERUp > 0.) ? softJetSumP4JERUp.Eta() : 10.e10;
+            softJetPhiJERUp = softJetSumP4JERUp.Phi();
+            softJetMassJERUp = softJetSumP4JERUp.M();
+            
+            softJetPtJERDown = softJetSumP4JERDown.Pt();
+            softJetEtaJERDown = (softJetPtJERDown > 0.) ? softJetSumP4JERDown.Eta() : 10.e10;
+            softJetPhiJERDown = softJetSumP4JERDown.Phi();
+            softJetMassJERDown = softJetSumP4JERDown.M();
+        }
     }
     
     
@@ -745,7 +752,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     // Fill all the trees
     eventIDTree->Fill();
     basicInfoTree->Fill();
-    integralPropTree->Fill();
+    
+    if (saveIntegralSoftJets)
+        integralPropTree->Fill();
+    
     puTree->Fill();
     
     if (!runOnData)
