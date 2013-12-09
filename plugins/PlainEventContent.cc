@@ -1,9 +1,3 @@
-/**
- * @author Andrey.Popov@cern.ch
- *
- * Description: see the header file.
- */
-
 #include <UserCode/SingleTop/plugins/PlainEventContent.h>
 
 #include <FWCore/Framework/interface/EventSetup.h>
@@ -35,6 +29,7 @@
 
 
 using namespace edm;
+using namespace std;
 
 
 // A static data member
@@ -119,14 +114,14 @@ PlainEventContent::~PlainEventContent()
 
 void PlainEventContent::beginJob()
 {
-    eventIDTree = fs->make<TTree>("EventID", "Tree contrains event ID information");
+    eventIDTree = fileService->make<TTree>("EventID", "Tree contrains event ID information");
     
     eventIDTree->Branch("run", &runNumber);
     eventIDTree->Branch("lumi", &lumiSection);
     eventIDTree->Branch("event", &eventNumber);
     
     
-    basicInfoTree = fs->make<TTree>("BasicInfo",
+    basicInfoTree = fileService->make<TTree>("BasicInfo",
      "Tree contains kinematics and other basic properties");
     
     basicInfoTree->Branch("eleSize", &eleSize);
@@ -205,7 +200,7 @@ void PlainEventContent::beginJob()
     
     if (saveIntegralSoftJets)
     {
-        integralPropTree = fs->make<TTree>("IntegralProperties",
+        integralPropTree = fileService->make<TTree>("IntegralProperties",
          "The tree keeps integral properties of the event");
         
         integralPropTree->Branch("softJetPt", &softJetPt);
@@ -239,7 +234,7 @@ void PlainEventContent::beginJob()
    
     if (!runOnData)
     {
-        generatorTree = fs->make<TTree>("GeneratorInfo",
+        generatorTree = fileService->make<TTree>("GeneratorInfo",
          "The tree keeps some generator information");
         
         generatorTree->Branch("processID", &processID);
@@ -272,7 +267,7 @@ void PlainEventContent::beginJob()
     }
     
     
-    puTree = fs->make<TTree>("PUInfo", "Pile-up information");
+    puTree = fileService->make<TTree>("PUInfo", "Pile-up information");
     puTree->Branch("pvSize", &pvSize);
     puTree->Branch("rho", &puRho);
     
@@ -366,7 +361,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         // Effective-area (rho) correction to isolation (*)
         //(*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
-        eleRelIso[eleSize] = (el.chargedHadronIso() + std::max(el.neutralHadronIso() +
+        eleRelIso[eleSize] = (el.chargedHadronIso() + max(el.neutralHadronIso() +
          el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / elePt[eleSize];
         
         
@@ -451,8 +446,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/interface/IsolatedPFCandidateSelectorDefinition.h?revision=1.4&view=markup
         //[2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Accessing_PF_Isolation_from_reco
         muRelIso[muSize] = (mu.chargedHadronIso() +
-         std::max(mu.neutralHadronIso() + mu.photonIso() - 0.5 * mu.puChargedHadronIso(), 0.)) /
-         mu.pt();
+         max(mu.neutralHadronIso() + mu.photonIso() - 0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt();
         
         // Tight muons are defined according to [1]. Note it does not imply selection on isolation
         //or kinematics
