@@ -42,19 +42,15 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetSrc(cfg.getParameter<InputTag>("jets")),
     metSrc(cfg.getParameter<vector<InputTag>>("METs")),
     
-    jetCut(cfg.exists("jetCut") ? cfg.getParameter<string>("jetCut") : ""),
-    softJetCut(cfg.exists("softJetCut") ? cfg.getParameter<string>("softJetCut") : ""),
+    jetCut(cfg.getParameter<string>("jetCut")),
+    softJetCut(cfg.getParameter<string>("softJetCut")),
     
-    eleSelection(cfg.exists("eleSelection") ?
-     cfg.getParameter<vector<string>>("eleSelection") : vector<string>(0)),
-    muSelection(cfg.exists("muSelection") ?
-     cfg.getParameter<vector<string>>("muSelection") : vector<string>(0)),
-    jetSelection(cfg.exists("jetSelection") ?
-     cfg.getParameter<vector<string>>("jetSelection") : vector<string>(0)),
+    eleSelection(cfg.getParameter<vector<string>>("eleSelection")),
+    muSelection(cfg.getParameter<vector<string>>("muSelection")),
+    jetSelection(cfg.getParameter<vector<string>>("jetSelection")),
     
     runOnData(cfg.getParameter<bool>("runOnData")),
-    saveHardInteraction(cfg.exists("saveHardInteraction") ?
-     cfg.getParameter<bool>("saveHardInteraction") : false),
+    saveHardInteraction(cfg.getParameter<bool>("saveHardInteraction")),
     saveIntegralSoftJets(cfg.getParameter<bool>("saveIntegralSoftJets")),
     
     generatorSrc(cfg.getParameter<InputTag>("generator")),
@@ -758,6 +754,58 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     if (!runOnData)
         generatorTree->Fill();
+}
+
+
+void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<bool>("runOnData")->
+     setComment("Indicates whether data or simulation is being processed.");
+    desc.add<bool>("saveHardInteraction", false)->
+     setComment("Determines if particles from the hard interaction should be stored. It is ignored "
+     "if runOnData is true.");
+    desc.add<bool>("saveIntegralSoftJets", false)->
+     setComment("Determines if summed four-momentum and Ht of soft jets should be stored.");
+    desc.add<InputTag>("primaryVertices")->
+     setComment("Collection of reconstructed primary vertices.");
+    desc.add<InputTag>("electrons")->setComment("Collection of electrons.");
+    desc.add<vector<string>>("eleSelection", vector<string>(0))->
+     setComment("User-defined selections for electrons whose results will be stored in the output "
+     "trees.");
+    desc.add<InputTag>("muons")->setComment("Collection of muons.");
+    desc.add<vector<string>>("muSelection", vector<string>(0))->
+     setComment("User-defined selections for muons whose results will be stored in the ouput "
+     "trees.");
+    desc.add<InputTag>("jets")->setComment("Collection of jets.");
+    desc.add<vector<InputTag>>("jerSystJets",
+      {InputTag("MissingJERUpJets"), InputTag("MissingJERDownJets")})->
+     setComment("Collections of jets with varied JER. The vector must contain exactly two tags: "
+     "first for the up variation, second for the down variation. If runOnData is true, this "
+     "parameter is ignored completely.");
+    desc.add<vector<string>>("jetSelection", vector<string>(0))->
+     setComment("User-defined selections for jets whose results will be stored in the output "
+     "trees.");
+    desc.add<string>("jetCut", "")->
+     setComment("Selection that determines which jets will be stored in the output trees.");
+    desc.add<string>("softJetCut", "")->
+     setComment("Selection to define soft jets. Only their summed four-momentum and Ht are saved.");
+    desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
+    desc.add<InputTag>("generator", InputTag("generator"))->
+     setComment("Tag to access information about generator. If runOnData is true, this parameter "
+     "is ignored.");
+    desc.add<InputTag>("genParticles", InputTag("genParticles"))->
+     setComment("Tag to access generator particles. If runOnData is true, this parameter is "
+     "ignored.");
+    desc.add<InputTag>("rho", InputTag("kt6PFJets", "rho"))->
+     setComment("Rho (mean angular energy density).");
+    desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
+     setComment("True pile-up information. If runOnData is true, this parameter is ignored.");
+    
+    descriptions.add("eventContent", desc);
 }
 
 

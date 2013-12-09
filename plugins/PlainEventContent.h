@@ -32,7 +32,8 @@
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
-#include <FWCore/ParameterSet/interface/FileInPath.h>
+#include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
+#include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
 #include <CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h>
@@ -91,6 +92,9 @@ public:
      * the trees.
      */
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
+    
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
 private:
     /// Tags to access collections of electrons, muons, and jets
