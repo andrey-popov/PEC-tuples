@@ -37,6 +37,10 @@
 using namespace edm;
 
 
+// A static data member
+unsigned const PlainEventContent::maxSize;
+
+
 PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     eleSrc(cfg.getParameter<InputTag>("electrons")),
     muSrc(cfg.getParameter<InputTag>("muons")),
@@ -85,13 +89,13 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetSelectionBits = new Bool_t *[jetSelection.size()];
     
     for (unsigned i = 0; i < eleSelection.size(); ++i)
-        eleSelectionBits[i] = new Bool_t[MAX_LEN];
+        eleSelectionBits[i] = new Bool_t[maxSize];
     
     for (unsigned i = 0; i < muSelection.size(); ++i)
-        muSelectionBits[i] = new Bool_t[MAX_LEN];
+        muSelectionBits[i] = new Bool_t[maxSize];
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
-        jetSelectionBits[i] = new Bool_t[MAX_LEN];
+        jetSelectionBits[i] = new Bool_t[maxSize];
 }
 
 
@@ -345,7 +349,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Loop through the electron collection and fill the relevant variables
-    for (eleSize = 0; eleSize < int(electrons->size())  &&  eleSize < MAX_LEN; ++eleSize)
+    for (eleSize = 0; eleSize < int(electrons->size()) and eleSize < maxSize; ++eleSize)
     {
         pat::Electron const &el = electrons->at(eleSize);
         
@@ -430,7 +434,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         muSelectors.push_back(*sel);
     
     // Loop through the muon collection and fill the relevant variables
-    for (muSize = 0; muSize < int(muons->size())  &&  muSize < MAX_LEN; ++muSize)
+    for (muSize = 0; muSize < int(muons->size()) and muSize < maxSize; ++muSize)
     {
         pat::Muon const &mu = muons->at(muSize);
         
@@ -500,7 +504,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             jJERDown = &jetsJERDown->at(i);
         }
         
-        if (jetSaveSelector(j)  &&  jetSize < MAX_LEN)
+        if (jetSaveSelector(j) and jetSize < maxSize)
         {
             jetPt[jetSize] = j.pt();
             jetEta[jetSize] = j.eta();
@@ -533,7 +537,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //[3] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714.html
             reco::SecondaryVertexTagInfo const *svTagInfo = j.tagInfoSecondaryVertex();
             
-            if (svTagInfo  &&  svTagInfo->nVertices() > 0)
+            if (svTagInfo and svTagInfo->nVertices() > 0)
                 jetSecVertexMass[jetSize] = svTagInfo->secondaryVertex(0).p4().mass();
             else
                 jetSecVertexMass[jetSize] = -100.;
@@ -734,7 +738,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         // The true number of interactions is the same for the whole event
         puTrueNumInteractions = puSummary->front().getTrueNumInteractions();
         
-        for (int i = 0; i < puSize  &&  i < MAX_LEN; ++i)
+        for (unsigned i = 0; i < puSize and i < maxSize; ++i)
         {
             puBunchCrossing[i] = puSummary->at(i).getBunchCrossing();
             puNumInteractions[i] = puSummary->at(i).getPU_NumInteractions();

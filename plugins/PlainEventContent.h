@@ -48,9 +48,6 @@ using std::string;
 using std::vector;
 
 
-#define MAX_LEN 128  // maximum size used to allocate the arrays
-
-
 class PlainEventContent: public edm::EDAnalyzer
 {
     public:
@@ -92,6 +89,10 @@ class PlainEventContent: public edm::EDAnalyzer
         JetCorrectionUncertainty *jecUncProvider;  // object to access the JEC uncertainty
         
         
+        /// Maximal size to allocate buffer arrays
+        static unsigned const maxSize = 64;
+        
+        
         // The tree to store the event ID information
         TTree *eventIDTree;
         
@@ -102,59 +103,59 @@ class PlainEventContent: public edm::EDAnalyzer
         TTree *basicInfoTree;
         
         UChar_t eleSize;  // actual size of the electron collection
-        Float_t elePt[MAX_LEN];    // electron 4-momenta
-        Float_t eleEta[MAX_LEN];   //
-        Float_t elePhi[MAX_LEN];   //
-        //Float_t eleMass[MAX_LEN];  // it equals (0 +- 0.03) GeV, can be assumed the PDG value
-        Bool_t eleCharge[MAX_LEN];  // electron's charge (true for electron, false for positron)
-        Float_t eleDB[MAX_LEN];  // impact-parameter in the transverse plane
-        Float_t eleRelIso[MAX_LEN];  // relative isolation
+        Float_t elePt[maxSize];    // electron 4-momenta
+        Float_t eleEta[maxSize];   //
+        Float_t elePhi[maxSize];   //
+        //Float_t eleMass[maxSize];  // it equals (0 +- 0.03) GeV, can be assumed the PDG value
+        Bool_t eleCharge[maxSize];  // electron's charge (true for electron, false for positron)
+        Float_t eleDB[maxSize];  // impact-parameter in the transverse plane
+        Float_t eleRelIso[maxSize];  // relative isolation
         
         // Trigger-emulating preselection required for triggering MVA ID [1-2]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
         //[2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72.html
-        Bool_t eleTriggerPreselection[MAX_LEN];
+        Bool_t eleTriggerPreselection[maxSize];
         
         // Electron MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-        Float_t eleMVAID[MAX_LEN];
+        Float_t eleMVAID[maxSize];
         
         // Old cut-based electron ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-        UChar_t eleIDSimple70cIso[MAX_LEN];
+        UChar_t eleIDSimple70cIso[maxSize];
         
-        Bool_t elePassConversion[MAX_LEN];  // conversion veto (true for good electrons)
+        Bool_t elePassConversion[maxSize];  // conversion veto (true for good electrons)
         Bool_t **eleSelectionBits;  // results of the additional selection
         
         UChar_t muSize;  // actual size of the muon collection
-        Float_t muPt[MAX_LEN];    // muon 4-momenta
-        Float_t muEta[MAX_LEN];   //
-        Float_t muPhi[MAX_LEN];   //
-        //Float_t muMass[MAX_LEN];  // it equals (0.106 +- 0.03) GeV, can be assumed the PDG value
-        Bool_t muCharge[MAX_LEN];  // muon's charge (true for muon, false for anti-muon)
-        Float_t muDB[MAX_LEN];  // impact-parameter in the transverse plane
-        Float_t muRelIso[MAX_LEN];  // relative isolation
-        Bool_t muQualityTight[MAX_LEN];  // quality cuts to define tight muons
+        Float_t muPt[maxSize];    // muon 4-momenta
+        Float_t muEta[maxSize];   //
+        Float_t muPhi[maxSize];   //
+        //Float_t muMass[maxSize];  // it equals (0.106 +- 0.03) GeV, can be assumed the PDG value
+        Bool_t muCharge[maxSize];  // muon's charge (true for muon, false for anti-muon)
+        Float_t muDB[maxSize];  // impact-parameter in the transverse plane
+        Float_t muRelIso[maxSize];  // relative isolation
+        Bool_t muQualityTight[maxSize];  // quality cuts to define tight muons
         Bool_t **muSelectionBits;  // results of the additional selection
         
         UChar_t jetSize;  // actual size of the jet collection
-        Float_t jetPt[MAX_LEN];    // jet corrected 4-momenta
-        Float_t jetEta[MAX_LEN];   //
-        Float_t jetPhi[MAX_LEN];   //
-        Float_t jetMass[MAX_LEN];  //
-        Float_t jecUncertainty[MAX_LEN];  // JEC uncertainty
+        Float_t jetPt[maxSize];    // jet corrected 4-momenta
+        Float_t jetEta[maxSize];   //
+        Float_t jetPhi[maxSize];   //
+        Float_t jetMass[maxSize];  //
+        Float_t jecUncertainty[maxSize];  // JEC uncertainty
         
         // JER systematics. The components of 4-momentum are scaled simultaneously (*). Therefore
         //phi and eta are not affected and are the same as for the nominal jets
         //(*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h?view=markup, function produce()
-        Float_t jetPtJERUp[MAX_LEN];
-        Float_t jetMassJERUp[MAX_LEN];
-        Float_t jetPtJERDown[MAX_LEN];
-        Float_t jetMassJERDown[MAX_LEN];
+        Float_t jetPtJERUp[maxSize];
+        Float_t jetMassJERUp[maxSize];
+        Float_t jetPtJERDown[maxSize];
+        Float_t jetMassJERDown[maxSize];
         
-        Float_t jetTCHP[MAX_LEN];  // b-tagging discriminators
-        Float_t jetCSV[MAX_LEN];   //
-        Float_t jetSecVertexMass[MAX_LEN];  // mass of the secondary vertex (a'la SHyFT)
+        Float_t jetTCHP[maxSize];  // b-tagging discriminators
+        Float_t jetCSV[maxSize];   //
+        Float_t jetSecVertexMass[maxSize];  // mass of the secondary vertex (a'la SHyFT)
         
         // Electric charge of the jet
         //It simply copies the value returned by pat::Jet::jetCharge(), which is calculated as a sum
@@ -162,19 +163,19 @@ class PlainEventContent: public edm::EDAnalyzer
         //Note, however, that other definitions are possible [2].
         //[1] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1425.html
         //[2] http://arxiv.org/abs/1209.2421
-        Float_t jetCharge[MAX_LEN];
+        Float_t jetCharge[maxSize];
         
         // Jet pull angle (radians)
         //The pull vector is defined in [1], Eq. (3.7). The pull angle is an angle between this
         //vector and the rapidity axis
         //[1] http://arxiv.org/abs/1010.3698
-        Float_t jetPullAngle[MAX_LEN];
+        Float_t jetPullAngle[maxSize];
         
         Bool_t **jetSelectionBits;  // results of the additional selection
         
         UChar_t metSize;  // number of different METs stored in the event
-        Float_t metPt[MAX_LEN];   // MET absolute value
-        Float_t metPhi[MAX_LEN];  // MET phi
+        Float_t metPt[maxSize];   // MET absolute value
+        Float_t metPhi[maxSize];  // MET phi
         
         
         // The tree to store the integral event characteristics
@@ -216,8 +217,8 @@ class PlainEventContent: public edm::EDAnalyzer
         Short_t processID;  // the generator process ID
         Float_t genWeight;  // the generator weight for the event
         
-        Char_t jetFlavour[MAX_LEN];  // algorithmic jet flavour definition
-        Char_t jetGenPartonFlavour[MAX_LEN];  // flavour of the parton matched to jet (0 if no match)
+        Char_t jetFlavour[maxSize];  // algorithmic jet flavour definition
+        Char_t jetGenPartonFlavour[maxSize];  // flavour of the parton matched to jet (0 if no match)
         //^ See here (*) for the motivation of using the both flavour definitions
         //(*) https://hypernews.cern.ch/HyperNews/CMS/get/b2g-selections/103.html
                 
@@ -228,12 +229,12 @@ class PlainEventContent: public edm::EDAnalyzer
         // Information about the hard interaction (status-3 particles). The initial section (i.e.
         //the first 6 entries in genParticles) is skipped
         UChar_t hardPartSize;  // number of the saved particles
-        Char_t hardPartPdgId[MAX_LEN];  // their PDG ID
-        Char_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];  // indices of mothers
-        Float_t hardPartPt[MAX_LEN];    // 4-momenta of the particles
-        Float_t hardPartEta[MAX_LEN];   //
-        Float_t hardPartPhi[MAX_LEN];   //
-        Float_t hardPartMass[MAX_LEN];  //
+        Char_t hardPartPdgId[maxSize];  // their PDG ID
+        Char_t hardPartFirstMother[maxSize], hardPartLastMother[maxSize];  // indices of mothers
+        Float_t hardPartPt[maxSize];    // 4-momenta of the particles
+        Float_t hardPartEta[maxSize];   //
+        Float_t hardPartPhi[maxSize];   //
+        Float_t hardPartMass[maxSize];  //
         
         
         // The tree to store pile-up information
@@ -243,6 +244,6 @@ class PlainEventContent: public edm::EDAnalyzer
         Float_t puRho;  // mean energy density
         Float_t puTrueNumInteractions;  // true mean number of PU interactions in the event
         UChar_t puSize;  // number of stored pile-up bunch crossings
-        Char_t puBunchCrossing[MAX_LEN];  // indices for the bunch crossings
-        UChar_t puNumInteractions[MAX_LEN];  // number of PU interactions in each crossing
+        Char_t puBunchCrossing[maxSize];  // indices for the bunch crossings
+        UChar_t puNumInteractions[maxSize];  // number of PU interactions in each crossing
 };
