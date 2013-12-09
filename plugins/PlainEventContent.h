@@ -66,7 +66,7 @@ class PlainEventContent: public edm::EDAnalyzer
         
         // The source collections
         InputTag const eleSrc, muSrc, jetSrc;
-        vector<InputTag> const METSrcs;
+        vector<InputTag> const metSrc;
         // String-based selection of the jets to be saved in the tuples
         string const jetCut;
         // String-based selection of the jets to be treated as "soft"
@@ -78,11 +78,11 @@ class PlainEventContent: public edm::EDAnalyzer
         // Generator information sources. They are not read for real data
         InputTag const generatorSrc, genParticlesSrc;
         InputTag const primaryVerticesSrc;  // collection of reconstructed PV
-        InputTag const PUSummarySrc;  // PU information. Not read for real data
+        InputTag const puSummarySrc;  // PU information. Not read for real data
         InputTag const rhoSrc;  // rho (mean energy density)
         
         
-        vector<InputTag> JERSystJetsSrc;  // JER systematic shifted collections of jets
+        vector<InputTag> jerSystJetsSrc;  // JER systematic shifted collections of jets
                 
         edm::Service<TFileService> fs;  // object providing interface to the ROOT files
         JetCorrectionUncertainty *jecUncProvider;  // object to access the JEC uncertainty
@@ -233,12 +233,12 @@ class PlainEventContent: public edm::EDAnalyzer
         
         
         // The tree to store pile-up information
-        TTree *PUTree;
+        TTree *puTree;
         
-        UChar_t PVSize;  // number of primary vertices
-        Float_t PURho;  // mean energy density
-        Float_t PUTrueNumInteractions;  // true mean number of PU interactions in the event
-        UChar_t PUSize;  // number of stored pile-up bunch crossings
-        Char_t PUBunchCrossing[MAX_LEN];  // indices for the bunch crossings
-        UChar_t PUNumInteractions[MAX_LEN];  // number of PU interactions in each crossing
+        UChar_t pvSize;  // number of primary vertices
+        Float_t puRho;  // mean energy density
+        Float_t puTrueNumInteractions;  // true mean number of PU interactions in the event
+        UChar_t puSize;  // number of stored pile-up bunch crossings
+        Char_t puBunchCrossing[MAX_LEN];  // indices for the bunch crossings
+        UChar_t puNumInteractions[MAX_LEN];  // number of PU interactions in each crossing
 };

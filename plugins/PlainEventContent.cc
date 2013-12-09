@@ -41,7 +41,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     eleSrc(cfg.getParameter<InputTag>("electrons")),
     muSrc(cfg.getParameter<InputTag>("muons")),
     jetSrc(cfg.getParameter<InputTag>("jets")),
-    METSrcs(cfg.getParameter<vector<InputTag>>("METs")),
+    metSrc(cfg.getParameter<vector<InputTag>>("METs")),
     
     jetCut(cfg.exists("jetCut") ? cfg.getParameter<string>("jetCut") : ""),
     softJetCut(cfg.exists("softJetCut") ? cfg.getParameter<string>("softJetCut") : ""),
@@ -60,21 +60,21 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     generatorSrc(cfg.getParameter<InputTag>("generator")),
     genParticlesSrc(cfg.getParameter<InputTag>("genParticles")),
     primaryVerticesSrc(cfg.getParameter<InputTag>("primaryVertices")),
-    PUSummarySrc(cfg.getParameter<InputTag>("PUInfo")),
+    puSummarySrc(cfg.getParameter<InputTag>("puInfo")),
     rhoSrc(cfg.getParameter<InputTag>("rho")),
     
     jecUncProvider(nullptr)
 {
     if (!runOnData)
-        JERSystJetsSrc = cfg.getParameter<vector<InputTag>>("JERSystJets");
+        jerSystJetsSrc = cfg.getParameter<vector<InputTag>>("jerSystJets");
     
     
     // Check the inputs
-    if (!runOnData  &&  JERSystJetsSrc.size() != 2)
+    if (!runOnData and jerSystJetsSrc.size() != 2)
     {
         edm::Exception excp(edm::errors::LogicError);
-        excp << "Vector of size 2 is expected for JERSystJets parameter but the given vector is " <<
-         "of size " << JERSystJetsSrc.size() << '\n';
+        excp << "Vector of size 2 is expected for jerSystJets parameter but the given vector is " <<
+         "of size " << jerSystJetsSrc.size() << '\n';
         excp.raise();
     }
     
@@ -264,16 +264,16 @@ void PlainEventContent::beginJob()
     }
     
     
-    PUTree = fs->make<TTree>("PUInfo", "Pile-up information");
-    PUTree->Branch("PVSize", &PVSize);
-    PUTree->Branch("rho", &PURho);
+    puTree = fs->make<TTree>("PUInfo", "Pile-up information");
+    puTree->Branch("pvSize", &pvSize);
+    puTree->Branch("rho", &puRho);
     
     if (!runOnData)
     {
-        PUTree->Branch("PUTrueNumInteractions", &PUTrueNumInteractions);
-        PUTree->Branch("PUSize", &PUSize);
-        PUTree->Branch("PUBunchCrossing", PUBunchCrossing, "PUBunchCrossing[PUSize]/B");
-        PUTree->Branch("PUNumInteractions", PUNumInteractions, "PUNumInteractions[PUSize]/b");
+        puTree->Branch("puTrueNumInteractions", &puTrueNumInteractions);
+        puTree->Branch("puSize", &puSize);
+        puTree->Branch("puBunchCrossing", puBunchCrossing, "puBunchCrossing[puSize]/B");
+        puTree->Branch("puNumInteractions", puNumInteractions, "puNumInteractions[puSize]/b");
     }
 }
 
@@ -311,9 +311,9 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<reco::VertexCollection> vertices;
     event.getByLabel(primaryVerticesSrc, vertices);
     
-    PVSize = vertices->size();
+    pvSize = vertices->size();
     
-    if (PVSize == 0)
+    if (pvSize == 0)
     {
         edm::Exception excp(edm::errors::LogicError);
         excp << "Event contains zero good primary vertices.\n";
@@ -465,8 +465,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
     if (!runOnData)
     {
-        event.getByLabel(JERSystJetsSrc[0], jetsJERUp);
-        event.getByLabel(JERSystJetsSrc[1], jetsJERDown);
+        event.getByLabel(jerSystJetsSrc[0], jetsJERUp);
+        event.getByLabel(jerSystJetsSrc[1], jetsJERDown);
     }
     
     // Construct the jet selectors
@@ -633,13 +633,13 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     // Read the MET
     metSize = 0;
     
-    for (vector<InputTag>::const_iterator tag = METSrcs.begin(); tag != METSrcs.end(); ++tag)
+    for (vector<InputTag>::const_iterator tag = metSrc.begin(); tag != metSrc.end(); ++tag)
     {
-        Handle<View<pat::MET>> METs;
-        event.getByLabel(*tag, METs);
+        Handle<View<pat::MET>> met;
+        event.getByLabel(*tag, met);
         
-        metPt[metSize] = METs->front().pt();
-        metPhi[metSize] = METs->front().phi();
+        metPt[metSize] = met->front().pt();
+        metPhi[metSize] = met->front().phi();
         
         ++metSize;
     }
@@ -720,24 +720,24 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     //https://twiki.cern.ch/twiki/bin/view/CMS/Pileup_MC_Information
     if (!runOnData)
     {
-        Handle<View<PileupSummaryInfo>> PUSummary;
-        event.getByLabel(PUSummarySrc, PUSummary);
+        Handle<View<PileupSummaryInfo>> puSummary;
+        event.getByLabel(puSummarySrc, puSummary);
         
-        PUSize = PUSummary->size();
+        puSize = puSummary->size();
         // The true number of interactions is the same for the whole event
-        PUTrueNumInteractions = PUSummary->front().getTrueNumInteractions();
+        puTrueNumInteractions = puSummary->front().getTrueNumInteractions();
         
-        for (int i = 0; i < PUSize  &&  i < MAX_LEN; ++i)
+        for (int i = 0; i < puSize  &&  i < MAX_LEN; ++i)
         {
-            PUBunchCrossing[i] = PUSummary->at(i).getBunchCrossing();
-            PUNumInteractions[i] = PUSummary->at(i).getPU_NumInteractions();
+            puBunchCrossing[i] = puSummary->at(i).getBunchCrossing();
+            puNumInteractions[i] = puSummary->at(i).getPU_NumInteractions();
         }
     }
     
     // Read rho
     Handle<double> rho;
     event.getByLabel(rhoSrc, rho);
-    PURho = *rho;
+    puRho = *rho;
     
     // Primary vertices have already been read before
    
@@ -746,7 +746,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     eventIDTree->Fill();
     basicInfoTree->Fill();
     integralPropTree->Fill();
-    PUTree->Fill();
+    puTree->Fill();
     
     if (!runOnData)
         generatorTree->Fill();

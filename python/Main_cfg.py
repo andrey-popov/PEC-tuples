@@ -182,7 +182,7 @@ paths.append(process.eventFiltersSequence)
 
 
 # Define the MET
-METCollections = DefineMETs(process, paths, runOnData, inputJetCorrLabel[1][-1])
+metCollections = DefineMETs(process, paths, runOnData, inputJetCorrLabel[1][-1])
 
 
 # Define the jets
@@ -236,13 +236,13 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     jets = cms.InputTag('analysisPatJets'),
     jetCut = cms.string('pt > 20.'),
     softJetCut = cms.string('pt > 10.'),
-    JERSystJets = cms.VInputTag('smearedPatJetsResUp', 'smearedPatJetsResDown'),
-    METs = cms.VInputTag(*METCollections),
+    jerSystJets = cms.VInputTag('smearedPatJetsResUp', 'smearedPatJetsResDown'),
+    METs = cms.VInputTag(*metCollections),
     saveHardInteraction = cms.bool(options.saveHardInteraction),
     generator = cms.InputTag('generator'),
     genParticles = cms.InputTag('genParticles'),
     primaryVertices = cms.InputTag('offlinePrimaryVertices'),
-    PUInfo = cms.InputTag('addPileupInfo'),
+    puInfo = cms.InputTag('addPileupInfo'),
     rho = cms.InputTag('kt6PFJets', 'rho'))
 
 paths.append(process.trigger, process.eventContent)
