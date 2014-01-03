@@ -75,3 +75,11 @@ cvs co -r 1.7 JetMETCorrections/Type1MET/python/pfMETsysShiftCorrections_cfi.py
 addpkg DPGAnalysis/SiStripTools V00-11-17
 #addpkg DataFormats/TrackerCommon V00-00-08  # same version in the release
 #addpkg RecoLocalTracker/SubCollectionProducers V01-09-05  # same version in the release
+
+
+# Correct an exception thrown when JEC are calculated for jet with too large pt or |eta|. See details in [1]
+# [1] https://github.com/andrey-popov/single-top/issues/1
+addpkg CondFormats/JetMETObjects
+#^ A version from the release is checked out
+sed -i 's/throw cms::Exception("SimpleJetCorrectionUncertainty")<<" bin variables out of range";/\
+return 1.f;/1' CondFormats/JetMETObjects/src/SimpleJetCorrectionUncertainty.cc
