@@ -167,10 +167,8 @@ void PlainEventContent::beginJob()
     
     if (!runOnData)
     {
-        basicInfoTree->Branch("jetPtJERUp", jetPtJERUp, "jetPtJERUp[jetSize]/F");
-        basicInfoTree->Branch("jetMassJERUp", jetMassJERUp, "jetMassJERUp[jetSize]/F");
-        basicInfoTree->Branch("jetPtJERDown", jetPtJERDown, "jetPtJERDown[jetSize]/F");
-        basicInfoTree->Branch("jetMassJERDown", jetMassJERDown, "jetMassJERDown[jetSize]/F");
+        basicInfoTree->Branch("jerFactorUp", jerFactorUp, "jerFactorUp[jetSize]/F");
+        basicInfoTree->Branch("jerFactorDown", jerFactorDown, "jerFactorDown[jetSize]/F");
     }
     
     basicInfoTree->Branch("jetTCHP", jetTCHP, "jetTCHP[jetSize]/F");
@@ -510,11 +508,12 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jecUncertainty[jetSize] = jecUncProvider->getUncertainty(true);
                 
                 
-                // JER systematics
-                jetPtJERUp[jetSize] = jJERUp->pt();
-                jetMassJERUp[jetSize] = jJERUp->mass();
-                jetPtJERDown[jetSize] = jJERDown->pt();
-                jetMassJERDown[jetSize] = jJERDown->mass();
+                // Scale factors to reproduce JER systematics. Components of jet four-momentum are
+                //scaled simultaneously; an average factor for pt and mass is calculated to get rid
+                //of rounding errors
+                jerFactorUp[jetSize] = 0.5 * (jJERUp->pt() / j.pt() + jJERUp->mass() / j.mass());
+                jerFactorDown[jetSize] = 0.5 * (jJERDown->pt() / j.pt() +
+                 jJERDown->mass() / j.mass());
             }
             
             jetTCHP[jetSize] = j.bDiscriminator("trackCountingHighPurBJetTags");

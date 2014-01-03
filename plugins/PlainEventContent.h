@@ -241,13 +241,11 @@ private:
     Float_t jetMass[maxSize];  //
     Float_t jecUncertainty[maxSize];  // JEC uncertainty
     
-    // JER systematics. The components of 4-momentum are scaled simultaneously (*). Therefore,
-    //phi and eta components are not affected and equals ones of nominal jets
-    //(*) http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h?view=markup, function produce()
-    Float_t jetPtJERUp[maxSize];
-    Float_t jetMassJERUp[maxSize];
-    Float_t jetPtJERDown[maxSize];
-    Float_t jetMassJERDown[maxSize];
+    // Factors to scale jet four-momenta to account for JER systematics. Components of the
+    //four-momentum are scaled simultaneously [1]. Therefore, a single factor is sufficient
+    //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_5_3_11/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
+    Float_t jerFactorUp[maxSize];
+    Float_t jerFactorDown[maxSize];
     
     Float_t jetTCHP[maxSize];  // b-tagging discriminators
     Float_t jetCSV[maxSize];   //
