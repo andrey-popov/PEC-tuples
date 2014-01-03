@@ -75,8 +75,3 @@ cvs co -r 1.7 JetMETCorrections/Type1MET/python/pfMETsysShiftCorrections_cfi.py
 addpkg DPGAnalysis/SiStripTools V00-11-17
 #addpkg DataFormats/TrackerCommon V00-00-08  # same version in the release
 #addpkg RecoLocalTracker/SubCollectionProducers V01-09-05  # same version in the release
-
-
-# PU jet ID. The code looks somewhat outdated; hence, it is likely to be updated soon
-# https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=16#Software
-cvs co -r V00-03-04 -d CMGTools/External UserCode/CMG/CMGTools/External
