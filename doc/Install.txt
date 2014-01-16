@@ -1,1 +1,1 @@
-The instruction has been moved to https://svnweb.cern.ch/trac/singletop/wiki/InstallSoftware
+The instruction has been moved to https://github.com/andrey-popov/single-top/wiki/InstallSoftware
