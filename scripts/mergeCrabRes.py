@@ -224,15 +224,18 @@ if __name__ == '__main__':
     pool = Pool(processes = args.num_threads)
     
     for partNumber in partToBlock.iterkeys():
-        nameFragment = outputDir + basename
+        nameFragment = outputDir + basename + '_p' + str(partNumber + 1)
         if nParts > 1:
-            nameFragment += '_p' + str(partNumber + 1)
+            outputName = nameFragment + '.root'
+        else:
+            outputName = outputDir + basename + '.root'
+        
         sourceFiles = []
         
         for blockNumber in partToBlock[partNumber]:
             sourceFiles.append(nameFragment + '_' + str(blockNumber + 1) + '.root')
         
-        pool.apply_async(mergeFiles, (nameFragment + '.root', sourceFiles))
+        pool.apply_async(mergeFiles, (outputName, sourceFiles))
     
     # Wait for the jobs to finish
     pool.close()
@@ -243,11 +246,12 @@ if __name__ == '__main__':
     finalFileNames = []
     
     for partNumber in partToBlock.iterkeys():
-        nameFragment = outputDir + basename
-        if nParts > 1:
-            nameFragment += '_p' + str(partNumber + 1)
+        nameFragment = outputDir + basename + '_p' + str(partNumber + 1)
         
-        finalFileNames.append(nameFragment + '.root')
+        if nParts > 1:
+            finalFileNames.append(nameFragment + '.root')
+        else:
+            finalFileNames.append(outputDir + basename + '.root')
         
         if not args.keep_tmp_files:
             for blockNumber in partToBlock[partNumber]:
