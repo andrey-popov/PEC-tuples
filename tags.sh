@@ -88,3 +88,9 @@ addpkg CondFormats/JetMETObjects
 #^ A version from the release is checked out
 sed -i 's/throw cms::Exception("SimpleJetCorrectionUncertainty")<<" bin variables out of range";/\
 return 1.f;/1' CondFormats/JetMETObjects/src/SimpleJetCorrectionUncertainty.cc
+
+
+# Hack the code for jet pile-up ID to suppress numerous warnings when the ID is calculated for a jet
+# below 20 GeV/c
+sed -i 's/reader_ = new TMVA::Reader("!Color:!Silent");/reader_ = new TMVA::Reader("!Color:Silent");/1' \
+CMGTools/External/src/PileupJetIdAlgo.cc
