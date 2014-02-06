@@ -17,6 +17,8 @@
 #include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
 #include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
 
+#include <CMGTools/External/interface/PileupJetIdentifier.h>
+
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
@@ -178,6 +180,8 @@ void PlainEventContent::beginJob()
     
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
     basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
+    
+    basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/s");
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
     {
@@ -458,12 +462,23 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     Handle<View<pat::Jet>> jetsJERUp, jetsJERDown;
     
-        
     if (!runOnData)
     {
         event.getByLabel(jerSystJetsSrc[0], jetsJERUp);
         event.getByLabel(jerSystJetsSrc[1], jetsJERDown);
     }
+    
+    
+    // Jet pile-up ID maps
+    Handle<ValueMap<int>> jetPUCutBasedIDHandle;
+    event.getByLabel("puJetMvaChs", "cutbasedId", jetPUCutBasedIDHandle);
+    
+    Handle<ValueMap<int>> jetPUSimpleIDHandle;
+    event.getByLabel("puJetMvaChs", "simpleId", jetPUSimpleIDHandle);
+    
+    Handle<ValueMap<int>> jetPUFullIDHandle;
+    event.getByLabel("puJetMvaChs", "fullId", jetPUFullIDHandle);
+    
     
     // Construct the jet selectors
     StringCutObjectSelector<pat::Jet> jetSaveSelector(jetCut);
@@ -559,6 +574,47 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //the polar angle only, it is not necessary
             
             jetPullAngle[jetSize] = atan2(pullPhi, pullY);
+            
+            
+            // Pack jet pile-up ID into a single short
+            jetPileUpID[jetSize] = 0;
+            int pileUpID;
+            
+            
+            pileUpID = (*jetPUCutBasedIDHandle)[jets->refAt(jetSize)];
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
+                jetPileUpID[jetSize] |= (1<<0);
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
+                jetPileUpID[jetSize] |= (1<<1);
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
+                jetPileUpID[jetSize] |= (1<<2);
+            
+            
+            pileUpID = (*jetPUSimpleIDHandle)[jets->refAt(jetSize)];
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
+                jetPileUpID[jetSize] |= (1<<3);
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
+                jetPileUpID[jetSize] |= (1<<4);
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
+                jetPileUpID[jetSize] |= (1<<5);
+            
+            
+            pileUpID = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
+                jetPileUpID[jetSize] |= (1<<6);
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
+                jetPileUpID[jetSize] |= (1<<7);
+            
+            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
+                jetPileUpID[jetSize] |= (1<<8);
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)

@@ -294,6 +294,29 @@ def DefineJets(process, paths, runOnData):
     # Finally, switch on the tag infos. It is needed to access the secondary vertex [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714/2/1/1.html
     process.patJets.addTagInfos = True
+    
+    
+    # Add jet pile-up ID [1]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
+    # WARNING: The package looks quite raw, many adjustments have been made by hand with no official
+    # recommendation. This tool should not be used in a physics analysis
+    process.load('CMGTools.External.pujetidsequence_cff')
+    
+    # By default, PU ID is calculated for selectedPatJets, but analysers need it to be associated
+    # with collection analysisPatJets
+    for m in [process.puJetIdChs, process.puJetMvaChs]:
+        m.jets = 'analysisPatJets'
+    
+    # "Simple" BDT is missing in the default configuration. Add it
+    from CMGTools.External.pujetidproducer_cfi import simple_5x_chs
+    process.puJetMvaChs.algos.append(simple_5x_chs)
+    
+    # XML files with configuration of the "full" BDT are resolved from a wrong location. Correct it
+    process.puJetMvaChs.algos[0].tmvaWeights = 'CMGTools/External/data/' + \
+     process.puJetMvaChs.algos[0].tmvaWeights.value().split('/')[3]
+    #^ That is just not to retype file's basename
+    
+    paths.append(process.puJetIdSqeuenceChs)
 
 
 def DefineMETs(process, paths, runOnData, jecLevel):

@@ -77,6 +77,11 @@ addpkg DPGAnalysis/SiStripTools V00-11-17
 #addpkg RecoLocalTracker/SubCollectionProducers V01-09-05  # same version in the release
 
 
+# Jet pile-up ID
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=16#Software
+cvs co -r V00-03-04 -d CMGTools/External UserCode/CMG/CMGTools/External
+
+
 # Correct an exception thrown when JEC are calculated for jet with too large pt or |eta|. See details in [1]
 # [1] https://github.com/andrey-popov/single-top/issues/1
 addpkg CondFormats/JetMETObjects
