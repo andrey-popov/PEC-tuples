@@ -427,7 +427,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             eleSelectionBits[i][eleSize] = eleSelectors[i](el);
     }
     
-
+    
     // Read the muon collection
     Handle<View<pat::Muon>> muons;
     event.getByLabel(muSrc, muons);
@@ -763,11 +763,21 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         genWeight = generator->weight();
         
         GenEventInfoProduct::PDF const *pdf = generator->pdf();
-        pdfX1 = pdf->x.first;
-        pdfX2 = pdf->x.second;
-        pdfQ = pdf->scalePDF;
-        pdfId1 = pdf->id.first;
-        pdfId2 = pdf->id.second;
+        
+        if (pdf)
+        {
+            pdfX1 = pdf->x.first;
+            pdfX2 = pdf->x.second;
+            pdfQ = pdf->scalePDF;
+            pdfId1 = pdf->id.first;
+            pdfId2 = pdf->id.second;
+        }
+        else  // information on PDF is not available for datasets with particle gun
+        {
+            pdfX1 = pdfX2 = -1.f;
+            pdfQ = -1.f;
+            pdfId1 = pdfId2 = -100;
+        }
     }
     
     
@@ -795,7 +805,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     puRho = *rho;
     
     // Primary vertices have already been read before
-   
+    
     
     // Fill all the trees
     eventIDTree->Fill();
