@@ -60,6 +60,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     primaryVerticesSrc(cfg.getParameter<InputTag>("primaryVertices")),
     puSummarySrc(cfg.getParameter<InputTag>("puInfo")),
     rhoSrc(cfg.getParameter<InputTag>("rho")),
+    jetPileUpIDSrc(cfg.getParameter<vector<InputTag>>("jetPileUpID")),
     
     jecUncProvider(nullptr)
 {
@@ -75,6 +76,16 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
          "of size " << jerSystJetsSrc.size() << '\n';
         excp.raise();
     }
+    
+    
+    if (jetPileUpIDSrc.size() > 2)
+    {
+        edm::Exception excp(edm::errors::LogicError);
+        excp << "Two sources of jet pile-up ID are expected at maximum while " <<
+         jetPileUpIDSrc.size() << "have been provided.\n";
+        excp.raise();
+    }
+    
     
     // Allocate the buffers to store the bits of additional selection
     eleSelectionBits = new Bool_t *[eleSelection.size()];
@@ -181,7 +192,8 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
     basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
     
-    basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/b");
+    if (jetPileUpIDSrc.size() > 0)
+        basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/b");
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
     {
@@ -470,11 +482,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Jet pile-up ID maps
-    Handle<ValueMap<int>> jetPUCutBasedIDHandle;
-    event.getByLabel("puJetMvaChs", "cutbasedId", jetPUCutBasedIDHandle);
+    vector<Handle<ValueMap<int>>> jetPileUpIDHandles(jetPileUpIDSrc.size());
     
-    Handle<ValueMap<int>> jetPUFullIDHandle;
-    event.getByLabel("puJetMvaChs", "fullId", jetPUFullIDHandle);
+    for (unsigned i = 0; i < jetPileUpIDSrc.size(); ++i)
+        event.getByLabel(jetPileUpIDSrc.at(i), jetPileUpIDHandles.at(i));
     
     
     // Construct the jet selectors
@@ -575,31 +586,34 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             // Pack jet pile-up ID into a single short
             jetPileUpID[jetSize] = 0;
-            int pileUpID;
             
+            if (jetPileUpIDHandles.size() > 0)
+            {
+                int const pileUpID = (*jetPileUpIDHandles.at(0))[jets->refAt(jetSize)];
+                
+                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
+                    jetPileUpID[jetSize] |= (1<<0);
+                
+                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
+                    jetPileUpID[jetSize] |= (1<<1);
+                
+                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
+                    jetPileUpID[jetSize] |= (1<<2);
+            }
             
-            pileUpID = (*jetPUCutBasedIDHandle)[jets->refAt(jetSize)];
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
-                jetPileUpID[jetSize] |= (1<<0);
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
-                jetPileUpID[jetSize] |= (1<<1);
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
-                jetPileUpID[jetSize] |= (1<<2);
-            
-            
-            pileUpID = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
-                jetPileUpID[jetSize] |= (1<<3);
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
-                jetPileUpID[jetSize] |= (1<<4);
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
-                jetPileUpID[jetSize] |= (1<<5);
+            if (jetPileUpIDHandles.size() > 1)
+            {
+                int const pileUpID = (*jetPileUpIDHandles.at(1))[jets->refAt(jetSize)];
+                
+                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
+                    jetPileUpID[jetSize] |= (1<<3);
+                
+                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
+                    jetPileUpID[jetSize] |= (1<<4);
+                
+                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
+                    jetPileUpID[jetSize] |= (1<<5);
+            }
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)
@@ -844,6 +858,10 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Rho (mean angular energy density).");
     desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
      setComment("True pile-up information. If runOnData is true, this parameter is ignored.");
+    desc.add<vector<InputTag>>("jetPileUpID", vector<InputTag>(0))->
+     setComment("Value maps with jet pile-up ID. Can contain 0, 1, or 2 entries. In the latter "
+     "case the first InputTag is supposed to denote the map for cut-based ID and the second one "
+     "should provide MVA ID.");
     
     descriptions.add("eventContent", desc);
 }

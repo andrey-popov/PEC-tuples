@@ -242,7 +242,10 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     genParticles = cms.InputTag('genParticles'),
     primaryVertices = cms.InputTag('offlinePrimaryVertices'),
     puInfo = cms.InputTag('addPileupInfo'),
-    rho = cms.InputTag('kt6PFJets', 'rho'))
+    rho = cms.InputTag('kt6PFJets', 'rho'),
+    jetPileUpID = cms.VInputTag(
+        cms.InputTag('puJetMvaChs', 'cutbasedId'),
+        cms.InputTag('puJetMvaChs', 'fullId')))
 
 paths.append(process.trigger, process.eventContent)
 

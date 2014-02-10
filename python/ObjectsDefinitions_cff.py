@@ -307,7 +307,9 @@ def DefineJets(process, paths, runOnData):
     for m in [process.puJetIdChs, process.puJetMvaChs]:
         m.jets = 'analysisPatJets'
     
-    # XML files with configuration of the "full" BDT are resolved from a wrong location. Correct it
+    # XML files with configuration of the "full" BDT are resolved from a wrong location. Correct it.
+    # The file I use here is identical to the one recommended in [1]
+    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1508/3.html
     process.puJetMvaChs.algos[0].tmvaWeights = 'CMGTools/External/data/' + \
      process.puJetMvaChs.algos[0].tmvaWeights.value().split('/')[3]
     #^ That is just not to retype file's basename

@@ -170,6 +170,16 @@ private:
      */
     std::vector<edm::InputTag> jerSystJetsSrc;
     
+    /**
+     * \brief Input tags for jet pile-up ID
+     * 
+     * The vector might contain 0, 1, or 2 elements. If more than 2 elements are provided,
+     * constructor throws an exception. If the vector is empty, no branch to store jet pile-up ID
+     * is added to the output tree. If there are two elements, the first one should refer to the
+     * cut-based ID, and the latter one specifies the MVA ID.
+     */
+    std::vector<edm::InputTag> jetPileUpIDSrc;
+    
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
@@ -265,10 +275,13 @@ private:
     //[1] http://arxiv.org/abs/1010.3698
     Float_t jetPullAngle[maxSize];
     
-    // Jet pile-up ID
-    //A bit set to store jet pile-up ID. First free bits (0x1, 0x2, 0x4) are set to true if the jet
-    //passes loose, medium, or tight working point of the cut-based algorithm respectively. The
-    //next three bits encode results for the "full" BDT in a similar fashion
+    // Jet pile-up ID [1]
+    //A bit set to store decisions of two jet pile-up ID algorithms at maximum. First three bits
+    //(0x1, 0x2, 0x4) are set to true if the jet passes loose, medium, or tight working point of
+    //the first algorithm, respectively. The next three bits (0x8, 0x10, 0x20) are set in a similar
+    //fashion if there is one more algorithm specified.
+    //Normally, the first algorithm is cut-based while the second is MVA. See details in the
+    //documentation for data member jetPileUpIDSrc.
     //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
     UChar_t jetPileUpID[maxSize];
     
