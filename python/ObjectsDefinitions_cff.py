@@ -307,10 +307,6 @@ def DefineJets(process, paths, runOnData):
     for m in [process.puJetIdChs, process.puJetMvaChs]:
         m.jets = 'analysisPatJets'
     
-    # "Simple" BDT is missing in the default configuration. Add it
-    from CMGTools.External.pujetidproducer_cfi import simple_5x_chs
-    process.puJetMvaChs.algos.append(simple_5x_chs)
-    
     # XML files with configuration of the "full" BDT are resolved from a wrong location. Correct it
     process.puJetMvaChs.algos[0].tmvaWeights = 'CMGTools/External/data/' + \
      process.puJetMvaChs.algos[0].tmvaWeights.value().split('/')[3]

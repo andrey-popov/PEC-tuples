@@ -268,10 +268,9 @@ private:
     // Jet pile-up ID
     //A bit set to store jet pile-up ID. First free bits (0x1, 0x2, 0x4) are set to true if the jet
     //passes loose, medium, or tight working point of the cut-based algorithm respectively. The
-    //next three bits encode results for the "simple" BDT. Finally, bits 0x40, 0x80, 0x100 refers to
-    //loose, medium, and tight working points of the "full" BDT
+    //next three bits encode results for the "full" BDT in a similar fashion
     //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-    UShort_t jetPileUpID[maxSize];
+    UChar_t jetPileUpID[maxSize];
     
     Bool_t **jetSelectionBits;  // results of the additional selection
     

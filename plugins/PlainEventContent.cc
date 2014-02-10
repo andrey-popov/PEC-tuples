@@ -181,7 +181,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
     basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
     
-    basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/s");
+    basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/b");
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
     {
@@ -473,9 +473,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<ValueMap<int>> jetPUCutBasedIDHandle;
     event.getByLabel("puJetMvaChs", "cutbasedId", jetPUCutBasedIDHandle);
     
-    Handle<ValueMap<int>> jetPUSimpleIDHandle;
-    event.getByLabel("puJetMvaChs", "simpleId", jetPUSimpleIDHandle);
-    
     Handle<ValueMap<int>> jetPUFullIDHandle;
     event.getByLabel("puJetMvaChs", "fullId", jetPUFullIDHandle);
     
@@ -593,7 +590,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jetPileUpID[jetSize] |= (1<<2);
             
             
-            pileUpID = (*jetPUSimpleIDHandle)[jets->refAt(jetSize)];
+            pileUpID = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
             
             if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
                 jetPileUpID[jetSize] |= (1<<3);
@@ -603,18 +600,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
                 jetPileUpID[jetSize] |= (1<<5);
-            
-            
-            pileUpID = (*jetPUFullIDHandle)[jets->refAt(jetSize)];
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
-                jetPileUpID[jetSize] |= (1<<6);
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
-                jetPileUpID[jetSize] |= (1<<7);
-            
-            if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
-                jetPileUpID[jetSize] |= (1<<8);
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)
