@@ -2,17 +2,17 @@
  * \file GenJetsInfo.h
  * \author Andrey Popov
  * 
- * The module defines a plugin to save generator-level jets into a plain ROOT tuple. It stores jet
- * four-momenta and number of b and c quarks with status 2 nearby.
+ * The module defines a plugin to save generator-level jets into a plain ROOT tuple. In the default
+ * configuration is stores only jet four momenta. If flag saveFlavourCounters is set to true, the
+ * plugin saves additionally the number of status-2 b and c partons in the vicinity of the jet.
  * 
  * Usage example:
  *   process.genJets = cms.EDAnalyzer('GenJetsInfo',
  *       jets = cms.InputTag('ak5GenJets'),
- *       cut = cms.string('pt > 20.'),
+ *       cut = cms.string('pt > 8.'),
+ *       saveFlavourCounters = cms.bool(True),
  *       genParticles = cms.InputTag('genParticles'))
- * The user can initialise the the input tag for generator-level particles with an empty string. In
- * this case multiplicities of b and c quarks are not saved. An empty cut means than all jets will
- * be saved.
+ * An empty cut (default one) means that all jets will be saved.
  */
 
 
