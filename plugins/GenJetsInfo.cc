@@ -8,15 +8,19 @@
 #include <Math/GenVector/VectorUtil.h>
 
 
+using namespace std;
+using namespace edm;
+
+
 // Define the static member
 unsigned const GenJetsInfo::maxSize;
 
 
 GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
-    jetSrc(cfg.getParameter<edm::InputTag>("jets")),
-    jetCut(cfg.getParameter<std::string>("cut")),
-    genParticleSrc(cfg.getParameter<edm::InputTag>("genParticles")),
-    readGenParticles(genParticleSrc.label().length() > 0)
+    jetSrc(cfg.getParameter<InputTag>("jets")),
+    jetCut(cfg.getParameter<string>("cut")),
+    saveFlavourCounters(cfg.getParameter<bool>("saveFlavourCounters")),
+    genParticleSrc(cfg.getParameter<InputTag>("genParticles"))
 {}
 
 
@@ -33,21 +37,24 @@ void GenJetsInfo::beginJob()
     tree->Branch("jetPhi", jetPhi, "jetPhi[jetSize]/F");
     tree->Branch("jetMass", jetMass, "jetMass[jetSize]/F");
     
-    tree->Branch("bMult", bMult, "bMult[jetSize]/b");
-    tree->Branch("cMult", cMult, "cMult[jetSize]/b");
+    if (saveFlavourCounters)
+    {
+        tree->Branch("bMult", bMult, "bMult[jetSize]/b");
+        tree->Branch("cMult", cMult, "cMult[jetSize]/b");
+    }
 }
 
 
 void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
     // Read the collection of generator-level jets
-    edm::Handle<edm::View<reco::Candidate>> jets;
+    Handle<View<reco::Candidate>> jets;
     event.getByLabel(jetSrc, jets);
     
     // Read the collection of generator-level particles
-    edm::Handle<edm::View<reco::GenParticle>> particles;
+    Handle<View<reco::GenParticle>> particles;
     
-    if (readGenParticles)
+    if (saveFlavourCounters)
         event.getByLabel(genParticleSrc, particles);
     
     
@@ -58,7 +65,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     // Loop over the jets
     jetSize = 0;
     
-    for (unsigned i = 0; i < jets->size() and jetSize < int(maxSize); ++i)
+    for (unsigned i = 0; i < jets->size() and jetSize < maxSize; ++i)
     {
         auto const &j = jets->at(i);
         
@@ -72,7 +79,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
             
         
             // Loop over the generator-level particles
-            if (readGenParticles)
+            if (saveFlavourCounters)
             {
                 bMult[jetSize] = cMult[jetSize] = 0;
                 
@@ -103,6 +110,26 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     
     
     tree->Fill();
+}
+
+
+void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<InputTag>("jets", InputTag("ak5GenJets"))->
+     setComment("Collection of generator-level jets.");
+    desc.add<string>("cut", "")->
+     setComment("Selection to choose which jets should be stored.");
+    desc.add<bool>("saveFlavourCounters", false)->
+     setComment("Indicates if information on flavours of nearby partons should be stored.");
+    desc.add<InputTag>("genParticles", InputTag("genParticles"))->
+     setComment("Collection of generator-level particles. It is ignored if parameter "
+     "saveFlavourCounters is set to false.");
+    
+    descriptions.add("genJets", desc);
 }
 
 
