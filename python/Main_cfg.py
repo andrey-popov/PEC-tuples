@@ -46,6 +46,8 @@ options.register('saveHardInteraction', False, VarParsing.multiplicity.singleton
     'Save information about the status 3 particles, except for the initial section')
 options.register('saveHeavyFlavours', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Saves information about heavy-flavour quarks in parton shower')
+options.register('saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Save information about generator-level jets')
 options.register('sourceFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'The name of the source file')
 options.register('runOnFastSim', False, VarParsing.multiplicity.singleton,
@@ -249,12 +251,23 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
 
 paths.append(process.trigger, process.eventContent)
 
-# Save the info on heavy-flavour quarks
+
+# Save information on heavy-flavour quarks
 if options.saveHeavyFlavours:
     process.heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
         absPdgId = cms.vint32(4, 5),
         genParticles = cms.InputTag('genParticles'))
     paths.append(process.heavyFlavours)
+
+
+# Save information on generator-level jets
+if options.saveGenJets:
+    process.genJets = cms.EDAnalyzer('GenJetsInfo',
+        jets = cms.InputTag('ak5GenJets'),
+        cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
+        genParticles = cms.InputTag('genParticles'))
+    paths.append(process.genJets)
+
 
 # In case one of the channels is not requested for the processing, remove it
 if not elChan:
