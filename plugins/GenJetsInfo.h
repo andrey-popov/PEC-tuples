@@ -2,7 +2,7 @@
  * \file GenJetsInfo.h
  * \author Andrey Popov
  * 
- * The module defines a plugin to save generator-level jets into a plain ROOT tuple. It store jets'
+ * The module defines a plugin to save generator-level jets into a plain ROOT tuple. It stores jet
  * four-momenta and number of b and c quarks with status 2 nearby.
  * 
  * Usage example:
@@ -66,7 +66,7 @@ class GenJetsInfo: public edm::EDAnalyzer
         static unsigned const maxSize = 128;
         
         // Output buffers
-        Int_t jetSize;
+        UChar_t jetSize;
         
         Float_t jetPt[maxSize];
         Float_t jetEta[maxSize];
@@ -74,5 +74,5 @@ class GenJetsInfo: public edm::EDAnalyzer
         Float_t jetMass[maxSize];
         
         // Number of b and c quark with status 2 in cone 0.5 around the jet
-        Int_t bMult[maxSize], cMult[maxSize];
+        UChar_t bMult[maxSize], cMult[maxSize];
 };

@@ -33,8 +33,8 @@ void GenJetsInfo::beginJob()
     tree->Branch("jetPhi", jetPhi, "jetPhi[jetSize]/F");
     tree->Branch("jetMass", jetMass, "jetMass[jetSize]/F");
     
-    tree->Branch("bMult", bMult, "bMult[jetSize]/I");
-    tree->Branch("cMult", cMult, "cMult[jetSize]/I");
+    tree->Branch("bMult", bMult, "bMult[jetSize]/b");
+    tree->Branch("cMult", cMult, "cMult[jetSize]/b");
 }
 
 
