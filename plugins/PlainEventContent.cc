@@ -44,8 +44,8 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetSrc(cfg.getParameter<InputTag>("jets")),
     metSrc(cfg.getParameter<vector<InputTag>>("METs")),
     
-    jetCut(cfg.getParameter<string>("jetCut")),
-    softJetCut(cfg.getParameter<string>("softJetCut")),
+    jetMinPt(cfg.getParameter<double>("jetMinPt")),
+    softJetMinPt(cfg.getParameter<double>("softJetMinPt")),
     
     eleSelection(cfg.getParameter<vector<string>>("eleSelection")),
     muSelection(cfg.getParameter<vector<string>>("muSelection")),
@@ -489,8 +489,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Construct the jet selectors
-    StringCutObjectSelector<pat::Jet> jetSaveSelector(jetCut);
-    StringCutObjectSelector<pat::Jet> softJetSelector(softJetCut);
     vector<StringCutObjectSelector<pat::Jet>> jetSelectors;
     
     for (vector<string>::const_iterator sel = jetSelection.begin(); sel != jetSelection.end();
@@ -515,29 +513,51 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             jJERDown = &jetsJERDown->at(i);
         }
         
-        if (jetSaveSelector(j) and jetSize < maxSize)
+        
+        // Need to check if the current jet should be stored per-ce. In order for this to happen,
+        //the jet should have a pt larger than the specifed cut. But jets just below the threshold
+        //that can gain a larger pt due to fluctuations of JEC or JER should also be stored. Check
+        //the possible fluctuations
+        double jetPtUpFluctuationFactor = 1.;
+        double curJetJecUnc, curJetJerFactorUp, curJetJerFactorDown;
+        
+        if (not runOnData)
+        {
+            // JEC uncertainties (*)
+            //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetCorUncertainties
+            jecUncProvider->setJetEta(j.eta());
+            jecUncProvider->setJetPt(j.pt());
+            curJetJecUnc = jecUncProvider->getUncertainty(true);
+            
+            
+            // Scale factors to reproduce JER systematics. Components of jet four-momentum are
+            //scaled simultaneously; an average factor for pt and mass is calculated to get rid
+            //of rounding errors
+            curJetJerFactorUp = 0.5 * (jJERUp->pt() / j.pt() + jJERUp->mass() / j.mass());
+            curJetJerFactorDown = 0.5 * (jJERDown->pt() / j.pt() + jJERDown->mass() / j.mass());
+            
+            
+            jetPtUpFluctuationFactor = max({1. + curJetJecUnc, curJetJerFactorUp,
+             curJetJerFactorDown});
+        }
+        
+        
+        // Now compare the highest possible fluctuation of jet pt with the threshold
+        if (j.pt() * jetPtUpFluctuationFactor > jetMinPt and jetSize < maxSize)
         {
             jetPt[jetSize] = j.pt();
             jetEta[jetSize] = j.eta();
             jetPhi[jetSize] = j.phi();
             jetMass[jetSize] = j.mass();
             
-            if (!runOnData)
+            
+            if (not runOnData)
             {
-                // JEC uncertainties (*)
-                //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetCorUncertainties
-                jecUncProvider->setJetEta(j.eta());
-                jecUncProvider->setJetPt(j.pt());
-                jecUncertainty[jetSize] = jecUncProvider->getUncertainty(true);
-                
-                
-                // Scale factors to reproduce JER systematics. Components of jet four-momentum are
-                //scaled simultaneously; an average factor for pt and mass is calculated to get rid
-                //of rounding errors
-                jerFactorUp[jetSize] = 0.5 * (jJERUp->pt() / j.pt() + jJERUp->mass() / j.mass());
-                jerFactorDown[jetSize] = 0.5 * (jJERDown->pt() / j.pt() +
-                 jJERDown->mass() / j.mass());
+                jecUncertainty[jetSize] = curJetJecUnc;
+                jerFactorUp[jetSize] = curJetJerFactorUp;
+                jerFactorDown[jetSize] = curJetJerFactorDown;
             }
+            
             
             jetTCHP[jetSize] = j.bDiscriminator("trackCountingHighPurBJetTags");
             jetCSV[jetSize] = j.bDiscriminator("combinedSecondaryVertexBJetTags");
@@ -632,7 +652,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             ++jetSize;
         }
-        else if (saveIntegralSoftJets and softJetSelector(j))
+        else if (saveIntegralSoftJets and j.pt() > softJetMinPt)
+        //^ Note that JEC or JER fluctuations are not considered when comparing with threshold
         {
             TLorentzVector p4(j.px(), j.py(), j.pz(), j.energy());
             softJetSumP4 += p4;
@@ -853,10 +874,10 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "trees.");
-    desc.add<string>("jetCut", "")->
-     setComment("Selection that determines which jets will be stored in the output trees.");
-    desc.add<string>("softJetCut", "")->
-     setComment("Selection to define soft jets. Only their summed four-momentum and Ht are saved.");
+    desc.add<double>("jetMinPt", 20.)->
+     setComment("Only jets with pt above this threshold will be stored in the output trees.");
+    desc.add<double>("softJetMinPt", 10.)->
+     setComment("Threshold to define soft jets. Only their summed four-momentum and Ht are saved.");
     desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Tag to access information about generator. If runOnData is true, this parameter "

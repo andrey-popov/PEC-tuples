@@ -108,20 +108,23 @@ private:
      */
     std::vector<edm::InputTag> const metSrc;
     
-    /// String-based selection to determine which jets are stored
-    std::string const jetCut;
+    /// Minimal transverse momentum to determine which jets are stored
+    double const jetMinPt;
     
     /**
-     * \brief String-based selection to define "soft jets"
+     * \brief Threshold on transverse momentum to define "soft jets"
      * 
-     * The "soft" jets jets are not stored on their own. Instead, several integral characteristics
+     * The "soft" jets are not stored on their own. Instead, several integral characteristics
      * such as total four-momentum or total Ht are evaluated with this jets and saved along with
      * information which is necessary to reproduces their systematical variations for JEC and JER
      * uncertainties. A jet is checked against this selection if only it fails jetCut. In addition,
      * these characteristics are evaluated and saved if only flag saveIntegralSoftJets is set to
      * true.
+     * 
+     * The "soft" jets never include normal jet collection. Therefore, if softJetMinPt is equal or
+     * larger than jetMinPt, no "soft" jets are considered.
      */
-    std::string const softJetCut;
+    double const softJetMinPt;
     
     /**
      * \brief String-based selection whose result is to be saved
