@@ -198,15 +198,24 @@ process.countTightPatElectrons = process.countPatElectrons.clone(
 process.countTightPatMuons = process.countPatMuons.clone(
     src = 'patMuonsForEventSelection',
     minNumber = 1, maxNumber = 999)
-process.countHighPtPatJets = process.countPatJets.clone(
-    src = 'patJetsForEventSelection',
-    minNumber = 2, maxNumber = 999)
+
+if runOnData:
+    process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
+        src = cms.VInputTag('analysisPatJets'),
+        cut = cms.string('pt > 30.'),
+        minNumber = cms.uint32(2), maxNumber = cms.uint32(999))
+else:
+    process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
+        src = cms.VInputTag('analysisPatJets', 'smearedPatJetsResUp', 'smearedPatJetsResUp',
+         'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt'),
+        cut = cms.string('pt > 30.'),
+        minNumber = cms.uint32(2), maxNumber = cms.uint32(999))
 
 if elChan:
     process.elPath += process.countTightPatElectrons
 if muChan:
     process.muPath += process.countTightPatMuons
-paths.append(process.countHighPtPatJets)
+paths.append(process.countGoodJets)
 
 
 

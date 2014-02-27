@@ -250,10 +250,7 @@ def DefineJets(process, paths, runOnData):
         1. analysisPatJets: jets subjected to recommended quality selection; to be used in the
         analysis.
         
-        2. patJetsForEventSelection: a hard subset of the above collection needed to perform an
-        event selection.
-        
-        3. selectedPatJets: jets from PFBRECO embedded in pat::Jet class and passing loose jet ID;
+        2. selectedPatJets: jets from PFBRECO embedded in pat::Jet class and passing loose jet ID;
         to be used with the MET uncertainty tool.
     """
     
@@ -282,13 +279,7 @@ def DefineJets(process, paths, runOnData):
         cut = 'pt > 10. & abs(eta) < 4.7')
     
     
-    # Jets used in the event selection
-    process.patJetsForEventSelection = process.analysisPatJets.clone(
-        src = 'analysisPatJets',
-        cut = 'pt > 30.')
-    
-    
-    paths.append(process.selectedPatJets, process.analysisPatJets, process.patJetsForEventSelection)
+    paths.append(process.selectedPatJets, process.analysisPatJets)
     
     
     # Finally, switch on the tag infos. It is needed to access the secondary vertex [1]
