@@ -54,6 +54,8 @@ options.register('runOnFastSim', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether FastSim is processed')
 options.register('run53XSpecific', True, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether the input dataset was reconstructed in 53X')
+options.register('noCHS', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Disable CHS when jets are built.')
 
 options.parseArguments()
 
@@ -139,7 +141,11 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Specify the JEC needed
-inputJetCorrLabel = ('AK5PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'])
+if options.noCHS:
+    inputJetCorrLabel = ('AK5PF', ['L1FastJet', 'L2Relative', 'L3Absolute'])
+else:
+    inputJetCorrLabel = ('AK5PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'])
+
 if runOnData:
     inputJetCorrLabel[1].append('L2L3Residual')
 
@@ -188,7 +194,7 @@ metCollections = DefineMETs(process, paths, runOnData, inputJetCorrLabel[1][-1])
 
 
 # Define the jets
-DefineJets(process, paths, runOnData)
+DefineJets(process, paths, runOnData, options.noCHS)
 
 
 # The loose event selection

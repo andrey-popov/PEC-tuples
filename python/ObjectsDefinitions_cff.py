@@ -243,16 +243,39 @@ def DefineMuons(process, PFRecoSequence, runOnData):
     return muQualityCuts
 
 
-def DefineJets(process, paths, runOnData):
+def DefineJets(process, paths, runOnData, disableCHS):
     """ Adjusts jet reconstruction. The function must be called after the MET uncertainty tool.
         The user is expected to operate with the following collections:
         
         1. analysisPatJets: jets subjected to recommended quality selection; to be used in the
         analysis.
         
-        2. selectedPatJets: jets from PFBRECO embedded in pat::Jet class and passing loose jet ID;
-        to be used with the MET uncertainty tool.
+        2. cleanPatJets: jets from PFBRECO embedded in pat::Jet class and passing loose jet ID; if
+        disableCHS is True, the collection is cleaned against muons and electrons; to be used with
+        the MET uncertainty tool.
     """
+    
+    # Switch off CHS is requested. Adjust jet cleaning accordingly
+    if disableCHS:
+        # Jets are built from all PF candidates, including pile-up ones
+        process.pfJets.src = 'particleFlow'
+        process.pfNoJet.bottomCollection = 'particleFlow'
+        
+        # Remove cleaning against objects that are not considered
+        del(process.cleanPatJets.checkOverlaps.taus)
+        del(process.cleanPatJets.checkOverlaps.photons)
+        del(process.cleanPatJets.checkOverlaps.tkIsoElectrons)
+        
+        # Collections of muons and electrons used to clean jets are same as for the MET uncertainty
+        # tool
+        process.cleanPatJets.checkOverlaps.muons.src = 'selectedPatMuons'
+        process.cleanPatJets.checkOverlaps.electrons.src = 'selectedPatElectrons'
+    else:
+        process.cleanPatJets.checkOverlaps = cms.PSet()
+    
+    for p in paths.paths:
+        p.replace(process.selectedPatJets, process.selectedPatJets + process.cleanPatJets)
+    
     
     # Jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
     # HF-hadron energy is defined below differently from the formula in [2]. However, the formula
@@ -275,11 +298,11 @@ def DefineJets(process, paths, runOnData):
     # Jets to be saved in PEC tuples are subjected to an additional selection on kinematics. Note
     # that jet ID has already been applied
     process.analysisPatJets = process.selectedPatJets.clone(
-        src = 'selectedPatJets' if runOnData else 'smearedPatJets',
+        src = 'cleanPatJets' if runOnData else 'smearedPatJets',
         cut = 'pt > 10. & abs(eta) < 4.7')
     
     
-    paths.append(process.selectedPatJets, process.analysisPatJets)
+    paths.append(process.analysisPatJets)
     
     
     # Finally, switch on the tag infos. It is needed to access the secondary vertex [1]
@@ -355,7 +378,7 @@ def DefineMETs(process, paths, runOnData, jecLevel):
         from PhysicsTools.PatUtils.tools.metUncertaintyTools import runMEtUncertainties
         runMEtUncertainties(process,
             electronCollection = 'selectedPatElectrons', muonCollection = 'selectedPatMuons',
-            tauCollection = '', photonCollection = '', jetCollection = 'selectedPatJets',
+            tauCollection = '', photonCollection = '', jetCollection = 'cleanPatJets',
             jetCorrLabel = jecLevel,
             makeType1corrPFMEt = True, makeType1p2corrPFMEt = False,
             doApplyType0corr = True, doApplySysShiftCorr = True,
