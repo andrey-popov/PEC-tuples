@@ -318,7 +318,7 @@ def DefineJets(process, paths, runOnData, disableCHS):
     
     # By default, PU ID is calculated for selectedPatJets, but analysers need it to be associated
     # with collection analysisPatJets
-    for m in [process.puJetIdChs, process.puJetMvaChs]:
+    for m in [process.puJetIdChs, process.puJetMvaChs, process.puJetId, process.puJetMva]:
         m.jets = 'analysisPatJets'
     
     # XML files with configuration of the "full" BDT are resolved from a wrong location. Correct it.
@@ -328,7 +328,14 @@ def DefineJets(process, paths, runOnData, disableCHS):
      process.puJetMvaChs.algos[0].tmvaWeights.value().split('/')[3]
     #^ That is just not to retype file's basename
     
-    paths.append(process.puJetIdSqeuenceChs)
+    if disableCHS:
+        paths.append(process.puJetIdSqeuence)
+        
+        # Make labels same as in the CHS version
+        process.puJetMva.algos[0].label = 'full'
+        process.puJetMva.algos[1].label = 'cutbased'
+    else:
+        paths.append(process.puJetIdSqeuenceChs)
 
 
 def DefineMETs(process, paths, runOnData, jecLevel):

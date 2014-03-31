@@ -244,6 +244,11 @@ process.trigger = cms.EDFilter('SlimTriggerResults',
     triggerProcessName = cms.string(options.hltProcess))
 
 # Save the event content
+if options.noCHS:
+    puIdProducerLabel = 'puJetMva'
+else:
+    puIdProducerLabel = 'puJetMvaChs'
+
 process.eventContent = cms.EDAnalyzer('PlainEventContent',
     runOnData = cms.bool(runOnData),
     electrons = cms.InputTag('nonIsolatedLoosePatElectrons'),
@@ -261,8 +266,8 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     puInfo = cms.InputTag('addPileupInfo'),
     rho = cms.InputTag('kt6PFJets', 'rho'),
     jetPileUpID = cms.VInputTag(
-        cms.InputTag('puJetMvaChs', 'cutbasedId'),
-        cms.InputTag('puJetMvaChs', 'fullId')))
+        cms.InputTag(puIdProducerLabel, 'cutbasedId'),
+        cms.InputTag(puIdProducerLabel, 'fullId')))
 
 paths.append(process.trigger, process.eventContent)
 
