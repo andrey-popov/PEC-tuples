@@ -269,7 +269,9 @@ def DefineJets(process, paths, runOnData, disableCHS):
         # Collections of muons and electrons used to clean jets are same as for the MET uncertainty
         # tool
         process.cleanPatJets.checkOverlaps.muons.src = 'selectedPatMuons'
+        process.cleanPatJets.checkOverlaps.muons.requireNoOverlaps = True
         process.cleanPatJets.checkOverlaps.electrons.src = 'selectedPatElectrons'
+        process.cleanPatJets.checkOverlaps.electrons.requireNoOverlaps = True
     else:
         process.cleanPatJets.checkOverlaps = cms.PSet()
     
