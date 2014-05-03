@@ -176,6 +176,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetRawEta", jetRawEta, "jetRawEta[jetSize]/F");
     basicInfoTree->Branch("jetRawPhi", jetRawPhi, "jetRawPhi[jetSize]/F");
     basicInfoTree->Branch("jetRawMass", jetRawMass, "jetRawMass[jetSize]/F");
+    basicInfoTree->Branch("jecFactor", jecFactor, "jecFactor[jetSize]/F");
     basicInfoTree->Branch("jecUncertainty", jecUncertainty, "jecUncertainty[jetSize]/F");
     
     if (!runOnData)
@@ -520,7 +521,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         //that can gain a larger pt due to fluctuations of JEC or JER should also be stored. Check
         //the possible fluctuations
         double jetPtUpFluctuationFactor = 1.;
-        double curJetJecUnc, curJetJerFactorUp, curJetJerFactorDown;
+        double curJetJecUnc = 999., curJetJerFactorUp = 0., curJetJerFactorDown = 0.;
         
         if (not runOnData)
         {
@@ -553,6 +554,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             jetRawPhi[jetSize] = rawP4.phi();
             jetRawMass[jetSize] = rawP4.mass();
             
+            jecFactor[jetSize] = 1. / j.jecFactor("Uncorrected");
+            //^ Raw momentum is stored, and it will have to be corrected back to the current level
             
             if (not runOnData)
             {

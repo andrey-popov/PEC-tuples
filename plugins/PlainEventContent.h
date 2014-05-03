@@ -252,6 +252,7 @@ private:
     Float_t jetRawEta[maxSize];   //
     Float_t jetRawPhi[maxSize];   //
     Float_t jetRawMass[maxSize];  //
+    Float_t jecFactor[maxSize];   // scale factor for current JEC level
     Float_t jecUncertainty[maxSize];  // JEC uncertainty
     
     // Factors to scale jet four-momenta to account for JER systematics. Components of the
