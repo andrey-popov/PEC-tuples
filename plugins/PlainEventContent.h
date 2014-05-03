@@ -166,10 +166,10 @@ private:
     edm::InputTag const rhoSrc;
     
     /**
-     * \brief Jet collections shifted for JER systematics
+     * \brief Collections of jets with applied JER smearing
      * 
-     * Must contain exactly two tags: the first one refers to the up variation, the latter one
-     * refers to the down variation. This data member is ignored in case of real data.
+     * Must contain exactly three tags: a collection with nominal smearing, up and down variations.
+     * This data member is ignored in case of real data.
      */
     std::vector<edm::InputTag> jerSystJetsSrc;
     
@@ -256,8 +256,10 @@ private:
     Float_t jecUncertainty[maxSize];  // JEC uncertainty
     
     // Factors to scale jet four-momenta to account for JER systematics. Components of the
-    //four-momentum are scaled simultaneously [1]. Therefore, a single factor is sufficient
+    //four-momentum are scaled simultaneously [1]. Therefore, a single factor is sufficient. They
+    //should be applied on top of corrected jets
     //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_5_3_11/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
+    Float_t jerFactorCentral[maxSize];
     Float_t jerFactorUp[maxSize];
     Float_t jerFactorDown[maxSize];
     

@@ -213,7 +213,8 @@ if runOnData:
         minNumber = cms.uint32(2), maxNumber = cms.uint32(999))
 else:
     process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
-        src = cms.VInputTag('analysisPatJets', 'smearedPatJetsResUp', 'smearedPatJetsResUp',
+        src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
+         'smearedPatJetsResUp', 'smearedPatJetsResUp',
          'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt'),
         cut = cms.string('pt > 30.'),
         minNumber = cms.uint32(2), maxNumber = cms.uint32(999))
@@ -258,7 +259,7 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     muSelection = muQualityCuts,
     jets = cms.InputTag('analysisPatJets'),
     jetMinPt = cms.double(20.),
-    jerSystJets = cms.VInputTag('smearedPatJetsResUp', 'smearedPatJetsResDown'),
+    jerSystJets = cms.VInputTag('smearedPatJets', 'smearedPatJetsResUp', 'smearedPatJetsResDown'),
     METs = cms.VInputTag(*metCollections),
     saveHardInteraction = cms.bool(options.saveHardInteraction),
     generator = cms.InputTag('generator'),

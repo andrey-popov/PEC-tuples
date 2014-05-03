@@ -300,7 +300,7 @@ def DefineJets(process, paths, runOnData, disableCHS):
     # Jets to be saved in PEC tuples are subjected to an additional selection on kinematics. Note
     # that jet ID has already been applied
     process.analysisPatJets = process.selectedPatJets.clone(
-        src = 'cleanPatJets' if runOnData else 'smearedPatJets',
+        src = 'cleanPatJets',
         cut = 'pt > 10. & abs(eta) < 4.7')
     
     

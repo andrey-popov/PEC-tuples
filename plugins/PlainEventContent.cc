@@ -69,10 +69,10 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     
     
     // Check the inputs
-    if (!runOnData and jerSystJetsSrc.size() != 2)
+    if (!runOnData and jerSystJetsSrc.size() != 3)
     {
         edm::Exception excp(edm::errors::LogicError);
-        excp << "Vector of size 2 is expected for jerSystJets parameter but the given vector is " <<
+        excp << "Vector of size 3 is expected for jerSystJets parameter but the given vector is " <<
          "of size " << jerSystJetsSrc.size() << '\n';
         excp.raise();
     }
@@ -181,6 +181,7 @@ void PlainEventContent::beginJob()
     
     if (!runOnData)
     {
+        basicInfoTree->Branch("jerFactorCentral", jerFactorCentral, "jerFactorCentral[jetSize]/F");
         basicInfoTree->Branch("jerFactorUp", jerFactorUp, "jerFactorUp[jetSize]/F");
         basicInfoTree->Branch("jerFactorDown", jerFactorDown, "jerFactorDown[jetSize]/F");
     }
@@ -474,12 +475,13 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<View<pat::Jet>> jets;
     event.getByLabel(jetSrc, jets);
     
-    Handle<View<pat::Jet>> jetsJERUp, jetsJERDown;
+    Handle<View<pat::Jet>> jetsJERCentral, jetsJERUp, jetsJERDown;
     
     if (!runOnData)
     {
-        event.getByLabel(jerSystJetsSrc[0], jetsJERUp);
-        event.getByLabel(jerSystJetsSrc[1], jetsJERDown);
+        event.getByLabel(jerSystJetsSrc[0], jetsJERCentral);
+        event.getByLabel(jerSystJetsSrc[1], jetsJERUp);
+        event.getByLabel(jerSystJetsSrc[2], jetsJERDown);
     }
     
     
@@ -507,21 +509,15 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     for (unsigned int i = 0; i < jets->size(); ++i)
     {
         pat::Jet const &j = jets->at(i);
-        pat::Jet const *jJERUp = NULL, *jJERDown = NULL;
-        
-        if (!runOnData)
-        {
-            jJERUp = &jetsJERUp->at(i);
-            jJERDown = &jetsJERDown->at(i);
-        }
         
         
-        // Need to check if the current jet should be stored per-ce. In order for this to happen,
-        //the jet should have a pt larger than the specifed cut. But jets just below the threshold
-        //that can gain a larger pt due to fluctuations of JEC or JER should also be stored. Check
-        //the possible fluctuations
+        // Need to check if the current jet should be stored. In order for this to happen, the jet
+        //should have a pt larger than the specifed cut. But jets just below the threshold that can
+        //gain a larger pt due to fluctuations of JEC or JER should also be stored. Check the
+        //possible fluctuations
         double jetPtUpFluctuationFactor = 1.;
-        double curJetJecUnc = 999., curJetJerFactorUp = 0., curJetJerFactorDown = 0.;
+        double curJetJecUnc = 999.;
+        double curJetJerFactorCentral = 0., curJetJerFactorUp = 0., curJetJerFactorDown = 0.;
         
         if (not runOnData)
         {
@@ -532,15 +528,49 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             curJetJecUnc = jecUncProvider->getUncertainty(true);
             
             
-            // Scale factors to reproduce JER systematics. Components of jet four-momentum are
-            //scaled simultaneously; an average factor for pt and mass is calculated to get rid
-            //of rounding errors
-            curJetJerFactorUp = 0.5 * (jJERUp->pt() / j.pt() + jJERUp->mass() / j.mass());
-            curJetJerFactorDown = 0.5 * (jJERDown->pt() / j.pt() + jJERDown->mass() / j.mass());
+            // Loop over the collection of jets with nominal smearing for JER and find the jet that
+            //matches the current one. They should (nearly) identical direction
+            unsigned closestSmearedJetIndex = -1;
+            double minDRSq = 1.e10;
+            
+            for (unsigned iSmeared = 0; iSmeared < jetsJERCentral->size(); ++iSmeared)
+            {
+                pat::Jet const &jSmeared = jetsJERCentral->at(iSmeared);
+                double const dRSq = pow(j.eta() - jSmeared.eta(), 2) +
+                 pow(j.phi() - jSmeared.phi(), 2);
+                
+                if (dRSq < minDRSq)
+                {
+                    closestSmearedJetIndex = iSmeared;
+                    minDRSq = dRSq;
+                }
+            }
             
             
-            jetPtUpFluctuationFactor = max({1. + curJetJecUnc, curJetJerFactorUp,
-             curJetJerFactorDown});
+            // Calculate scale factors to reproduce JER systematics
+            if (minDRSq < 0.01 * 0.01)
+            {
+                // Components of jet four-momentum are scaled simultaneously; an average factor for
+                //pt and mass is calculated to get rid of rounding errors
+                curJetJerFactorCentral = 0.5 * (
+                 jetsJERCentral->at(closestSmearedJetIndex).pt() / j.pt() +
+                 jetsJERCentral->at(closestSmearedJetIndex).mass() / j.mass());
+                curJetJerFactorUp = 0.5 * (
+                 jetsJERUp->at(closestSmearedJetIndex).pt() / j.pt() +
+                 jetsJERUp->at(closestSmearedJetIndex).mass() / j.mass());
+                curJetJerFactorDown = 0.5 * (
+                 jetsJERDown->at(closestSmearedJetIndex).pt() / j.pt() +
+                 jetsJERDown->at(closestSmearedJetIndex).mass() / j.mass());
+            }
+            else
+            {
+                // There is no match
+                curJetJerFactorCentral = curJetJerFactorUp = curJetJerFactorDown = 1.;
+            }
+            
+            
+            jetPtUpFluctuationFactor = max({1. + curJetJecUnc, curJetJerFactorCentral,
+             curJetJerFactorUp, curJetJerFactorDown});
         }
         
         
@@ -560,8 +590,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             if (not runOnData)
             {
                 jecUncertainty[jetSize] = curJetJecUnc;
+                
+                jerFactorCentral[jetSize] = curJetJerFactorCentral;
                 jerFactorUp[jetSize] = curJetJerFactorUp;
                 jerFactorDown[jetSize] = curJetJerFactorDown;
+                //^ Note that the JER factors are calculated w.r.t. corrected jet
             }
             
             
@@ -877,10 +910,10 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      "trees.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
     desc.add<vector<InputTag>>("jerSystJets",
-      {InputTag("MissingJERUpJets"), InputTag("MissingJERDownJets")})->
-     setComment("Collections of jets with varied JER. The vector must contain exactly two tags: "
-     "first for the up variation, second for the down variation. If runOnData is true, this "
-     "parameter is ignored completely.");
+      {InputTag("MissingJERJets"), InputTag("MissingJERUpJets"), InputTag("MissingJERDownJets")})->
+     setComment("Collections of jets smeared for JER. The vector must contain exactly three tags: "
+     "nominal smearing, up variation, and down variation. If runOnData is true, this parameter is "
+     "ignored completely.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "trees.");
