@@ -291,6 +291,9 @@ private:
     Char_t jetGenPartonFlavour[maxSize];  // flavour of the parton matched to jet (0 if no match)
     //^ See here (*) for the motivation of using the both flavour definitions
     //(*) https://hypernews.cern.ch/HyperNews/CMS/get/b2g-selections/103.html
+    
+    // Shows if there is a generator-level jet matched. Definition from JME-13-005 is used
+    Bool_t jetGenJetMatch[maxSize];
             
     Float_t pdfX1, pdfX2;  // momenta fraction carried by initial-state partons
     Float_t pdfQ;  // scale used to evaluate PDF

@@ -24,6 +24,7 @@
 #include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
 
 #include <TLorentzVector.h>
+#include <Math/GenVector/VectorUtil.h>
 
 #include <memory>
 #include <cmath>
@@ -221,6 +222,7 @@ void PlainEventContent::beginJob()
         generatorTree->Branch("jetFlavour", jetFlavour, "jetFlavour[jetSize]/B");
         generatorTree->Branch("jetGenPartonFlavour", jetGenPartonFlavour,
          "jetGenPartonFlavour[jetSize]/B");
+        generatorTree->Branch("jetGenJetMatch", jetGenJetMatch, "jetGenJetMatch[jetSize]/O");
         
         generatorTree->Branch("pdfX1", &pdfX1);
         generatorTree->Branch("pdfX2", &pdfX2);
@@ -651,6 +653,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jetFlavour[jetSize] = j.partonFlavour();
                 jetGenPartonFlavour[jetSize] = (j.genParton() == nullptr) ? 0 :
                  j.genParton()->pdgId();
+                 
+                jetGenJetMatch[jetSize] = (j.genJet() and j.genJet()->pt() > 8. and
+                 ROOT::Math::VectorUtil::DeltaR(j.p4(), j.genJet()->p4()) < 0.25);
+                //^ The matching is performed according to the definition from JME-13-005. By
+                //default, PAT uses a looser definition
             }
             
             
