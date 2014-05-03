@@ -189,6 +189,7 @@ void PlainEventContent::beginJob()
     
     basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
     
+    basicInfoTree->Branch("jetArea", jetArea, "jetArea[jetSize]/F");
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
     basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
     
@@ -573,6 +574,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 jetSecVertexMass[jetSize] = svTagInfo->secondaryVertex(0).p4().mass();
             else
                 jetSecVertexMass[jetSize] = -100.;
+            
+            
+            // Jet area
+            jetArea[jetSize] = j.jetArea();
             
             
             // Jet electric charge

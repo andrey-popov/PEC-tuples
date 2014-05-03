@@ -264,6 +264,9 @@ private:
     Float_t jetCSV[maxSize];   //
     Float_t jetSecVertexMass[maxSize];  // mass of the secondary vertex
     
+    // Jet area
+    Float_t jetArea[maxSize];
+    
     // Electric charge of the jet
     //It simply copies the value returned by pat::Jet::jetCharge(), which is calculated as a sum
     //of electric charges of the jet's contituents weighted with their pt, as mentioned in [1].
