@@ -126,8 +126,7 @@ def DefineElectrons(process, PFRecoSequence, runOnData):
     process.patElectrons.isolationValues.user = cms.VInputTag(cms.InputTag('elPFIsoValueEA03'))
     
     # Selection to mimic the pfElectronsForTopProjection collection
-    process.selectedPatElectrons.cut = '(' + process.pfElectronsForTopProjection.cut.value() + \
-     ') & electronID("mvaTrigV0") > 0.'
+    process.selectedPatElectrons.cut = process.pfElectronsForTopProjection.cut.value()
     
     
     
