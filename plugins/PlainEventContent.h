@@ -9,13 +9,6 @@
  * can provide an arbitrary number of string-based selections, which are evaluated for each object
  * of an appropriate type and whose results are stored in dedicated boolean branches.
  * 
- * In case of jets, additional string-based selections can be used to prefilter them. Selection
- * jetCut determines which jets are written in the trees. If a jet fails it but passes another
- * selection specified in softJetCut parameter, it is added to an aggregate, and the summed four-
- * momentum and Ht of the aggregate are stored in a tree. However, this integral information is
- * written if only saveIntegralSoftJets flag is activated. Jets provided to the plugin are expected
- * to be smeared for nominal JER in case of simulated events.
- * 
  * The plugin expects a vector of METs instead of a single input tag. It allows to store versions
  * with different corrections as well as systematical variations of MET.
  * 
@@ -112,21 +105,6 @@ private:
     double const jetMinPt;
     
     /**
-     * \brief Threshold on transverse momentum to define "soft jets"
-     * 
-     * The "soft" jets are not stored on their own. Instead, several integral characteristics
-     * such as total four-momentum or total Ht are evaluated with this jets and saved along with
-     * information which is necessary to reproduces their systematical variations for JEC and JER
-     * uncertainties. A jet is checked against this selection if only it fails jetCut. In addition,
-     * these characteristics are evaluated and saved if only flag saveIntegralSoftJets is set to
-     * true.
-     * 
-     * The "soft" jets never include normal jet collection. Therefore, if softJetMinPt is equal or
-     * larger than jetMinPt, no "soft" jets are considered.
-     */
-    double const softJetMinPt;
-    
-    /**
      * \brief String-based selection whose result is to be saved
      * 
      * These selections do not affect which objects are stored in the output files. Instead, each
@@ -145,9 +123,6 @@ private:
     
     /// Determines of status-3 generator particles should be saved
     bool const saveHardInteraction;
-    
-    /// Determines if integral properties for soft jets should be saved
-    bool const saveIntegralSoftJets;
     
     /**
      * \brief Tags to access generator information
@@ -299,44 +274,6 @@ private:
     UChar_t metSize;  // number of different METs stored in the event
     Float_t metPt[maxSize];   // MET absolute value
     Float_t metPhi[maxSize];  // MET phi
-    
-    
-    /**
-     * \brief Tree to store integral properties of soft jets
-     * 
-     * Consult documentation for the softJetCut data member for definition of the soft jets. This
-     * tree is written if only the flag saveIntegralSoftJets is set to true. Systematical variations
-     * are stored only when simulation is processed.
-     */
-    TTree *integralPropTree;
-    
-    // Summed four-momentum of the soft jets and their Ht
-    Float_t softJetPt;
-    Float_t softJetEta;
-    Float_t softJetPhi;
-    Float_t softJetMass;
-    Float_t softJetHt;
-    
-    // JEC uncertainties for the soft jets. This is a weighted sum unc_i * p4_i, where i indexes the
-    //jets. In addition, sum unc_i * pt_i is saved to allow use of Ht
-    Float_t softJetPtJECUnc;
-    Float_t softJetEtaJECUnc;
-    Float_t softJetPhiJECUnc;
-    Float_t softJetMassJECUnc;
-    Float_t softJetHtJECUnc;
-    
-    // JER systematics for the soft jets
-    Float_t softJetPtJERUp;
-    Float_t softJetEtaJERUp;
-    Float_t softJetPhiJERUp;
-    Float_t softJetMassJERUp;
-    Float_t softJetHtJERUp;
-    
-    Float_t softJetPtJERDown;
-    Float_t softJetEtaJERDown;
-    Float_t softJetPhiJERDown;
-    Float_t softJetMassJERDown;
-    Float_t softJetHtJERDown;
     
     
     /**

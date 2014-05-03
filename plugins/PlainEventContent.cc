@@ -45,7 +45,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     metSrc(cfg.getParameter<vector<InputTag>>("METs")),
     
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
-    softJetMinPt(cfg.getParameter<double>("softJetMinPt")),
     
     eleSelection(cfg.getParameter<vector<string>>("eleSelection")),
     muSelection(cfg.getParameter<vector<string>>("muSelection")),
@@ -53,7 +52,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     
     runOnData(cfg.getParameter<bool>("runOnData")),
     saveHardInteraction(cfg.getParameter<bool>("saveHardInteraction")),
-    saveIntegralSoftJets(cfg.getParameter<bool>("saveIntegralSoftJets")),
     
     generatorSrc(cfg.getParameter<InputTag>("generator")),
     genParticlesSrc(cfg.getParameter<InputTag>("genParticles")),
@@ -211,40 +209,6 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("metPhi", metPhi, "metPhi[metSize]/F");
     
     
-    if (saveIntegralSoftJets)
-    {
-        integralPropTree = fileService->make<TTree>("IntegralProperties",
-         "The tree keeps integral properties of the event");
-        
-        integralPropTree->Branch("softJetPt", &softJetPt);
-        integralPropTree->Branch("softJetEta", &softJetEta);
-        integralPropTree->Branch("softJetPhi", &softJetPhi);
-        integralPropTree->Branch("softJetMass", &softJetMass);
-        integralPropTree->Branch("softJetHt", &softJetHt);
-        
-        if (!runOnData)
-        {
-            integralPropTree->Branch("softJetPtJECUnc", &softJetPtJECUnc);
-            integralPropTree->Branch("softJetEtaJECUnc", &softJetEtaJECUnc);
-            integralPropTree->Branch("softJetPhiJECUnc", &softJetPhiJECUnc);
-            integralPropTree->Branch("softJetMassJECUnc", &softJetMassJECUnc);
-            integralPropTree->Branch("softJetHtJECUnc", &softJetHtJECUnc);
-            
-            integralPropTree->Branch("softJetPtJERUp", &softJetPtJERUp);
-            integralPropTree->Branch("softJetEtaJERUp", &softJetEtaJERUp);
-            integralPropTree->Branch("softJetPhiJERUp", &softJetPhiJERUp);
-            integralPropTree->Branch("softJetMassJERUp", &softJetMassJERUp);
-            integralPropTree->Branch("softJetHtJERUp", &softJetHtJERUp);
-            
-            integralPropTree->Branch("softJetPtJERDown", &softJetPtJERDown);
-            integralPropTree->Branch("softJetEtaJERDown", &softJetEtaJERDown);
-            integralPropTree->Branch("softJetPhiJERDown", &softJetPhiJERDown);
-            integralPropTree->Branch("softJetMassJERDown", &softJetMassJERDown);
-            integralPropTree->Branch("softJetHtJERDown", &softJetHtJERDown);
-        }
-    }
-    
-   
     if (!runOnData)
     {
         generatorTree = fileService->make<TTree>("GeneratorInfo",
@@ -499,11 +463,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
      ++sel)
         jetSelectors.push_back(*sel);
     
-    jetSize = 0;
-    TLorentzVector softJetSumP4, softJetSumP4JERUp, softJetSumP4JERDown;
-    softJetHt = softJetHtJERUp = softJetHtJERDown = 0.;
-    TLorentzVector softJetSumP4JECUnc = 0.;
     
+    jetSize = 0;
     
     // Loop through the jet collection and fill the relevant variables
     for (unsigned int i = 0; i < jets->size(); ++i)
@@ -695,57 +656,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             ++jetSize;
         }
-        else if (saveIntegralSoftJets and j.pt() > softJetMinPt)
-        //^ Note that JEC or JER fluctuations are not considered when comparing with threshold
-        {
-            TLorentzVector p4(j.px(), j.py(), j.pz(), j.energy());
-            softJetSumP4 += p4;
-            softJetHt += j.pt();
-            
-            if (!runOnData)
-            {
-                jecUncProvider->setJetPt(j.pt());
-                jecUncProvider->setJetEta(j.eta());
-                double const unc = jecUncProvider->getUncertainty(true);
-                
-                softJetSumP4JECUnc += unc * p4;
-                softJetHtJECUnc += unc * j.pt();
-                
-                softJetSumP4JERUp += TLorentzVector(jJERUp->px(), jJERUp->py(), jJERUp->pz(),
-                 jJERUp->energy());
-                softJetHtJERUp += jJERUp->pt();
-                
-                softJetSumP4JERDown += TLorentzVector(jJERDown->px(), jJERDown->py(),
-                 jJERDown->pz(), jJERDown->energy());
-                softJetHtJERDown += jJERDown->pt();
-            }
-        }
-    }
-    
-    if (saveIntegralSoftJets)
-    {
-        softJetPt = softJetSumP4.Pt();
-        softJetEta = (softJetPt > 0.) ? softJetSumP4.Eta() : 10.e10;
-        softJetPhi = softJetSumP4.Phi();
-        softJetMass = softJetSumP4.M();
-        
-        if (!runOnData)
-        {
-            softJetPtJECUnc = softJetSumP4JECUnc.Pt();
-            softJetEtaJECUnc = (softJetSumP4JECUnc.Pt() > 0.) ? softJetSumP4JECUnc.Eta() : 10.e10;
-            softJetPhiJECUnc = softJetSumP4JECUnc.Phi();
-            softJetMassJECUnc = softJetSumP4JECUnc.M();
-            
-            softJetPtJERUp = softJetSumP4JERUp.Pt();
-            softJetEtaJERUp = (softJetPtJERUp > 0.) ? softJetSumP4JERUp.Eta() : 10.e10;
-            softJetPhiJERUp = softJetSumP4JERUp.Phi();
-            softJetMassJERUp = softJetSumP4JERUp.M();
-            
-            softJetPtJERDown = softJetSumP4JERDown.Pt();
-            softJetEtaJERDown = (softJetPtJERDown > 0.) ? softJetSumP4JERDown.Eta() : 10.e10;
-            softJetPhiJERDown = softJetSumP4JERDown.Phi();
-            softJetMassJERDown = softJetSumP4JERDown.M();
-        }
     }
     
     
@@ -874,10 +784,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     // Fill all the trees
     eventIDTree->Fill();
     basicInfoTree->Fill();
-    
-    if (saveIntegralSoftJets)
-        integralPropTree->Fill();
-    
     puTree->Fill();
     
     if (!runOnData)
@@ -896,8 +802,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
     desc.add<bool>("saveHardInteraction", false)->
      setComment("Determines if particles from the hard interaction should be stored. It is ignored "
      "if runOnData is true.");
-    desc.add<bool>("saveIntegralSoftJets", false)->
-     setComment("Determines if summed four-momentum and Ht of soft jets should be stored.");
     desc.add<InputTag>("primaryVertices")->
      setComment("Collection of reconstructed primary vertices.");
     desc.add<InputTag>("electrons")->setComment("Collection of electrons.");
@@ -919,8 +823,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      "trees.");
     desc.add<double>("jetMinPt", 20.)->
      setComment("Only jets with pt above this threshold will be stored in the output trees.");
-    desc.add<double>("softJetMinPt", 10.)->
-     setComment("Threshold to define soft jets. Only their summed four-momentum and Ht are saved.");
     desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Tag to access information about generator. If runOnData is true, this parameter "
