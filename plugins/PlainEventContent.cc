@@ -587,8 +587,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             
             // Calculate the jet pull angle
-            double const y = j.rapidity();
-            double const phi = j.phi();
+            double const y = rawP4.Rapidity();
+            double const phi = rawP4.phi();
             double pullY = 0., pullPhi = 0.;  // projections of the pull vector (unnormalised)
             
             // Loop over constituents of the jet
