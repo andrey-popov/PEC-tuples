@@ -90,12 +90,13 @@ if not runOnData:
 
 
 # Define the input files to be used for testing
-if runOnData:
-    from PhysicsTools.PatAlgos.patInputFiles_cff import filesSingleMuRECO
-    process.source.fileNames = filesSingleMuRECO
-else:
-    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarAODSIM
-    process.source.fileNames = filesRelValProdTTbarAODSIM
+# if runOnData:
+#     from PhysicsTools.PatAlgos.patInputFiles_cff import filesSingleMuRECO
+#     process.source.fileNames = filesSingleMuRECO
+# else:
+#     from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarAODSIM
+#     process.source.fileNames = filesRelValProdTTbarAODSIM
+process.source.fileNames = cms.untracked.vstring('/store/relval/CMSSW_5_3_6-START53_V14/RelValProdTTbar/AODSIM/v2/00000/76ED0FA6-1E2A-E211-B8F1-001A92971B72.root')
 
 if len(options.sourceFile) > 0:
     process.source.fileNames = cms.untracked.vstring(options.sourceFile)
