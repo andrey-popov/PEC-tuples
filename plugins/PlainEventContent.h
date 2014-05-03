@@ -248,10 +248,10 @@ private:
     Bool_t **muSelectionBits;  // results of the additional selection
     
     UChar_t jetSize;  // actual number of jets in an event
-    Float_t jetPt[maxSize];    // jet corrected four-momenta
-    Float_t jetEta[maxSize];   //
-    Float_t jetPhi[maxSize];   //
-    Float_t jetMass[maxSize];  //
+    Float_t jetRawPt[maxSize];    // raw jet four-momenta
+    Float_t jetRawEta[maxSize];   //
+    Float_t jetRawPhi[maxSize];   //
+    Float_t jetRawMass[maxSize];  //
     Float_t jecUncertainty[maxSize];  // JEC uncertainty
     
     // Factors to scale jet four-momenta to account for JER systematics. Components of the

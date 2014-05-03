@@ -172,10 +172,10 @@ void PlainEventContent::beginJob()
     }
     
     basicInfoTree->Branch("jetSize", &jetSize);
-    basicInfoTree->Branch("jetPt", jetPt, "jetPt[jetSize]/F");
-    basicInfoTree->Branch("jetEta", jetEta, "jetEta[jetSize]/F");
-    basicInfoTree->Branch("jetPhi", jetPhi, "jetPhi[jetSize]/F");
-    basicInfoTree->Branch("jetMass", jetMass, "jetMass[jetSize]/F");
+    basicInfoTree->Branch("jetRawPt", jetRawPt, "jetRawPt[jetSize]/F");
+    basicInfoTree->Branch("jetRawEta", jetRawEta, "jetRawEta[jetSize]/F");
+    basicInfoTree->Branch("jetRawPhi", jetRawPhi, "jetRawPhi[jetSize]/F");
+    basicInfoTree->Branch("jetRawMass", jetRawMass, "jetRawMass[jetSize]/F");
     basicInfoTree->Branch("jecUncertainty", jecUncertainty, "jecUncertainty[jetSize]/F");
     
     if (!runOnData)
@@ -546,10 +546,12 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         // Now compare the highest possible fluctuation of jet pt with the threshold
         if (j.pt() * jetPtUpFluctuationFactor > jetMinPt and jetSize < maxSize)
         {
-            jetPt[jetSize] = j.pt();
-            jetEta[jetSize] = j.eta();
-            jetPhi[jetSize] = j.phi();
-            jetMass[jetSize] = j.mass();
+            reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
+            
+            jetRawPt[jetSize] = rawP4.pt();
+            jetRawEta[jetSize] = rawP4.eta();
+            jetRawPhi[jetSize] = rawP4.phi();
+            jetRawMass[jetSize] = rawP4.mass();
             
             
             if (not runOnData)
