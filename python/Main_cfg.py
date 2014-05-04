@@ -286,7 +286,8 @@ if options.saveHeavyFlavours:
 if options.saveGenJets:
     process.genJets = cms.EDAnalyzer('GenJetsInfo',
         jets = cms.InputTag('ak5GenJets'),
-        cut = cms.string('pt > 8.'))  # the pt cut is synchronised with JME-13-005
+        cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
+        saveFlavourCounters = cms.bool(True))
     paths.append(process.genJets)
 
 

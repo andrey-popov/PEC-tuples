@@ -4,14 +4,14 @@
  * 
  * The module defines a plugin to save generator-level jets into a plain ROOT tuple. In the default
  * configuration is stores only jet four momenta. If flag saveFlavourCounters is set to true, the
- * plugin saves additionally the number of status-2 b and c partons in the vicinity of the jet.
+ * plugin saves additionally the number of hadrons with b or c quarks among ancestors of jet
+ * constituents.
  * 
  * Usage example:
  *   process.genJets = cms.EDAnalyzer('GenJetsInfo',
  *       jets = cms.InputTag('ak5GenJets'),
  *       cut = cms.string('pt > 8.'),
- *       saveFlavourCounters = cms.bool(True),
- *       genParticles = cms.InputTag('genParticles'))
+ *       saveFlavourCounters = cms.bool(True))
  * An empty cut (default one) means that all jets will be saved.
  */
 
@@ -58,13 +58,6 @@ private:
     /// Indicates whether the plugin should store information on flavours of nearby partons
     bool const saveFlavourCounters;
     
-    /**
-     * \brief Input tag to identify the collection of generator-level particles
-     * 
-     * It is not used if saveFlavourCounters is set to false.
-     */
-    edm::InputTag const genParticleSrc;
-    
     /// A service to write to ROOT files
     edm::Service<TFileService> fs;
     
@@ -82,6 +75,6 @@ private:
     Float_t jetPhi[maxSize];
     Float_t jetMass[maxSize];
     
-    // Number of b and c quark with status 2 in cone 0.5 around the jet
+    // Number of hadrons with b or c quarks among jet constituents
     UChar_t bMult[maxSize], cMult[maxSize];
 };
