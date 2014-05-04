@@ -75,6 +75,7 @@ private:
     Float_t jetPhi[maxSize];
     Float_t jetMass[maxSize];
     
-    // Number of hadrons with b or c quarks among jet constituents
-    UChar_t bMult[maxSize], cMult[maxSize];
+    // Number of hadrons with b or c quarks among jet constituents. Constructed as the number of
+    //B hadrons multiplied by 16 plus number of c hadrons
+    UChar_t bcMult[maxSize];
 };

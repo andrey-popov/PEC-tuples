@@ -38,10 +38,7 @@ void GenJetsInfo::beginJob()
     tree->Branch("jetMass", jetMass, "jetMass[jetSize]/F");
     
     if (saveFlavourCounters)
-    {
-        tree->Branch("bMult", bMult, "bMult[jetSize]/b");
-        tree->Branch("cMult", cMult, "cMult[jetSize]/b");
-    }
+        tree->Branch("bcMult", bcMult, "bcMult[jetSize]/b");
 }
 
 
@@ -111,8 +108,8 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                 }
                 
                 
-                bMult[jetSize] = bHadFound.size();
-                cMult[jetSize] = cHadFound.size();
+                bcMult[jetSize] = min<int>(bHadFound.size(), 15) * 16 +
+                 min<int>(cHadFound.size(), 15);
             }
             
             
