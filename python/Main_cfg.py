@@ -13,6 +13,7 @@
 
 import random
 import string
+import re
 
 
 # Metadata
@@ -56,6 +57,9 @@ options.register('run53XSpecific', True, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether the input dataset was reconstructed in 53X')
 options.register('noCHS', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Disable CHS when jets are built.')
+options.register('jetSel', '2j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'Selection on jets. E.g. 2j30 means that an event must contain at least 2 jets with '
+    'pt > 30 GeV/c')
 
 options.parseArguments()
 
@@ -73,6 +77,17 @@ if len(options.globalTag) == 0:
     else:
         options.globalTag = 'START53_V27'
 process.GlobalTag.globaltag = options.globalTag + '::All'
+
+
+# Parse jet selection
+jetSelParsed = re.match(r'(\d+)j(\d+)', options.jetSel)
+if jetSelParsed is None:
+    print 'Cannot parse jet selection "' + options.jetSel + '". Aborted.'
+    sys.exit(1)
+ 
+minNumJets = int(jetSelParsed.group(1))
+jetPtThreshold = int(jetSelParsed.group(2))
+print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThreshold, 'GeV/c.'
 
 
 # Rerun jet probability calibration when running over simulation [1-2]. Real data form 22Jan2013
@@ -105,7 +120,7 @@ if len(options.sourceFile) > 0:
 #process.source.eventsToProcess = cms.untracked.VEventRange('1:2807803')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))
 
 # Reduce the verbosity for a local run
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -206,18 +221,14 @@ process.countTightPatMuons = process.countPatMuons.clone(
     src = 'patMuonsForEventSelection',
     minNumber = 1, maxNumber = 999)
 
-if runOnData:
-    process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
-        src = cms.VInputTag('analysisPatJets'),
-        cut = cms.string('pt > 30.'),
-        minNumber = cms.uint32(2), maxNumber = cms.uint32(999))
-else:
-    process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
-        src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
-         'smearedPatJetsResUp', 'smearedPatJetsResUp',
-         'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt'),
-        cut = cms.string('pt > 30.'),
-        minNumber = cms.uint32(2), maxNumber = cms.uint32(999))
+process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
+    src = cms.VInputTag('analysisPatJets'),
+    cut = cms.string('pt > ' + str(jetPtThreshold)),
+    minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999))
+if not runOnData:
+    process.countGoodJets.src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
+     'smearedPatJetsResUp', 'smearedPatJetsResUp',
+     'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt')
 
 if elChan:
     process.elPath += process.countTightPatElectrons
