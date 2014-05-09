@@ -46,6 +46,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     metSrc(cfg.getParameter<vector<InputTag>>("METs")),
     
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
+    jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
     
     eleSelection(cfg.getParameter<vector<string>>("eleSelection")),
     muSelection(cfg.getParameter<vector<string>>("muSelection")),
@@ -538,10 +539,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         
         // Now compare the highest possible fluctuation of jet pt with the threshold
-        if (j.pt() * jetPtUpFluctuationFactor > jetMinPt and jetSize < maxSize)
+        reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
+        
+        if ((j.pt() * jetPtUpFluctuationFactor > jetMinPt or rawP4.pt() > jetMinRawPt)
+         and jetSize < maxSize)
         {
-            reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
-            
             jetRawPt[jetSize] = rawP4.pt();
             jetRawEta[jetSize] = rawP4.eta();
             jetRawPhi[jetSize] = rawP4.phi();
@@ -829,7 +831,9 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("User-defined selections for jets whose results will be stored in the output "
      "trees.");
     desc.add<double>("jetMinPt", 20.)->
-     setComment("Only jets with pt above this threshold will be stored in the output trees.");
+     setComment("Jets with pt above this threshold will be stored in the output trees.");
+    desc.add<double>("jetMinRawPt", 10.)->
+     setComment("Jets with raw pt above this threshold will be stored in the output trees.");
     desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Tag to access information about generator. If runOnData is true, this parameter "

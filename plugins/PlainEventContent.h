@@ -101,8 +101,11 @@ private:
      */
     std::vector<edm::InputTag> const metSrc;
     
-    /// Minimal transverse momentum to determine which jets are stored
+    /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;
+    
+    /// Minimal raw transverse momentum to determine which jets are stored
+    double const jetMinRawPt;
     
     /**
      * \brief String-based selection whose result is to be saved

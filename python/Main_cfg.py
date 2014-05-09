@@ -120,7 +120,7 @@ if len(options.sourceFile) > 0:
 #process.source.eventsToProcess = cms.untracked.VEventRange('1:2807803')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(5000))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 # Reduce the verbosity for a local run
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
@@ -270,6 +270,7 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     muSelection = muQualityCuts,
     jets = cms.InputTag('analysisPatJets'),
     jetMinPt = cms.double(20.),
+    jetMinRawPt = cms.double(10.),
     jerSystJets = cms.VInputTag('smearedPatJets', 'smearedPatJetsResUp', 'smearedPatJetsResDown'),
     METs = cms.VInputTag(*metCollections),
     saveHardInteraction = cms.bool(options.saveHardInteraction),
