@@ -300,7 +300,7 @@ def DefineJets(process, paths, runOnData, disableCHS):
     # that jet ID has already been applied
     process.analysisPatJets = process.selectedPatJets.clone(
         src = 'cleanPatJets',
-        cut = 'pt > 10. & abs(eta) < 4.7')
+        cut = 'pt > 5. & abs(eta) < 4.7')
     
     
     paths.append(process.analysisPatJets)
