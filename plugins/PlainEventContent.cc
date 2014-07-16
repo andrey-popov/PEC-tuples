@@ -501,7 +501,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             {
                 pat::Jet const &jSmeared = jetsJERCentral->at(iSmeared);
                 double const dRSq = pow(j.eta() - jSmeared.eta(), 2) +
-                 pow(j.phi() - jSmeared.phi(), 2);
+                 pow(TVector2::Phi_mpi_pi(j.phi() - jSmeared.phi()), 2);
                 
                 if (dRSq < minDRSq)
                 {
