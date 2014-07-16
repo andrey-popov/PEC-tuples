@@ -14,9 +14,6 @@
 
 #include <EgammaAnalysis/ElectronTools/interface/EcalIsolationCorrector.h>
 
-#include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
-#include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
-
 #include <CMGTools/External/interface/PileupJetIdentifier.h>
 
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
@@ -60,24 +57,8 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     primaryVerticesSrc(cfg.getParameter<InputTag>("primaryVertices")),
     puSummarySrc(cfg.getParameter<InputTag>("puInfo")),
     rhoSrc(cfg.getParameter<InputTag>("rho")),
-    jetPileUpIDSrc(cfg.getParameter<vector<InputTag>>("jetPileUpID")),
-    
-    jecUncProvider(nullptr)
+    jetPileUpIDSrc(cfg.getParameter<vector<InputTag>>("jetPileUpID"))
 {
-    if (!runOnData)
-        jerSystJetsSrc = cfg.getParameter<vector<InputTag>>("jerSystJets");
-    
-    
-    // Check the inputs
-    if (!runOnData and jerSystJetsSrc.size() != 3)
-    {
-        edm::Exception excp(edm::errors::LogicError);
-        excp << "Vector of size 3 is expected for jerSystJets parameter but the given vector is " <<
-         "of size " << jerSystJetsSrc.size() << '\n';
-        excp.raise();
-    }
-    
-    
     if (jetPileUpIDSrc.size() > 2)
     {
         edm::Exception excp(edm::errors::LogicError);
@@ -176,15 +157,6 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetRawEta", jetRawEta, "jetRawEta[jetSize]/F");
     basicInfoTree->Branch("jetRawPhi", jetRawPhi, "jetRawPhi[jetSize]/F");
     basicInfoTree->Branch("jetRawMass", jetRawMass, "jetRawMass[jetSize]/F");
-    basicInfoTree->Branch("jecFactor", jecFactor, "jecFactor[jetSize]/F");
-    basicInfoTree->Branch("jecUncertainty", jecUncertainty, "jecUncertainty[jetSize]/F");
-    
-    if (!runOnData)
-    {
-        basicInfoTree->Branch("jerFactorCentral", jerFactorCentral, "jerFactorCentral[jetSize]/F");
-        basicInfoTree->Branch("jerFactorUp", jerFactorUp, "jerFactorUp[jetSize]/F");
-        basicInfoTree->Branch("jerFactorDown", jerFactorDown, "jerFactorDown[jetSize]/F");
-    }
     
     basicInfoTree->Branch("jetTCHP", jetTCHP, "jetTCHP[jetSize]/F");
     basicInfoTree->Branch("jetCSV", jetCSV, "jetCSV[jetSize]/F");
@@ -266,20 +238,11 @@ void PlainEventContent::endJob()
 
 
 void PlainEventContent::beginRun(edm::Run const &run, edm::EventSetup const &setup)
-{
-    // Construct the JEC uncertainty provider (*)
-    //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetCorUncertainties
-    edm::ESHandle<JetCorrectorParametersCollection> jecParametersCollection;
-    setup.get<JetCorrectionsRecord>().get("AK5PFchs", jecParametersCollection);
-    JetCorrectorParameters const &jecParameters = (*jecParametersCollection)["Uncertainty"];
-    jecUncProvider = new JetCorrectionUncertainty(jecParameters);
-}
+{}
 
 
 void PlainEventContent::endRun(edm::Run const &run, edm::EventSetup const &setup)
-{
-    delete jecUncProvider;
-}
+{}
 
 
 void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &setup)
@@ -442,15 +405,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<View<pat::Jet>> jets;
     event.getByLabel(jetSrc, jets);
     
-    Handle<View<pat::Jet>> jetsJERCentral, jetsJERUp, jetsJERDown;
-    
-    if (!runOnData)
-    {
-        event.getByLabel(jerSystJetsSrc[0], jetsJERCentral);
-        event.getByLabel(jerSystJetsSrc[1], jetsJERUp);
-        event.getByLabel(jerSystJetsSrc[2], jetsJERDown);
-    }
-    
     
     // Jet pile-up ID maps
     vector<Handle<ValueMap<int>>> jetPileUpIDHandles(jetPileUpIDSrc.size());
@@ -473,95 +427,14 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     for (unsigned int i = 0; i < jets->size(); ++i)
     {
         pat::Jet const &j = jets->at(i);
-        
-        
-        // Need to check if the current jet should be stored. In order for this to happen, the jet
-        //should have a pt larger than the specifed cut. But jets just below the threshold that can
-        //gain a larger pt due to fluctuations of JEC or JER should also be stored. Check the
-        //possible fluctuations
-        double jetPtUpFluctuationFactor = 1.;
-        double curJetJecUnc = 999.;
-        double curJetJerFactorCentral = 0., curJetJerFactorUp = 0., curJetJerFactorDown = 0.;
-        
-        if (not runOnData)
-        {
-            // JEC uncertainties (*)
-            //(*) https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetCorUncertainties
-            jecUncProvider->setJetEta(j.eta());
-            jecUncProvider->setJetPt(j.pt());
-            curJetJecUnc = jecUncProvider->getUncertainty(true);
-            
-            
-            // Loop over the collection of jets with nominal smearing for JER and find the jet that
-            //matches the current one. They should (nearly) identical direction
-            unsigned closestSmearedJetIndex = -1;
-            double minDRSq = 1.e10;
-            
-            for (unsigned iSmeared = 0; iSmeared < jetsJERCentral->size(); ++iSmeared)
-            {
-                pat::Jet const &jSmeared = jetsJERCentral->at(iSmeared);
-                double const dRSq = pow(j.eta() - jSmeared.eta(), 2) +
-                 pow(TVector2::Phi_mpi_pi(j.phi() - jSmeared.phi()), 2);
-                
-                if (dRSq < minDRSq)
-                {
-                    closestSmearedJetIndex = iSmeared;
-                    minDRSq = dRSq;
-                }
-            }
-            
-            
-            // Calculate scale factors to reproduce JER systematics
-            if (minDRSq < 0.01 * 0.01)
-            {
-                // Components of jet four-momentum are scaled simultaneously; an average factor for
-                //pt and mass is calculated to get rid of rounding errors
-                curJetJerFactorCentral = 0.5 * (
-                 jetsJERCentral->at(closestSmearedJetIndex).pt() / j.pt() +
-                 jetsJERCentral->at(closestSmearedJetIndex).mass() / j.mass());
-                curJetJerFactorUp = 0.5 * (
-                 jetsJERUp->at(closestSmearedJetIndex).pt() / j.pt() +
-                 jetsJERUp->at(closestSmearedJetIndex).mass() / j.mass());
-                curJetJerFactorDown = 0.5 * (
-                 jetsJERDown->at(closestSmearedJetIndex).pt() / j.pt() +
-                 jetsJERDown->at(closestSmearedJetIndex).mass() / j.mass());
-            }
-            else
-            {
-                // There is no match
-                curJetJerFactorCentral = curJetJerFactorUp = curJetJerFactorDown = 1.;
-            }
-            
-            
-            jetPtUpFluctuationFactor = max({1. + curJetJecUnc, curJetJerFactorCentral,
-             curJetJerFactorUp, curJetJerFactorDown});
-        }
-        
-        
-        // Now compare the highest possible fluctuation of jet pt with the threshold
         reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         
-        if ((j.pt() * jetPtUpFluctuationFactor > jetMinPt or rawP4.pt() > jetMinRawPt)
-         and jetSize < maxSize)
+        if ((j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt) and jetSize < maxSize)
         {
             jetRawPt[jetSize] = rawP4.pt();
             jetRawEta[jetSize] = rawP4.eta();
             jetRawPhi[jetSize] = rawP4.phi();
             jetRawMass[jetSize] = rawP4.mass();
-            
-            jecFactor[jetSize] = 1. / j.jecFactor("Uncorrected");
-            //^ Raw momentum is stored, and it will have to be corrected back to the current level
-            
-            if (not runOnData)
-            {
-                jecUncertainty[jetSize] = curJetJecUnc;
-                
-                jerFactorCentral[jetSize] = curJetJerFactorCentral;
-                jerFactorUp[jetSize] = curJetJerFactorUp;
-                jerFactorDown[jetSize] = curJetJerFactorDown;
-                //^ Note that the JER factors are calculated w.r.t. corrected jet
-            }
-            
             
             jetTCHP[jetSize] = j.bDiscriminator("trackCountingHighPurBJetTags");
             jetCSV[jetSize] = j.bDiscriminator("combinedSecondaryVertexBJetTags");
@@ -822,11 +695,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("User-defined selections for muons whose results will be stored in the ouput "
      "trees.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
-    desc.add<vector<InputTag>>("jerSystJets",
-      {InputTag("MissingJERJets"), InputTag("MissingJERUpJets"), InputTag("MissingJERDownJets")})->
-     setComment("Collections of jets smeared for JER. The vector must contain exactly three tags: "
-     "nominal smearing, up variation, and down variation. If runOnData is true, this parameter is "
-     "ignored completely.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "trees.");

@@ -12,9 +12,8 @@
  * The plugin expects a vector of METs instead of a single input tag. It allows to store versions
  * with different corrections as well as systematical variations of MET.
  * 
- * When a simulated event is processed, variations of jet momenta for JEC and JER uncertainties are
- * written. In addition, the plugin stores true jet flavours, information on PDF, particles from
- * the hard interaction, true pile-up configuration, and other details.
+ * When a simulated event is processed, the plugin stores true jet flavours, information on PDF,
+ * particles from the hard interaction, true pile-up configuration, and other details.
  * 
  * The plugin does not store any information on trigger decision.
  */
@@ -28,8 +27,6 @@
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 #include <FWCore/Utilities/interface/InputTag.h>
-
-#include <CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -144,14 +141,6 @@ private:
     edm::InputTag const rhoSrc;
     
     /**
-     * \brief Collections of jets with applied JER smearing
-     * 
-     * Must contain exactly three tags: a collection with nominal smearing, up and down variations.
-     * This data member is ignored in case of real data.
-     */
-    std::vector<edm::InputTag> jerSystJetsSrc;
-    
-    /**
      * \brief Input tags for jet pile-up ID
      * 
      * The vector might contain 0, 1, or 2 elements. If more than 2 elements are provided,
@@ -164,10 +153,6 @@ private:
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
-    
-    
-    /// An object to accesss JEC uncertainty
-    JetCorrectionUncertainty *jecUncProvider;
     
     
     /// Maximal size to allocate buffer arrays
@@ -230,16 +215,6 @@ private:
     Float_t jetRawEta[maxSize];   //
     Float_t jetRawPhi[maxSize];   //
     Float_t jetRawMass[maxSize];  //
-    Float_t jecFactor[maxSize];   // scale factor for current JEC level
-    Float_t jecUncertainty[maxSize];  // JEC uncertainty
-    
-    // Factors to scale jet four-momenta to account for JER systematics. Components of the
-    //four-momentum are scaled simultaneously [1]. Therefore, a single factor is sufficient. They
-    //should be applied on top of corrected jets
-    //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_5_3_11/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
-    Float_t jerFactorCentral[maxSize];
-    Float_t jerFactorUp[maxSize];
-    Float_t jerFactorDown[maxSize];
     
     Float_t jetTCHP[maxSize];  // b-tagging discriminators
     Float_t jetCSV[maxSize];   //
