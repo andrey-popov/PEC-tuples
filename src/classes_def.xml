@@ -1,0 +1,4 @@
+<lcgdict>
+    <class  name = "pec::Candidate" />
+    <class  name = "std::vector<pec::Candidate>" />
+</lcgdict>

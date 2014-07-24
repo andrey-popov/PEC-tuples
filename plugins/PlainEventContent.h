@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <UserCode/SingleTop/interface/Candidate.h>
+
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -173,6 +175,9 @@ private:
      * four-momenta of all objects, their identification, isolations, b-tagging, etc.
      */
     TTree *basicInfoTree;
+    
+    std::vector<pec::Candidate> electrons;
+    std::vector<pec::Candidate> *electronsPointer;
     
     UChar_t eleSize;  // actual number of electrons in an event
     Float_t elePt[maxSize];    // electron four-momenta

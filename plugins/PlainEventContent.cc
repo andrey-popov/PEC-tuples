@@ -114,6 +114,9 @@ void PlainEventContent::beginJob()
     basicInfoTree = fileService->make<TTree>("BasicInfo",
      "Tree contains kinematics and other basic properties");
     
+    electronsPointer = &electrons;
+    basicInfoTree->Branch("electrons", &electronsPointer);
+    
     basicInfoTree->Branch("eleSize", &eleSize);
     basicInfoTree->Branch("elePt", elePt, "elePt[eleSize]/F");
     basicInfoTree->Branch("eleEta", eleEta, "eleEta[eleSize]/F");
@@ -287,9 +290,17 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Loop through the electron collection and fill the relevant variables
+    PlainEventContent::electrons.clear();
+    
     for (eleSize = 0; eleSize < int(electrons->size()) and eleSize < maxSize; ++eleSize)
     {
         pat::Electron const &el = electrons->at(eleSize);
+        
+        pec::Candidate storeElectron;
+        storeElectron.SetPt(el.ecalDrivenMomentum().pt());
+        storeElectron.SetEta(el.ecalDrivenMomentum().eta());
+        storeElectron.SetPhi(el.ecalDrivenMomentum().phi());
+        PlainEventContent::electrons.push_back(storeElectron);
         
         
         elePt[eleSize] = el.ecalDrivenMomentum().pt();
