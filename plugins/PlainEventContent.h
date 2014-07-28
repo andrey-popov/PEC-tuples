@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <UserCode/SingleTop/interface/Candidate.h>
+#include <UserCode/SingleTop/interface/Electron.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -90,7 +90,7 @@ public:
     
 private:
     /// Tags to access collections of electrons, muons, and jets
-    edm::InputTag const eleSrc, muSrc, jetSrc;
+    edm::InputTag const electronTag, muonTag, jetTag;
     
     /**
      * \brief Tags to access collections of MET
@@ -98,7 +98,7 @@ private:
      * The plugin reads not a single MET but a vector of them. It allows to store MET with various
      * corrections as well as its systematical variations.
      */
-    std::vector<edm::InputTag> const metSrc;
+    std::vector<edm::InputTag> const metTag;
     
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;
@@ -131,16 +131,16 @@ private:
      * 
      * They are ignored in case of real data.
      */
-    edm::InputTag const generatorSrc, genParticlesSrc;
+    edm::InputTag const generatorTag, genParticlesTag;
     
     /// Tag to access reconstructed primary vertices
-    edm::InputTag const primaryVerticesSrc;
+    edm::InputTag const primaryVerticesTag;
     
     /// Pile-up information in simulation
-    edm::InputTag const puSummarySrc;
+    edm::InputTag const puSummaryTag;
     
     /// Rho (mean angular energy density)
-    edm::InputTag const rhoSrc;
+    edm::InputTag const rhoTag;
     
     /**
      * \brief Input tags for jet pile-up ID
@@ -150,7 +150,7 @@ private:
      * is added to the output tree. If there are two elements, the first one should refer to the
      * cut-based ID, and the latter one specifies the MVA ID.
      */
-    std::vector<edm::InputTag> jetPileUpIDSrc;
+    std::vector<edm::InputTag> jetPileUpIDTags;
     
     
     /// An object to handle the output ROOT file
@@ -176,8 +176,8 @@ private:
      */
     TTree *basicInfoTree;
     
-    std::vector<pec::Candidate> electrons;
-    std::vector<pec::Candidate> *electronsPointer;
+    std::vector<pec::Electron> storeElectrons;
+    std::vector<pec::Electron> *storeElectronsPointer;
     
     UChar_t eleSize;  // actual number of electrons in an event
     Float_t elePt[maxSize];    // electron four-momenta
@@ -248,7 +248,7 @@ private:
     //the first algorithm, respectively. The next three bits (0x8, 0x10, 0x20) are set in a similar
     //fashion if there is one more algorithm specified.
     //Normally, the first algorithm is cut-based while the second is MVA. See details in the
-    //documentation for data member jetPileUpIDSrc.
+    //documentation for data member jetPileUpIDTags.
     //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
     UChar_t jetPileUpID[maxSize];
     

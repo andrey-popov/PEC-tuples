@@ -37,10 +37,10 @@ unsigned const PlainEventContent::maxSize;
 
 
 PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
-    eleSrc(cfg.getParameter<InputTag>("electrons")),
-    muSrc(cfg.getParameter<InputTag>("muons")),
-    jetSrc(cfg.getParameter<InputTag>("jets")),
-    metSrc(cfg.getParameter<vector<InputTag>>("METs")),
+    electronTag(cfg.getParameter<InputTag>("electrons")),
+    muonTag(cfg.getParameter<InputTag>("muons")),
+    jetTag(cfg.getParameter<InputTag>("jets")),
+    metTag(cfg.getParameter<vector<InputTag>>("METs")),
     
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
@@ -52,18 +52,18 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     runOnData(cfg.getParameter<bool>("runOnData")),
     saveHardInteraction(cfg.getParameter<bool>("saveHardInteraction")),
     
-    generatorSrc(cfg.getParameter<InputTag>("generator")),
-    genParticlesSrc(cfg.getParameter<InputTag>("genParticles")),
-    primaryVerticesSrc(cfg.getParameter<InputTag>("primaryVertices")),
-    puSummarySrc(cfg.getParameter<InputTag>("puInfo")),
-    rhoSrc(cfg.getParameter<InputTag>("rho")),
-    jetPileUpIDSrc(cfg.getParameter<vector<InputTag>>("jetPileUpID"))
+    generatorTag(cfg.getParameter<InputTag>("generator")),
+    genParticlesTag(cfg.getParameter<InputTag>("genParticles")),
+    primaryVerticesTag(cfg.getParameter<InputTag>("primaryVertices")),
+    puSummaryTag(cfg.getParameter<InputTag>("puInfo")),
+    rhoTag(cfg.getParameter<InputTag>("rho")),
+    jetPileUpIDTags(cfg.getParameter<vector<InputTag>>("jetPileUpID"))
 {
-    if (jetPileUpIDSrc.size() > 2)
+    if (jetPileUpIDTags.size() > 2)
     {
         edm::Exception excp(edm::errors::LogicError);
         excp << "Two sources of jet pile-up ID are expected at maximum while " <<
-         jetPileUpIDSrc.size() << "have been provided.\n";
+         jetPileUpIDTags.size() << "have been provided.\n";
         excp.raise();
     }
     
@@ -114,8 +114,8 @@ void PlainEventContent::beginJob()
     basicInfoTree = fileService->make<TTree>("BasicInfo",
      "Tree contains kinematics and other basic properties");
     
-    electronsPointer = &electrons;
-    basicInfoTree->Branch("electrons", &electronsPointer);
+    storeElectronsPointer = &storeElectrons;
+    basicInfoTree->Branch("electrons", &storeElectronsPointer);
     
     basicInfoTree->Branch("eleSize", &eleSize);
     basicInfoTree->Branch("elePt", elePt, "elePt[eleSize]/F");
@@ -170,7 +170,7 @@ void PlainEventContent::beginJob()
     basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
     basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
     
-    if (jetPileUpIDSrc.size() > 0)
+    if (jetPileUpIDTags.size() > 0)
         basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/b");
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
@@ -258,7 +258,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Read the primary vertices
     Handle<reco::VertexCollection> vertices;
-    event.getByLabel(primaryVerticesSrc, vertices);
+    event.getByLabel(primaryVerticesTag, vertices);
     
     pvSize = vertices->size();
     
@@ -272,8 +272,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Fill the tree with basic information
     // Read the electron collection
-    Handle<View<pat::Electron>> electrons;
-    event.getByLabel(eleSrc, electrons);
+    Handle<View<pat::Electron>> srcElectrons;
+    event.getByLabel(electronTag, srcElectrons);
     
     
     // Construct the electron selectors (s. SWGuidePhysicsCutParser)
@@ -290,17 +290,36 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Loop through the electron collection and fill the relevant variables
-    PlainEventContent::electrons.clear();
+    storeElectrons.clear();
+    pec::Electron storeElectron;  // will reuse this object to fill the vector
     
-    for (eleSize = 0; eleSize < int(electrons->size()) and eleSize < maxSize; ++eleSize)
+    for (eleSize = 0; eleSize < int(srcElectrons->size()) and eleSize < maxSize; ++eleSize)
     {
-        pat::Electron const &el = electrons->at(eleSize);
+        pat::Electron const &el = srcElectrons->at(eleSize);
         
-        pec::Candidate storeElectron;
         storeElectron.SetPt(el.ecalDrivenMomentum().pt());
         storeElectron.SetEta(el.ecalDrivenMomentum().eta());
         storeElectron.SetPhi(el.ecalDrivenMomentum().phi());
-        PlainEventContent::electrons.push_back(storeElectron);
+        
+        storeElectron.SetCharge(el.charge());
+        storeElectron.SetDB(el.dB());
+        
+        // Effective-area (rho) correction to isolation (*)
+        //(*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
+        storeElectron.SetRelIso((el.chargedHadronIso() + max(el.neutralHadronIso() +
+         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / el.ecalDrivenMomentum().pt());
+        
+        // Triggering MVA ID [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification
+        storeElectron.SetMvaID(el.electronID("mvaTrigV0"));
+        
+        // Cut-based electron ID [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+        storeElectron.SetCutBasedID(el.electronID("simpleEleId70cIso"));
+        
+        storeElectron.SetBit(0, el.passConversionVeto() and
+         (el.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0));
+        
         
         
         elePt[eleSize] = el.ecalDrivenMomentum().pt();
@@ -321,7 +340,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         // Trigger-emulating preselection for MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
-        eleTriggerPreselection[eleSize] = false;
+        bool passTriggerPreselection = false;
         
         if (el.dr03TkSumPt() / elePt[eleSize] < 0.2 and /* ECAL-based isolation is addressed later */
          el.dr03HcalTowerSumEt() / elePt[eleSize] < 0.2 and
@@ -343,10 +362,13 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             // Check the rest of requirements for trigger-emulating preselection
             if (correctedECALIso / elePt[eleSize] < 0.2)
-                eleTriggerPreselection[eleSize] =  (fabs(el.superCluster()->eta()) < 1.479) ?
+                passTriggerPreselection =  (fabs(el.superCluster()->eta()) < 1.479) ?
                  (el.sigmaIetaIeta() < 0.014 and el.hadronicOverEm() < 0.15) :
                  (el.sigmaIetaIeta() < 0.035 and el.hadronicOverEm() < 0.10);
         }
+        
+        eleTriggerPreselection[eleSize] = passTriggerPreselection;
+        storeElectron.SetBit(1, passTriggerPreselection);
         
         
         // Triggering MVA ID [1]
@@ -368,13 +390,20 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         
         for (unsigned i = 0; i < eleSelectors.size(); ++i)
+        {
             eleSelectionBits[i][eleSize] = eleSelectors[i](el);
+            storeElectron.SetBit(2 + i, eleSelectors[i](el));
+        }
+        
+        
+        // The electron is set up. Add it to the vector
+        storeElectrons.push_back(storeElectron);
     }
     
     
     // Read the muon collection
     Handle<View<pat::Muon>> muons;
-    event.getByLabel(muSrc, muons);
+    event.getByLabel(muonTag, muons);
     
     // Constuct the muon selectors
     vector<StringCutObjectSelector<pat::Muon>> muSelectors;
@@ -414,14 +443,14 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Read the jets collections
     Handle<View<pat::Jet>> jets;
-    event.getByLabel(jetSrc, jets);
+    event.getByLabel(jetTag, jets);
     
     
     // Jet pile-up ID maps
-    vector<Handle<ValueMap<int>>> jetPileUpIDHandles(jetPileUpIDSrc.size());
+    vector<Handle<ValueMap<int>>> jetPileUpIDHandles(jetPileUpIDTags.size());
     
-    for (unsigned i = 0; i < jetPileUpIDSrc.size(); ++i)
-        event.getByLabel(jetPileUpIDSrc.at(i), jetPileUpIDHandles.at(i));
+    for (unsigned i = 0; i < jetPileUpIDTags.size(); ++i)
+        event.getByLabel(jetPileUpIDTags.at(i), jetPileUpIDHandles.at(i));
     
     
     // Construct the jet selectors
@@ -555,7 +584,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     // Read the MET
     metSize = 0;
     
-    for (vector<InputTag>::const_iterator tag = metSrc.begin(); tag != metSrc.end(); ++tag)
+    for (vector<InputTag>::const_iterator tag = metTag.begin(); tag != metTag.end(); ++tag)
     {
         Handle<View<pat::MET>> met;
         event.getByLabel(*tag, met);
@@ -573,7 +602,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     {
         // Read the generator-level particles
         Handle<View<reco::GenParticle>> genParticles;
-        event.getByLabel(genParticlesSrc, genParticles);
+        event.getByLabel(genParticlesTag, genParticles);
         
         hardPartSize = 0;
         vector<reco::GenParticle const *> visitedParticles;
@@ -624,7 +653,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     if (!runOnData)
     {
         Handle<GenEventInfoProduct> generator;
-        event.getByLabel(generatorSrc, generator);
+        event.getByLabel(generatorTag, generator);
         
         processID = generator->signalProcessID();
         genWeight = generator->weight();
@@ -653,7 +682,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     if (!runOnData)
     {
         Handle<View<PileupSummaryInfo>> puSummary;
-        event.getByLabel(puSummarySrc, puSummary);
+        event.getByLabel(puSummaryTag, puSummary);
         
         puSize = puSummary->size();
         // The true number of interactions is the same for the whole event
@@ -668,7 +697,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Read rho
     Handle<double> rho;
-    event.getByLabel(rhoSrc, rho);
+    event.getByLabel(rhoTag, rho);
     puRho = *rho;
     
     // Primary vertices have already been read before
