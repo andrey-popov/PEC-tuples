@@ -22,7 +22,7 @@
 #pragma once
 
 #include <UserCode/SingleTop/interface/Electron.h>
- #include <UserCode/SingleTop/interface/Muon.h>
+#include <UserCode/SingleTop/interface/Muon.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -99,7 +99,7 @@ private:
      * The plugin reads not a single MET but a vector of them. It allows to store MET with various
      * corrections as well as its systematical variations.
      */
-    std::vector<edm::InputTag> const metTag;
+    std::vector<edm::InputTag> const metTags;
     
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;
@@ -245,9 +245,18 @@ private:
     
     Bool_t **jetSelectionBits;  // results of the additional selection
     
-    UChar_t metSize;  // number of different METs stored in the event
-    Float_t metPt[maxSize];   // MET absolute value
-    Float_t metPhi[maxSize];  // MET phi
+    /**
+     * \brief METs to be stored in the output file
+     * 
+     * Includes all METs whose input tags were provided to the plugin in the didecated parameter.
+     * Usually, these are METs with different corrections and/or systematical variations. MET is
+     * stored as an instance of pec::Candidate, but pseudorapidity and mass are set to zeros, which
+     * allows them to be compressed efficiently.
+     */
+    std::vector<pec::Candidate> storeMETs;
+    
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    std::vector<pec::Candidate> *storeMETsPointer;
     
     
     /**

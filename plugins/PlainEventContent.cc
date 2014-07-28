@@ -40,7 +40,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     electronTag(cfg.getParameter<InputTag>("electrons")),
     muonTag(cfg.getParameter<InputTag>("muons")),
     jetTag(cfg.getParameter<InputTag>("jets")),
-    metTag(cfg.getParameter<vector<InputTag>>("METs")),
+    metTags(cfg.getParameter<vector<InputTag>>("METs")),
     
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
@@ -131,9 +131,8 @@ void PlainEventContent::beginJob()
          (branchName + "[jetSize]/O").c_str());
     }
     
-    basicInfoTree->Branch("metSize", &metSize);
-    basicInfoTree->Branch("metPt", metPt, "metPt[metSize]/F");
-    basicInfoTree->Branch("metPhi", metPhi, "metPhi[metSize]/F");
+    storeMETsPointer = &storeMETs;
+    basicInfoTree->Branch("METs", &storeMETsPointer);
     
     
     if (!runOnData)
@@ -516,18 +515,19 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     }
     
     
-    // Read the MET
-    metSize = 0;
+    // Read METs
+    storeMETs.clear();
+    pec::Candidate storeMET;  // will reuse this object to fill the vector
     
-    for (vector<InputTag>::const_iterator tag = metTag.begin(); tag != metTag.end(); ++tag)
+    for (vector<InputTag>::const_iterator tag = metTags.begin(); tag != metTags.end(); ++tag)
     {
         Handle<View<pat::MET>> met;
         event.getByLabel(*tag, met);
         
-        metPt[metSize] = met->front().pt();
-        metPhi[metSize] = met->front().phi();
+        storeMET.SetPt(met->front().pt());
+        storeMET.SetPhi(met->front().phi());
         
-        ++metSize;
+        storeMETs.push_back(storeMET);
     }
     
     
