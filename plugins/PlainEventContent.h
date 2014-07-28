@@ -176,33 +176,21 @@ private:
      */
     TTree *basicInfoTree;
     
+    /**
+     * \brief Trimmed electrons to be stored in the output file
+     * 
+     * Mass is always close to the PDG value and thus does not encode useful information. It is set
+     * to zero to faciliate compression. Bit flags include conversion rejection, trigger-emulating
+     * preselection required for the triggering MVA ID [1-2], and user-defined selections. Consult
+     * the source code to find their indices.
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
+     * [2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72.html
+     */
     std::vector<pec::Electron> storeElectrons;
+    
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
     std::vector<pec::Electron> *storeElectronsPointer;
     
-    UChar_t eleSize;  // actual number of electrons in an event
-    Float_t elePt[maxSize];    // electron four-momenta
-    Float_t eleEta[maxSize];   //
-    Float_t elePhi[maxSize];   //
-    //Float_t eleMass[maxSize];  // it equals (0 +- 0.03) GeV, can be assumed the PDG value
-    Bool_t eleCharge[maxSize];  // electron's charge (true for electron, false for positron)
-    Float_t eleDB[maxSize];  // impact-parameter in the transverse plane
-    Float_t eleRelIso[maxSize];  // relative isolation
-    
-    // Trigger-emulating preselection required for triggering MVA ID [1-2]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
-    //[2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72.html
-    Bool_t eleTriggerPreselection[maxSize];
-    
-    // Electron MVA ID [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-    Float_t eleMVAID[maxSize];
-    
-    // Old cut-based electron ID [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-    UChar_t eleIDSimple70cIso[maxSize];
-    
-    Bool_t elePassConversion[maxSize];  // conversion veto (true for good electrons)
-    Bool_t **eleSelectionBits;  // results of the additional selection
     
     UChar_t muSize;  // actual number of muons in an event
     Float_t muPt[maxSize];    // muon four-momenta

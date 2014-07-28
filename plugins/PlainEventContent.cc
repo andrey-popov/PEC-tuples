@@ -69,12 +69,8 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     
     
     // Allocate the buffers to store the bits of additional selection
-    eleSelectionBits = new Bool_t *[eleSelection.size()];
     muSelectionBits = new Bool_t *[muSelection.size()];
     jetSelectionBits = new Bool_t *[jetSelection.size()];
-    
-    for (unsigned i = 0; i < eleSelection.size(); ++i)
-        eleSelectionBits[i] = new Bool_t[maxSize];
     
     for (unsigned i = 0; i < muSelection.size(); ++i)
         muSelectionBits[i] = new Bool_t[maxSize];
@@ -87,16 +83,12 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
 PlainEventContent::~PlainEventContent()
 {
     // Free the memory allocated for the additional selection
-    for (unsigned i = 0; i < eleSelection.size(); ++i)
-        delete [] eleSelectionBits[i];
-    
     for (unsigned i = 0; i < muSelection.size(); ++i)
         delete [] muSelectionBits[i];
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
         delete [] jetSelectionBits[i];
     
-    delete [] eleSelectionBits;
     delete [] muSelectionBits;
     delete [] jetSelectionBits;
 }
@@ -116,27 +108,6 @@ void PlainEventContent::beginJob()
     
     storeElectronsPointer = &storeElectrons;
     basicInfoTree->Branch("electrons", &storeElectronsPointer);
-    
-    basicInfoTree->Branch("eleSize", &eleSize);
-    basicInfoTree->Branch("elePt", elePt, "elePt[eleSize]/F");
-    basicInfoTree->Branch("eleEta", eleEta, "eleEta[eleSize]/F");
-    basicInfoTree->Branch("elePhi", elePhi, "elePhi[eleSize]/F");
-    basicInfoTree->Branch("eleCharge", eleCharge, "eleCharge[eleSize]/O");
-    basicInfoTree->Branch("eleDB", eleDB, "eleDB[eleSize]/F");
-    basicInfoTree->Branch("eleRelIso", eleRelIso, "eleRelIso[eleSize]/F");
-    basicInfoTree->Branch("eleTriggerPreselection", eleTriggerPreselection,
-     "eleTriggerPreselection[eleSize]/O");
-    basicInfoTree->Branch("eleMVAID", eleMVAID, "eleMVAID[eleSize]/F");
-    basicInfoTree->Branch("eleIDSimple70cIso", eleIDSimple70cIso, "eleIDSimple70cIso[eleSize]/b");
-    basicInfoTree->Branch("elePassConversion", elePassConversion, "elePassConversion[eleSize]/O");
-    
-    for (unsigned i = 0; i < eleSelection.size(); ++i)
-    {
-        string branchName("eleSelection");
-        branchName += char(65 + i);  // char(65) == 'A'
-        basicInfoTree->Branch(branchName.c_str(), eleSelectionBits[i],
-         (branchName + "[eleSize]/O").c_str());
-    }
     
     basicInfoTree->Branch("muSize", &muSize);
     basicInfoTree->Branch("muPt", muPt, "muPt[muSize]/F");
@@ -293,21 +264,27 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     storeElectrons.clear();
     pec::Electron storeElectron;  // will reuse this object to fill the vector
     
-    for (eleSize = 0; eleSize < int(srcElectrons->size()) and eleSize < maxSize; ++eleSize)
+    for (unsigned i = 0; i < srcElectrons->size(); ++i)
     {
-        pat::Electron const &el = srcElectrons->at(eleSize);
+        pat::Electron const &el = srcElectrons->at(i);
         
+        
+        // Set four-momentum. Mass is ignored
         storeElectron.SetPt(el.ecalDrivenMomentum().pt());
         storeElectron.SetEta(el.ecalDrivenMomentum().eta());
         storeElectron.SetPhi(el.ecalDrivenMomentum().phi());
+        //^ Gsf momentum is used instead of the one calculated by the particle-flow algorithm
+        //https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
+        
+        double const pt = el.ecalDrivenMomentum().pt();  // a short-cut to be used for isolation
         
         storeElectron.SetCharge(el.charge());
         storeElectron.SetDB(el.dB());
         
-        // Effective-area (rho) correction to isolation (*)
-        //(*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
+        // Effective-area (rho) correction to isolation [1]
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
         storeElectron.SetRelIso((el.chargedHadronIso() + max(el.neutralHadronIso() +
-         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / el.ecalDrivenMomentum().pt());
+         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / pt);
         
         // Triggering MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification
@@ -317,33 +294,22 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
         storeElectron.SetCutBasedID(el.electronID("simpleEleId70cIso"));
         
+        // Conversion rejection. True for a "good" electron
         storeElectron.SetBit(0, el.passConversionVeto() and
          (el.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0));
-        
-        
-        
-        elePt[eleSize] = el.ecalDrivenMomentum().pt();
-        eleEta[eleSize] = el.ecalDrivenMomentum().eta();
-        elePhi[eleSize] = el.ecalDrivenMomentum().phi();
-        //^ Gsf momentum is used instead of the one calculated by the particle-flow algorithm
-        //https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-        
-        eleCharge[eleSize] = (el.charge() == -1) ? true : false;
-        eleDB[eleSize] = el.dB();
-        
-        
-        // Effective-area (rho) correction to isolation (*)
-        //(*) https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
-        eleRelIso[eleSize] = (el.chargedHadronIso() + max(el.neutralHadronIso() +
-         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / elePt[eleSize];
+        //^ See [1]. The decision is stored by PATElectronProducer based on the collection
+        //"allConversions" (the name is hard-coded). The additional requirement to reject electrons
+        //from the photon conversion is set according to [2].
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
+        //[2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel#Electrons
         
         
         // Trigger-emulating preselection for MVA ID [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
         bool passTriggerPreselection = false;
         
-        if (el.dr03TkSumPt() / elePt[eleSize] < 0.2 and /* ECAL-based isolation is addressed later */
-         el.dr03HcalTowerSumEt() / elePt[eleSize] < 0.2 and
+        if (el.dr03TkSumPt() / pt < 0.2 and /* ECAL-based isolation is addressed later */
+         el.dr03HcalTowerSumEt() / pt < 0.2 and
          el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() == 0)
         {
             // Calculate a corrected ECAL-based isolation as described in [1]. The corrected
@@ -361,39 +327,18 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/src/EcalIsolationCorrector.cc?view=markup
             
             // Check the rest of requirements for trigger-emulating preselection
-            if (correctedECALIso / elePt[eleSize] < 0.2)
+            if (correctedECALIso / pt < 0.2)
                 passTriggerPreselection =  (fabs(el.superCluster()->eta()) < 1.479) ?
                  (el.sigmaIetaIeta() < 0.014 and el.hadronicOverEm() < 0.15) :
                  (el.sigmaIetaIeta() < 0.035 and el.hadronicOverEm() < 0.10);
         }
         
-        eleTriggerPreselection[eleSize] = passTriggerPreselection;
         storeElectron.SetBit(1, passTriggerPreselection);
         
         
-        // Triggering MVA ID [1]
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification
-        eleMVAID[eleSize] = el.electronID("mvaTrigV0");
-        
-        // Cut-based electron ID [1]
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-        eleIDSimple70cIso[eleSize] = el.electronID("simpleEleId70cIso");
-        
-        
-        elePassConversion[eleSize] = el.passConversionVeto()
-         and (el.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0);
-        //^ See (*). The decision is stored by PATElectronProducer based on the collection
-        //"allConversions" (the name is hard-coded). The additional requirement to reject electrons
-        //from the photon conversion is set according to (**).
-        //(*) https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
-        //(**) https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel#Electrons
-        
-        
+        // Evaluate user-defined selectors if any
         for (unsigned i = 0; i < eleSelectors.size(); ++i)
-        {
-            eleSelectionBits[i][eleSize] = eleSelectors[i](el);
             storeElectron.SetBit(2 + i, eleSelectors[i](el));
-        }
         
         
         // The electron is set up. Add it to the vector
