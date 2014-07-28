@@ -69,11 +69,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     
     
     // Allocate the buffers to store the bits of additional selection
-    muSelectionBits = new Bool_t *[muSelection.size()];
     jetSelectionBits = new Bool_t *[jetSelection.size()];
-    
-    for (unsigned i = 0; i < muSelection.size(); ++i)
-        muSelectionBits[i] = new Bool_t[maxSize];
     
     for (unsigned i = 0; i < jetSelection.size(); ++i)
         jetSelectionBits[i] = new Bool_t[maxSize];
@@ -83,13 +79,9 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
 PlainEventContent::~PlainEventContent()
 {
     // Free the memory allocated for the additional selection
-    for (unsigned i = 0; i < muSelection.size(); ++i)
-        delete [] muSelectionBits[i];
-    
     for (unsigned i = 0; i < jetSelection.size(); ++i)
         delete [] jetSelectionBits[i];
     
-    delete [] muSelectionBits;
     delete [] jetSelectionBits;
 }
 
@@ -112,23 +104,7 @@ void PlainEventContent::beginJob()
     storeMuonsPointer = &storeMuons;
     basicInfoTree->Branch("muons", &storeMuonsPointer);
     
-    basicInfoTree->Branch("muSize", &muSize);
-    basicInfoTree->Branch("muPt", muPt, "muPt[muSize]/F");
-    basicInfoTree->Branch("muEta", muEta, "muEta[muSize]/F");
-    basicInfoTree->Branch("muPhi", muPhi, "muPhi[muSize]/F");
-    basicInfoTree->Branch("muCharge", muCharge, "muCharge[muSize]/O");
-    basicInfoTree->Branch("muDB", muDB, "muDB[muSize]/F");
-    basicInfoTree->Branch("muRelIso", muRelIso, "muRelIso[muSize]/F");
-    basicInfoTree->Branch("muQualityTight", muQualityTight, "muQualityTight[muSize]/O");
-    
-    for (unsigned i = 0; i < muSelection.size(); ++i)
-    {
-        string branchName("muSelection");
-        branchName += char(65 + i);  // char(65) == 'A'
-        basicInfoTree->Branch(branchName.c_str(), muSelectionBits[i],
-         (branchName + "[muSize]/O").c_str());
-    }
-    
+        
     basicInfoTree->Branch("jetSize", &jetSize);
     basicInfoTree->Branch("jetRawPt", jetRawPt, "jetRawPt[jetSize]/F");
     basicInfoTree->Branch("jetRawEta", jetRawEta, "jetRawEta[jetSize]/F");
@@ -364,9 +340,9 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     storeMuons.clear();
     pec::Muon storeMuon;  // will reuse this object to fill the vector
     
-    for (muSize = 0; muSize < int(srcMuons->size()) and muSize < maxSize; ++muSize)
+    for (unsigned i = 0; i < srcMuons->size(); ++i)
     {
-        pat::Muon const &mu = srcMuons->at(muSize);
+        pat::Muon const &mu = srcMuons->at(i);
         
         
         // Set four-momentum. Mass is ignored
@@ -397,31 +373,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         // The muon is set up. Add it to the vector
         storeMuons.push_back(storeMuon);
-        
-        
-        
-        muPt[muSize] = mu.pt();
-        muEta[muSize] = mu.eta();
-        muPhi[muSize] = mu.phi();
-        
-        muCharge[muSize] = (mu.charge() == -1) ? true : false;
-        muDB[muSize] = mu.dB();
-        
-        // Relative isolation with delta-beta correction. Logic of the calculation follows [1]. Note
-        //that it is calculated differently from [2], but the adopted recipe is more natural for
-        //PFBRECO
-        //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/interface/IsolatedPFCandidateSelectorDefinition.h?revision=1.4&view=markup
-        //[2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Accessing_PF_Isolation_from_reco
-        muRelIso[muSize] = (mu.chargedHadronIso() +
-         max(mu.neutralHadronIso() + mu.photonIso() - 0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt();
-        
-        // Tight muons are defined according to [1]. Note it does not imply selection on isolation
-        //or kinematics
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
-        muQualityTight[muSize] = mu.isTightMuon(vertices->front());
-        
-        for (unsigned i = 0; i < muSelectors.size(); ++i)
-            muSelectionBits[i][muSize] = muSelectors[i](mu);
     }
     
     

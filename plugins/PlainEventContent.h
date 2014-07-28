@@ -196,7 +196,8 @@ private:
      * \brief Trimmed muons to be stored in the output file
      * 
      * Mass is always close to the PDG value and thus does not encode useful information. It is set
-     * to zero to faciliate compression.
+     * to zero to faciliate compression. Bit flags include the tight quality ID and user-defined
+     * selections. Consult the source code to find their indices.
      */
     std::vector<pec::Muon> storeMuons;
     
@@ -204,16 +205,6 @@ private:
     std::vector<pec::Muon> *storeMuonsPointer;
     
     
-    UChar_t muSize;  // actual number of muons in an event
-    Float_t muPt[maxSize];    // muon four-momenta
-    Float_t muEta[maxSize];   //
-    Float_t muPhi[maxSize];   //
-    //Float_t muMass[maxSize];  // it equals (0.106 +- 0.03) GeV, can be assumed the PDG value
-    Bool_t muCharge[maxSize];  // muon's charge (true for muon, false for anti-muon)
-    Float_t muDB[maxSize];  // impact-parameter in the transverse plane
-    Float_t muRelIso[maxSize];  // relative isolation
-    Bool_t muQualityTight[maxSize];  // quality cuts to define tight muons
-    Bool_t **muSelectionBits;  // results of the additional selection
     
     UChar_t jetSize;  // actual number of jets in an event
     Float_t jetRawPt[maxSize];    // raw jet four-momenta
