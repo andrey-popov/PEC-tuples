@@ -22,6 +22,7 @@
 #pragma once
 
 #include <UserCode/SingleTop/interface/Electron.h>
+ #include <UserCode/SingleTop/interface/Muon.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -190,6 +191,17 @@ private:
     
     /// ROOT needs a variable with a pointer to an object to store the object in a tree
     std::vector<pec::Electron> *storeElectronsPointer;
+    
+    /**
+     * \brief Trimmed muons to be stored in the output file
+     * 
+     * Mass is always close to the PDG value and thus does not encode useful information. It is set
+     * to zero to faciliate compression.
+     */
+    std::vector<pec::Muon> storeMuons;
+    
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    std::vector<pec::Muon> *storeMuonsPointer;
     
     
     UChar_t muSize;  // actual number of muons in an event

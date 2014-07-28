@@ -109,6 +109,9 @@ void PlainEventContent::beginJob()
     storeElectronsPointer = &storeElectrons;
     basicInfoTree->Branch("electrons", &storeElectronsPointer);
     
+    storeMuonsPointer = &storeMuons;
+    basicInfoTree->Branch("muons", &storeMuonsPointer);
+    
     basicInfoTree->Branch("muSize", &muSize);
     basicInfoTree->Branch("muPt", muPt, "muPt[muSize]/F");
     basicInfoTree->Branch("muEta", muEta, "muEta[muSize]/F");
@@ -347,8 +350,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Read the muon collection
-    Handle<View<pat::Muon>> muons;
-    event.getByLabel(muonTag, muons);
+    Handle<View<pat::Muon>> srcMuons;
+    event.getByLabel(muonTag, srcMuons);
     
     // Constuct the muon selectors
     vector<StringCutObjectSelector<pat::Muon>> muSelectors;
@@ -356,10 +359,46 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     for (vector<string>::const_iterator sel = muSelection.begin(); sel != muSelection.end(); ++sel)
         muSelectors.push_back(*sel);
     
+    
     // Loop through the muon collection and fill the relevant variables
-    for (muSize = 0; muSize < int(muons->size()) and muSize < maxSize; ++muSize)
+    storeMuons.clear();
+    pec::Muon storeMuon;  // will reuse this object to fill the vector
+    
+    for (muSize = 0; muSize < int(srcMuons->size()) and muSize < maxSize; ++muSize)
     {
-        pat::Muon const &mu = muons->at(muSize);
+        pat::Muon const &mu = srcMuons->at(muSize);
+        
+        
+        // Set four-momentum. Mass is ignored
+        storeMuon.SetPt(mu.pt());
+        storeMuon.SetEta(mu.eta());
+        storeMuon.SetPhi(mu.phi());
+        
+        storeMuon.SetCharge(mu.charge());
+        storeMuon.SetDB(mu.dB());
+        
+        // Relative isolation with delta-beta correction. Logic of the calculation follows [1]. Note
+        //that it is calculated differently from [2], but the adopted recipe is more natural for
+        //PFBRECO
+        //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/interface/IsolatedPFCandidateSelectorDefinition.h?revision=1.4&view=markup
+        //[2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Accessing_PF_Isolation_from_reco
+        storeMuon.SetRelIso((mu.chargedHadronIso() + max(mu.neutralHadronIso() + mu.photonIso() -
+         0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt());
+        
+        // Tight muons are defined according to [1]. Note it does not imply selection on isolation
+        //or kinematics
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
+        storeMuon.SetBit(0, mu.isTightMuon(vertices->front()));
+        
+        // Evaluate user-defined selectors if any
+        for (unsigned i = 0; i < muSelectors.size(); ++i)
+            storeMuon.SetBit(2 + i, muSelectors[i](mu));
+        
+        
+        // The muon is set up. Add it to the vector
+        storeMuons.push_back(storeMuon);
+        
+        
         
         muPt[muSize] = mu.pt();
         muEta[muSize] = mu.eta();
