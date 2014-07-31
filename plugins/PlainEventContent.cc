@@ -104,6 +104,9 @@ void PlainEventContent::beginJob()
     storeMuonsPointer = &storeMuons;
     basicInfoTree->Branch("muons", &storeMuonsPointer);
     
+    storeJetsPointer = &storeJets;
+    basicInfoTree->Branch("jets", &storeJetsPointer);
+    
         
     basicInfoTree->Branch("jetSize", &jetSize);
     basicInfoTree->Branch("jetRawPt", jetRawPt, "jetRawPt[jetSize]/F");
@@ -376,8 +379,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Read the jets collections
-    Handle<View<pat::Jet>> jets;
-    event.getByLabel(jetTag, jets);
+    Handle<View<pat::Jet>> srcJets;
+    event.getByLabel(jetTag, srcJets);
     
     
     // Jet pile-up ID maps
@@ -398,13 +401,29 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     jetSize = 0;
     
     // Loop through the jet collection and fill the relevant variables
-    for (unsigned int i = 0; i < jets->size(); ++i)
+    storeJets.clear();
+    pec::Jet storeJet;  // will reuse this object to fill the vector
+    
+    for (unsigned int i = 0; i < srcJets->size(); ++i)
     {
-        pat::Jet const &j = jets->at(i);
+        pat::Jet const &j = srcJets->at(i);
         reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         
         if ((j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt) and jetSize < maxSize)
         {
+            storeJet.SetPt(rawP4.pt());
+            storeJet.SetEta(rawP4.eta());
+            storeJet.SetPhi(rawP4.phi());
+            storeJet.SetM(rawP4.mass());
+            
+            storeJet.SetBTagCSV(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
+            storeJet.SetBTagTCHP(j.bDiscriminator("trackCountingHighPurBJetTags"));
+            
+            storeJet.SetArea(j.jetArea());
+            storeJet.SetCharge(j.jetCharge());
+            
+            
+            
             jetRawPt[jetSize] = rawP4.pt();
             jetRawEta[jetSize] = rawP4.eta();
             jetRawPhi[jetSize] = rawP4.phi();
@@ -418,12 +437,14 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPATExampleTrackBJet#ExerCise5
             //[2] https://hypernews.cern.ch/HyperNews/CMS/get/btag/718/1.html
             //[3] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714.html
+            double secVertexMass = -100.;
             reco::SecondaryVertexTagInfo const *svTagInfo = j.tagInfoSecondaryVertex();
             
             if (svTagInfo and svTagInfo->nVertices() > 0)
-                jetSecVertexMass[jetSize] = svTagInfo->secondaryVertex(0).p4().mass();
-            else
-                jetSecVertexMass[jetSize] = -100.;
+                secVertexMass = svTagInfo->secondaryVertex(0).p4().mass();
+            
+            storeJet.SetSecVertexMass(secVertexMass);
+            jetSecVertexMass[jetSize] = secVertexMass;
             
             
             // Jet area
@@ -456,6 +477,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //^ The pull vector should be normalised by the jet's pt, but since I'm interested in
             //the polar angle only, it is not necessary
             
+            storeJet.SetPullAngle(atan2(pullPhi, pullY));
             jetPullAngle[jetSize] = atan2(pullPhi, pullY);
             
             
@@ -464,7 +486,17 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             if (jetPileUpIDHandles.size() > 0)
             {
-                int const pileUpID = (*jetPileUpIDHandles.at(0))[jets->refAt(jetSize)];
+                int const pileUpID = (*jetPileUpIDHandles.at(0))[srcJets->refAt(jetSize)];
+                
+                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
+                 pec::Jet::PileUpIDWorkingPoint::Loose,
+                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose));
+                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
+                 pec::Jet::PileUpIDWorkingPoint::Medium,
+                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium));
+                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
+                 pec::Jet::PileUpIDWorkingPoint::Tight,
+                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight));
                 
                 if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
                     jetPileUpID[jetSize] |= (1<<0);
@@ -478,7 +510,17 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             if (jetPileUpIDHandles.size() > 1)
             {
-                int const pileUpID = (*jetPileUpIDHandles.at(1))[jets->refAt(jetSize)];
+                int const pileUpID = (*jetPileUpIDHandles.at(1))[srcJets->refAt(jetSize)];
+                
+                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
+                 pec::Jet::PileUpIDWorkingPoint::Loose,
+                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose));
+                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
+                 pec::Jet::PileUpIDWorkingPoint::Medium,
+                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium));
+                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
+                 pec::Jet::PileUpIDWorkingPoint::Tight,
+                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight));
                 
                 if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
                     jetPileUpID[jetSize] |= (1<<3);
@@ -492,7 +534,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             
             for (unsigned i = 0; i < jetSelectors.size(); ++i)
-             jetSelectionBits[i][jetSize] = jetSelectors[i](j);
+            {
+                storeJet.SetBit(i, jetSelectors[i](j));
+                jetSelectionBits[i][jetSize] = jetSelectors[i](j);
+            }
             
             
             if (!runOnData)
@@ -509,6 +554,9 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 //default, PAT uses a looser definition
             }
             
+            
+            // The jet is set up. Add it to the vector
+            storeJets.push_back(storeJet);
             
             ++jetSize;
         }

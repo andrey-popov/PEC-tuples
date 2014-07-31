@@ -4,10 +4,12 @@
     <class  name = "pec::Lepton" />
     <class  name = "pec::Muon" />
     <class  name = "pec::Electron" />
+    <class  name = "pec::Jet" />
     
     <class  name = "std::vector<pec::Candidate>" />
     <class  name = "std::vector<pec::CandidateWithID>" />
     <class  name = "std::vector<pec::Lepton>" />
     <class  name = "std::vector<pec::Muon>" />
     <class  name = "std::vector<pec::Electron>" />
+    <class  name = "std::vector<pec::Jet>" />
 </lcgdict>

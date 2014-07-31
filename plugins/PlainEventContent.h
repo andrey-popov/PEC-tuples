@@ -23,6 +23,7 @@
 
 #include <UserCode/SingleTop/interface/Electron.h>
 #include <UserCode/SingleTop/interface/Muon.h>
+#include <UserCode/SingleTop/interface/Jet.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -203,6 +204,15 @@ private:
     
     /// ROOT needs a variable with a pointer to an object to store the object in a tree
     std::vector<pec::Muon> *storeMuonsPointer;
+    
+    /**
+     * \brief Trimmed jets to the stored in the output file
+     * 
+     */
+    std::vector<pec::Jet> storeJets;
+    
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    std::vector<pec::Jet> *storeJetsPointer;
     
     
     
