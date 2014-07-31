@@ -66,24 +66,11 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
          jetPileUpIDTags.size() << "have been provided.\n";
         excp.raise();
     }
-    
-    
-    // Allocate the buffers to store the bits of additional selection
-    jetSelectionBits = new Bool_t *[jetSelection.size()];
-    
-    for (unsigned i = 0; i < jetSelection.size(); ++i)
-        jetSelectionBits[i] = new Bool_t[maxSize];
 }
 
 
 PlainEventContent::~PlainEventContent()
-{
-    // Free the memory allocated for the additional selection
-    for (unsigned i = 0; i < jetSelection.size(); ++i)
-        delete [] jetSelectionBits[i];
-    
-    delete [] jetSelectionBits;
-}
+{}
 
 
 void PlainEventContent::beginJob()
@@ -106,33 +93,6 @@ void PlainEventContent::beginJob()
     
     storeJetsPointer = &storeJets;
     basicInfoTree->Branch("jets", &storeJetsPointer);
-    
-        
-    basicInfoTree->Branch("jetSize", &jetSize);
-    basicInfoTree->Branch("jetRawPt", jetRawPt, "jetRawPt[jetSize]/F");
-    basicInfoTree->Branch("jetRawEta", jetRawEta, "jetRawEta[jetSize]/F");
-    basicInfoTree->Branch("jetRawPhi", jetRawPhi, "jetRawPhi[jetSize]/F");
-    basicInfoTree->Branch("jetRawMass", jetRawMass, "jetRawMass[jetSize]/F");
-    
-    basicInfoTree->Branch("jetTCHP", jetTCHP, "jetTCHP[jetSize]/F");
-    basicInfoTree->Branch("jetCSV", jetCSV, "jetCSV[jetSize]/F");
-    
-    basicInfoTree->Branch("jetSecVertexMass", jetSecVertexMass, "jetSecVertexMass[jetSize]/F");
-    
-    basicInfoTree->Branch("jetArea", jetArea, "jetArea[jetSize]/F");
-    basicInfoTree->Branch("jetCharge", jetCharge, "jetCharge[jetSize]/F");
-    basicInfoTree->Branch("jetPullAngle", jetPullAngle, "jetPullAngle[jetSize]/F");
-    
-    if (jetPileUpIDTags.size() > 0)
-        basicInfoTree->Branch("jetPileUpID", jetPileUpID, "jetPileUpID[jetSize]/b");
-    
-    for (unsigned i = 0; i < jetSelection.size(); ++i)
-    {
-        string branchName("jetSelection");
-        branchName += char(65 + i);  // char(65) == 'A'
-        basicInfoTree->Branch(branchName.c_str(), jetSelectionBits[i],
-         (branchName + "[jetSize]/O").c_str());
-    }
     
     storeMETsPointer = &storeMETs;
     basicInfoTree->Branch("METs", &storeMETsPointer);
@@ -411,26 +371,18 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         if ((j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt) and jetSize < maxSize)
         {
+            // Set four-momentum
             storeJet.SetPt(rawP4.pt());
             storeJet.SetEta(rawP4.eta());
             storeJet.SetPhi(rawP4.phi());
             storeJet.SetM(rawP4.mass());
             
-            storeJet.SetBTagCSV(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
-            storeJet.SetBTagTCHP(j.bDiscriminator("trackCountingHighPurBJetTags"));
             
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());
             
-            
-            
-            jetRawPt[jetSize] = rawP4.pt();
-            jetRawEta[jetSize] = rawP4.eta();
-            jetRawPhi[jetSize] = rawP4.phi();
-            jetRawMass[jetSize] = rawP4.mass();
-            
-            jetTCHP[jetSize] = j.bDiscriminator("trackCountingHighPurBJetTags");
-            jetCSV[jetSize] = j.bDiscriminator("combinedSecondaryVertexBJetTags");
+            storeJet.SetBTagCSV(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
+            storeJet.SetBTagTCHP(j.bDiscriminator("trackCountingHighPurBJetTags"));
             
             
             // Calculate the secondary vertex mass [1-3]
@@ -444,15 +396,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 secVertexMass = svTagInfo->secondaryVertex(0).p4().mass();
             
             storeJet.SetSecVertexMass(secVertexMass);
-            jetSecVertexMass[jetSize] = secVertexMass;
-            
-            
-            // Jet area
-            jetArea[jetSize] = j.jetArea();
-            
-            
-            // Jet electric charge
-            jetCharge[jetSize] = j.jetCharge();
             
             
             // Calculate the jet pull angle
@@ -478,12 +421,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //the polar angle only, it is not necessary
             
             storeJet.SetPullAngle(atan2(pullPhi, pullY));
-            jetPullAngle[jetSize] = atan2(pullPhi, pullY);
             
             
-            // Pack jet pile-up ID into a single short
-            jetPileUpID[jetSize] = 0;
-            
+            // Pack jet pile-up ID into a single short. If single pile-up ID is provided in the
+            //plugin's configuration, it is assumed to be cut-based. If two IDs are given, the first
+            //one is cut-based, and the second is MVA.
             if (jetPileUpIDHandles.size() > 0)
             {
                 int const pileUpID = (*jetPileUpIDHandles.at(0))[srcJets->refAt(jetSize)];
@@ -497,15 +439,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
                  pec::Jet::PileUpIDWorkingPoint::Tight,
                  PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight));
-                
-                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
-                    jetPileUpID[jetSize] |= (1<<0);
-                
-                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
-                    jetPileUpID[jetSize] |= (1<<1);
-                
-                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
-                    jetPileUpID[jetSize] |= (1<<2);
             }
             
             if (jetPileUpIDHandles.size() > 1)
@@ -521,23 +454,12 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
                  pec::Jet::PileUpIDWorkingPoint::Tight,
                  PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight));
-                
-                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose))
-                    jetPileUpID[jetSize] |= (1<<3);
-                
-                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium))
-                    jetPileUpID[jetSize] |= (1<<4);
-                
-                if (PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight))
-                    jetPileUpID[jetSize] |= (1<<5);
             }
             
             
+            // User-difined selectors if any
             for (unsigned i = 0; i < jetSelectors.size(); ++i)
-            {
                 storeJet.SetBit(i, jetSelectors[i](j));
-                jetSelectionBits[i][jetSize] = jetSelectors[i](j);
-            }
             
             
             if (!runOnData)

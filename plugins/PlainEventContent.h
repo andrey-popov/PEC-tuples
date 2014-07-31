@@ -208,53 +208,14 @@ private:
     /**
      * \brief Trimmed jets to the stored in the output file
      * 
+     * The four-momenta stored are uncorrected. In case of soft jets some properties might be set to
+     * zero as they are not needed and this would allow a better compression in the output file.
      */
     std::vector<pec::Jet> storeJets;
     
     /// ROOT needs a variable with a pointer to an object to store the object in a tree
     std::vector<pec::Jet> *storeJetsPointer;
-    
-    
-    
-    UChar_t jetSize;  // actual number of jets in an event
-    Float_t jetRawPt[maxSize];    // raw jet four-momenta
-    Float_t jetRawEta[maxSize];   //
-    Float_t jetRawPhi[maxSize];   //
-    Float_t jetRawMass[maxSize];  //
-    
-    Float_t jetTCHP[maxSize];  // b-tagging discriminators
-    Float_t jetCSV[maxSize];   //
-    Float_t jetSecVertexMass[maxSize];  // mass of the secondary vertex
-    
-    // Jet area
-    Float_t jetArea[maxSize];
-    
-    // Electric charge of the jet
-    //It simply copies the value returned by pat::Jet::jetCharge(), which is calculated as a sum
-    //of electric charges of the jet's contituents weighted with their pt, as mentioned in [1].
-    //Note, however, that other definitions are possible [2].
-    //[1] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1425.html
-    //[2] http://arxiv.org/abs/1209.2421
-    Float_t jetCharge[maxSize];
-    
-    // Jet pull angle (radians)
-    //The pull vector is defined in [1], Eq. (3.7). The pull angle is an angle between this
-    //vector and the rapidity axis
-    //[1] http://arxiv.org/abs/1010.3698
-    Float_t jetPullAngle[maxSize];
-    
-    // Jet pile-up ID [1]
-    //A bit set to store decisions of two jet pile-up ID algorithms at maximum. First three bits
-    //(0x1, 0x2, 0x4) are set to true if the jet passes loose, medium, or tight working point of
-    //the first algorithm, respectively. The next three bits (0x8, 0x10, 0x20) are set in a similar
-    //fashion if there is one more algorithm specified.
-    //Normally, the first algorithm is cut-based while the second is MVA. See details in the
-    //documentation for data member jetPileUpIDTags.
-    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-    UChar_t jetPileUpID[maxSize];
-    
-    Bool_t **jetSelectionBits;  // results of the additional selection
-    
+        
     /**
      * \brief METs to be stored in the output file
      * 
@@ -280,6 +241,7 @@ private:
     Short_t processID;  // process ID; e.g. different subprocesses in MadGraph get different IDs
     Float_t genWeight;  // generator weight of an event
     
+    UChar_t jetSize;
     Char_t jetFlavour[maxSize];  // jet flavour according to the "algorithmic" definition
     Char_t jetGenPartonFlavour[maxSize];  // flavour of the parton matched to jet (0 if no match)
     //^ See here (*) for the motivation of using the both flavour definitions

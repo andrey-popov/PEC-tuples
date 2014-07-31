@@ -10,7 +10,9 @@ namespace pec
      * \author Andrey Popov
      * \brief Represents a reconstructed jet
      * 
-     * Stored four-momentum (via the Candidate base class) is uncorrected.
+     * Stored four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet
+     * (especially of a soft one) might be left uninitialised if they are not expected to be used in
+     * an analysis.
      */
     class Jet: public CandidateWithID
     {
