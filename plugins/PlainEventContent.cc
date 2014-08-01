@@ -107,9 +107,6 @@ void PlainEventContent::beginJob()
         generatorTree->Branch("genWeight", &genWeight);
         
         generatorTree->Branch("jetSize", &jetSize);  // it's a duplication from basicInfoTree
-        generatorTree->Branch("jetFlavour", jetFlavour, "jetFlavour[jetSize]/B");
-        generatorTree->Branch("jetGenPartonFlavour", jetGenPartonFlavour,
-         "jetGenPartonFlavour[jetSize]/B");
         generatorTree->Branch("jetGenJetMatch", jetGenJetMatch, "jetGenJetMatch[jetSize]/O");
         
         generatorTree->Branch("pdfX1", &pdfX1);
@@ -466,10 +463,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             // These are variables is from the generator tree, but it's more convenient to
             //calculate it here
             {
-                jetFlavour[jetSize] = j.partonFlavour();
-                jetGenPartonFlavour[jetSize] = (j.genParton() == nullptr) ? 0 :
-                 j.genParton()->pdgId();
-                 
+                storeJet.SetFlavour(pec::Jet::FlavourType::Algorithmic, j.partonFlavour());
+                storeJet.SetFlavour(pec::Jet::FlavourType::Physics,
+                 (j.genParton() == nullptr) ? 0 : j.genParton()->pdgId());
+                
                 jetGenJetMatch[jetSize] = (j.genJet() and j.genJet()->pt() > 8. and
                  ROOT::Math::VectorUtil::DeltaR(j.p4(), j.genJet()->p4()) < 0.25);
                 //^ The matching is performed according to the definition from JME-13-005. By

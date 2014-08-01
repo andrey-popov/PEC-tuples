@@ -1,5 +1,7 @@
 #include <UserCode/SingleTop/interface/Jet.h>
 
+#include <stdexcept>
+
 
 using namespace pec;
 
@@ -10,7 +12,8 @@ Jet::Jet():
     area(0),
     charge(0),
     pullAngle(0),
-    pileUpID(0)
+    pileUpID(0),
+    flavourAlgorithmic(0), flavourPhysics(0)
 {}
 
 
@@ -20,7 +23,8 @@ Jet::Jet(Jet const &src):
     area(src.area),
     charge(src.charge),
     pullAngle(src.pullAngle),
-    pileUpID(src.pileUpID)
+    pileUpID(src.pileUpID),
+    flavourAlgorithmic(src.flavourAlgorithmic), flavourPhysics(src.flavourPhysics)
 {}
 
 
@@ -35,6 +39,8 @@ Jet &Jet::operator=(Jet const &src)
     charge = src.charge;
     pullAngle = src.pullAngle;
     pileUpID = src.pileUpID;
+    flavourAlgorithmic = src.flavourAlgorithmic;
+    flavourPhysics = src.flavourPhysics;
     
     return *this;
 }
@@ -112,6 +118,24 @@ void Jet::SetPileUpID(PileUpIDAlgo algo, PileUpIDWorkingPoint wp, bool pass /*= 
 }
 
 
+void Jet::SetFlavour(FlavourType type, int flavour)
+{
+    switch (type)
+    {
+        case FlavourType::Algorithmic:
+            flavourAlgorithmic = flavour;
+            break;
+        
+        case FlavourType::Physics:
+            flavourPhysics = flavour;
+            break;
+        
+        default:
+            throw std::runtime_error("Jet::SetFlavour: Requested flavour type is not supported.");
+    }
+}
+
+
 double Jet::BTagCSV() const
 {
     return bTagCSV;
@@ -177,4 +201,20 @@ bool Jet::PileUpID(PileUpIDAlgo algo, PileUpIDWorkingPoint wp) const
     
     
     return pileUpID & (1 << shift);
+}
+
+
+int Jet::Flavour(FlavourType type) const
+{
+    switch (type)
+    {
+        case FlavourType::Algorithmic:
+            return flavourAlgorithmic;
+        
+        case FlavourType::Physics:
+            return flavourPhysics;
+        
+        default:
+            throw std::runtime_error("Jet::SetFlavour: Requested flavour type is not supported.");
+    }
 }

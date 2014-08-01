@@ -242,10 +242,6 @@ private:
     Float_t genWeight;  // generator weight of an event
     
     UChar_t jetSize;
-    Char_t jetFlavour[maxSize];  // jet flavour according to the "algorithmic" definition
-    Char_t jetGenPartonFlavour[maxSize];  // flavour of the parton matched to jet (0 if no match)
-    //^ See here (*) for the motivation of using the both flavour definitions
-    //(*) https://hypernews.cern.ch/HyperNews/CMS/get/b2g-selections/103.html
     
     // Shows if there is a generator-level jet matched. Definition from JME-13-005 is used
     Bool_t jetGenJetMatch[maxSize];
