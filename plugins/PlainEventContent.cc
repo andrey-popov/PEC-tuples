@@ -129,16 +129,9 @@ void PlainEventContent::beginJob()
     
     
     puTree = fileService->make<TTree>("PUInfo", "Pile-up information");
-    puTree->Branch("pvSize", &pvSize);
-    puTree->Branch("rho", &puRho);
     
-    if (!runOnData)
-    {
-        puTree->Branch("puTrueNumInteractions", &puTrueNumInteractions);
-        puTree->Branch("puSize", &puSize);
-        puTree->Branch("puBunchCrossing", puBunchCrossing, "puBunchCrossing[puSize]/B");
-        puTree->Branch("puNumInteractions", puNumInteractions, "puNumInteractions[puSize]/b");
-    }
+    puInfoPointer = &puInfo;
+    puTree->Branch("puInfo", &puInfoPointer);
 }
 
 
@@ -166,9 +159,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<reco::VertexCollection> vertices;
     event.getByLabel(primaryVerticesTag, vertices);
     
-    pvSize = vertices->size();
-    
-    if (pvSize == 0)
+    if (vertices->size() == 0)
     {
         edm::Exception excp(edm::errors::LogicError);
         excp << "Event contains zero good primary vertices.\n";
@@ -574,29 +565,29 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Save the pile-up information
-    //https://twiki.cern.ch/twiki/bin/view/CMS/Pileup_MC_Information
+    puInfo.SetNumPV(vertices->size());
+
+    Handle<double> rho;
+    event.getByLabel(rhoTag, rho);
+    
+    puInfo.SetRho(*rho);
+    
+    
     if (!runOnData)
     {
         Handle<View<PileupSummaryInfo>> puSummary;
         event.getByLabel(puSummaryTag, puSummary);
         
-        puSize = puSummary->size();
-        // The true number of interactions is the same for the whole event
-        puTrueNumInteractions = puSummary->front().getTrueNumInteractions();
+        puInfo.SetTrueNumPU(puSummary->front().getTrueNumInteractions());
+        //^ The true number of interactions is same for all bunch crossings
         
-        for (unsigned i = 0; i < puSize and i < maxSize; ++i)
-        {
-            puBunchCrossing[i] = puSummary->at(i).getBunchCrossing();
-            puNumInteractions[i] = puSummary->at(i).getPU_NumInteractions();
-        }
+        for (unsigned i = 0; i < puSummary->size(); ++i)
+            if (puSummary->at(i).getBunchCrossing() == 0)
+            {
+                puInfo.SetInTimePU(puSummary->at(i).getPU_NumInteractions());
+                break;
+            }
     }
-    
-    // Read rho
-    Handle<double> rho;
-    event.getByLabel(rhoTag, rho);
-    puRho = *rho;
-    
-    // Primary vertices have already been read before
     
     
     // Fill all the trees

@@ -12,4 +12,6 @@
     <class  name = "std::vector<pec::Muon>" />
     <class  name = "std::vector<pec::Electron>" />
     <class  name = "std::vector<pec::Jet>" />
+    
+    <class  name = "pec::PileUpInfo" />
 </lcgdict>

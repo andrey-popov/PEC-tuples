@@ -24,6 +24,7 @@
 #include <UserCode/SingleTop/interface/Electron.h>
 #include <UserCode/SingleTop/interface/Muon.h>
 #include <UserCode/SingleTop/interface/Jet.h>
+ #include <UserCode/SingleTop/interface/PileUpInfo.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -266,10 +267,9 @@ private:
      */
     TTree *puTree;
     
-    UChar_t pvSize;  // number of primary vertices
-    Float_t puRho;  // mean energy density
-    Float_t puTrueNumInteractions;  // true mean number of pile-up interactions in the event
-    UChar_t puSize;  // number of stored pile-up bunch crossings
-    Char_t puBunchCrossing[maxSize];  // indices for the bunch crossings
-    UChar_t puNumInteractions[maxSize];  // number of pile-up interactions in each crossing
+    /// Information on pile-up to be stored in the output file
+    pec::PileUpInfo puInfo;
+    
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    pec::PileUpInfo *puInfoPointer;
 };
