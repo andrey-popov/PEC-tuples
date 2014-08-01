@@ -209,7 +209,9 @@ private:
      * \brief Trimmed jets to the stored in the output file
      * 
      * The four-momenta stored are uncorrected. In case of soft jets some properties might be set to
-     * zero as they are not needed and this would allow a better compression in the output file.
+     * zero as they are not needed and this would allow a better compression in the output file. Bit
+     * flags show if the jet is matched to a generator-level jet (always set to false in real data)
+     * and include user-defined selections. Consult the source code to find the indices.
      */
     std::vector<pec::Jet> storeJets;
     
@@ -241,11 +243,6 @@ private:
     Short_t processID;  // process ID; e.g. different subprocesses in MadGraph get different IDs
     Float_t genWeight;  // generator weight of an event
     
-    UChar_t jetSize;
-    
-    // Shows if there is a generator-level jet matched. Definition from JME-13-005 is used
-    Bool_t jetGenJetMatch[maxSize];
-            
     Float_t pdfX1, pdfX2;  // momenta fraction carried by initial-state partons
     Float_t pdfQ;  // scale used to evaluate PDF
     Char_t pdfId1, pdfId2;  // ID of the initial-state partons; gluons are encoded by code 0

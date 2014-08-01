@@ -12,7 +12,8 @@ namespace pec
      * 
      * Stored four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet
      * (especially of a soft one) might be left uninitialised if they are not expected to be used in
-     * an analysis.
+     * an analysis. Properties that make sence for simulations only (like flavours) are not expected
+     * to be set in case of real data.
      */
     class Jet: public CandidateWithID
     {

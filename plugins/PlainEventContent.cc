@@ -106,9 +106,6 @@ void PlainEventContent::beginJob()
         generatorTree->Branch("processID", &processID);
         generatorTree->Branch("genWeight", &genWeight);
         
-        generatorTree->Branch("jetSize", &jetSize);  // it's a duplication from basicInfoTree
-        generatorTree->Branch("jetGenJetMatch", jetGenJetMatch, "jetGenJetMatch[jetSize]/O");
-        
         generatorTree->Branch("pdfX1", &pdfX1);
         generatorTree->Branch("pdfX2", &pdfX2);
         generatorTree->Branch("pdfQ", &pdfQ);
@@ -355,8 +352,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         jetSelectors.push_back(*sel);
     
     
-    jetSize = 0;
-    
     // Loop through the jet collection and fill the relevant variables
     storeJets.clear();
     pec::Jet storeJet;  // will reuse this object to fill the vector
@@ -366,7 +361,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         pat::Jet const &j = srcJets->at(i);
         reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         
-        if ((j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt) and jetSize < maxSize)
+        if (j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt)
         {
             // Set four-momentum
             storeJet.SetPt(rawP4.pt());
@@ -425,7 +420,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //one is cut-based, and the second is MVA.
             if (jetPileUpIDHandles.size() > 0)
             {
-                int const pileUpID = (*jetPileUpIDHandles.at(0))[srcJets->refAt(jetSize)];
+                int const pileUpID = (*jetPileUpIDHandles.at(0))[srcJets->refAt(i)];
                 
                 storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
                  pec::Jet::PileUpIDWorkingPoint::Loose,
@@ -440,7 +435,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             if (jetPileUpIDHandles.size() > 1)
             {
-                int const pileUpID = (*jetPileUpIDHandles.at(1))[srcJets->refAt(jetSize)];
+                int const pileUpID = (*jetPileUpIDHandles.at(1))[srcJets->refAt(i)];
                 
                 storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
                  pec::Jet::PileUpIDWorkingPoint::Loose,
@@ -454,11 +449,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             }
             
             
-            // User-difined selectors if any
-            for (unsigned i = 0; i < jetSelectors.size(); ++i)
-                storeJet.SetBit(i, jetSelectors[i](j));
-            
-            
             if (!runOnData)
             // These are variables is from the generator tree, but it's more convenient to
             //calculate it here
@@ -467,17 +457,21 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
                 storeJet.SetFlavour(pec::Jet::FlavourType::Physics,
                  (j.genParton() == nullptr) ? 0 : j.genParton()->pdgId());
                 
-                jetGenJetMatch[jetSize] = (j.genJet() and j.genJet()->pt() > 8. and
-                 ROOT::Math::VectorUtil::DeltaR(j.p4(), j.genJet()->p4()) < 0.25);
+                storeJet.SetBit(0, (j.genJet() and j.genJet()->pt() > 8. and
+                 ROOT::Math::VectorUtil::DeltaR(j.p4(), j.genJet()->p4()) < 0.25));
                 //^ The matching is performed according to the definition from JME-13-005. By
                 //default, PAT uses a looser definition
             }
             
             
+            // User-difined selectors if any. The first bit has already been used for the match with
+            //generator-level jet
+            for (unsigned i = 0; i < jetSelectors.size(); ++i)
+                storeJet.SetBit(i + 1, jetSelectors[i](j));
+            
+            
             // The jet is set up. Add it to the vector
             storeJets.push_back(storeJet);
-            
-            ++jetSize;
         }
     }
     
