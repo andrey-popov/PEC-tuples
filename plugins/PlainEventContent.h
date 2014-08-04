@@ -159,22 +159,19 @@ private:
     edm::Service<TFileService> fileService;
     
     
-    /// Tree to store event ID information
-    TTree *eventIDTree;
+    /**
+     * \brief Output tree
+     * 
+     * The tree aggregates all information stored by the plugin. Its structure differs between data
+     * and simulation as in the latter case a branch with generator-level information is added.
+     */
+    TTree *outTree;
     
     /// Basic generator information to be stored in the output file
     pec::EventID eventId;
     
     /// ROOT needs a variable with a pointer to an object to store the object in a tree
     pec::EventID *eventIdPointer;
-    
-    /**
-     * \brief Tree to store all general information
-     * 
-     * It is responsible for the most of information that is written by the plugin. It includes
-     * four-momenta of all objects, their identification, isolations, b-tagging, etc.
-     */
-    TTree *basicInfoTree;
     
     /**
      * \brief Trimmed electrons to be stored in the output file
@@ -230,28 +227,12 @@ private:
     std::vector<pec::Candidate> *storeMETsPointer;
     
     
-    /**
-     * \brief Tree to store generator information
-     * 
-     * The tree is written only in case the runOnData flag is set to false. Particles from the hard
-     * interaction are stored if only the runHardInteraction flag is set to true in addition.
-     */
-    TTree *generatorTree;
-    
     /// Basic generator information to be stored in the output file
     pec::GeneratorInfo generatorInfo;
     
     /// ROOT needs a variable with a pointer to an object to store the object in a tree
     pec::GeneratorInfo *generatorInfoPointer;
     
-    
-    /**
-     * \brief Tree to store pile-up information
-     * 
-     * Number of reconstructed primary vertices and rho (angular energy density) are saved for real
-     * data. In case of simulation additional truth information is recorded.
-     */
-    TTree *puTree;
     
     /// Information on pile-up to be stored in the output file
     pec::PileUpInfo puInfo;

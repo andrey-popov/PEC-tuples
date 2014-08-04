@@ -68,42 +68,40 @@ PlainEventContent::~PlainEventContent()
 
 void PlainEventContent::beginJob()
 {
-    eventIDTree = fileService->make<TTree>("EventID", "Tree contrains event ID information");
+    // Create the output tree
+    outTree = fileService->make<TTree>("EventContent", "Minimalistic description of events");
     
+    
+    // A branch with event ID
     eventIdPointer = &eventId;
-    eventIDTree->Branch("eventId", &eventIdPointer);
+    outTree->Branch("eventId", &eventIdPointer);
     
     
-    basicInfoTree = fileService->make<TTree>("BasicInfo",
-     "Tree contains kinematics and other basic properties");
-    
+    // Branches with reconstucted objects
     storeElectronsPointer = &storeElectrons;
-    basicInfoTree->Branch("electrons", &storeElectronsPointer);
+    outTree->Branch("electrons", &storeElectronsPointer);
     
     storeMuonsPointer = &storeMuons;
-    basicInfoTree->Branch("muons", &storeMuonsPointer);
+    outTree->Branch("muons", &storeMuonsPointer);
     
     storeJetsPointer = &storeJets;
-    basicInfoTree->Branch("jets", &storeJetsPointer);
+    outTree->Branch("jets", &storeJetsPointer);
     
     storeMETsPointer = &storeMETs;
-    basicInfoTree->Branch("METs", &storeMETsPointer);
+    outTree->Branch("METs", &storeMETsPointer);
     
     
+    // A branch with most basic generator-level information
     if (!runOnData)
     {
-        generatorTree = fileService->make<TTree>("GeneratorInfo",
-         "The tree keeps some generator information");
-        
         generatorInfoPointer = &generatorInfo;
-        generatorTree->Branch("genInfo", &generatorInfoPointer);
+        outTree->Branch("genInfo", &generatorInfoPointer);
     }
     
     
-    puTree = fileService->make<TTree>("PUInfo", "Pile-up information");
-    
+    // A branch with per-event information on pile-up
     puInfoPointer = &puInfo;
-    puTree->Branch("puInfo", &puInfoPointer);
+    outTree->Branch("puInfo", &puInfoPointer);
 }
 
 
@@ -506,13 +504,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     }
     
     
-    // Fill all the trees
-    eventIDTree->Fill();
-    basicInfoTree->Fill();
-    puTree->Fill();
-    
-    if (!runOnData)
-        generatorTree->Fill();
+    // Fill the output tree
+    outTree->Fill();
 }
 
 
