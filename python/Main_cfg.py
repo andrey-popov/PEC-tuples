@@ -272,9 +272,7 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     jetMinPt = cms.double(20.),
     jetMinRawPt = cms.double(10.),
     METs = cms.VInputTag(*metCollections),
-    saveHardInteraction = cms.bool(options.saveHardInteraction),
     generator = cms.InputTag('generator'),
-    genParticles = cms.InputTag('genParticles'),
     primaryVertices = cms.InputTag('offlinePrimaryVertices'),
     puInfo = cms.InputTag('addPileupInfo'),
     rho = cms.InputTag('kt6PFJets', 'rho'),
@@ -283,6 +281,13 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
         cms.InputTag(puIdProducerLabel, 'fullId')))
 
 paths.append(process.trigger, process.eventContent)
+
+
+# Save information about the hard interaction
+if options.saveHardInteraction:
+    process.hardInteraction = cms.EDAnalyzer('HardInteractionInfo',
+        genParticles = cms.InputTag('genParticles'))
+    paths.append(process.hardInteraction)
 
 
 # Save information on heavy-flavour quarks

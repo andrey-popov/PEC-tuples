@@ -127,15 +127,12 @@ private:
      */
     bool const runOnData;
     
-    /// Determines of status-3 generator particles should be saved
-    bool const saveHardInteraction;
-    
     /**
      * \brief Tags to access generator information
      * 
      * They are ignored in case of real data.
      */
-    edm::InputTag const generatorTag, genParticlesTag;
+    edm::InputTag const generatorTag;
     
     /// Tag to access reconstructed primary vertices
     edm::InputTag const primaryVerticesTag;
@@ -159,10 +156,6 @@ private:
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
-    
-    
-    /// Maximal size to allocate buffer arrays
-    static unsigned const maxSize = 64;
     
     
     /// Tree to store event ID information
@@ -247,16 +240,6 @@ private:
     
     /// ROOT needs a variable with a pointer to an object to store the object in a tree
     pec::GeneratorInfo *generatorInfoPointer;
-        
-    // Information about the hard interaction (status-3 particles). The beam particles (the protons)
-    //are skipped
-    UChar_t hardPartSize;  // number of the saved particles
-    Char_t hardPartPdgId[maxSize];  // their PDG ID
-    Char_t hardPartFirstMother[maxSize], hardPartLastMother[maxSize];  // indices of mothers
-    Float_t hardPartPt[maxSize];    // four-momenta of the particles
-    Float_t hardPartEta[maxSize];   //
-    Float_t hardPartPhi[maxSize];   //
-    Float_t hardPartMass[maxSize];  //
     
     
     /**
