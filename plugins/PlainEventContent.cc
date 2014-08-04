@@ -542,7 +542,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         generatorInfo.SetProcessId(generator->signalProcessID());
         generatorInfo.SetWeight(generator->weight());
-        generatorInfo.SetMeQScale(generator->qScale());
         
         
         GenEventInfoProduct::PDF const *pdf = generator->pdf();

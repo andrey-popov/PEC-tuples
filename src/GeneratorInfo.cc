@@ -12,8 +12,7 @@ GeneratorInfo::GeneratorInfo():
     weight(0),
     pdfX(),  // the array is zeroed according to the C++03 standard
     pdfId(0),
-    pdfQScale(0),
-    meQScale(0)
+    pdfQScale(0)
 {}
 
 
@@ -21,8 +20,7 @@ GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
     processId(src.processId),
     weight(src.weight),
     pdfId(src.pdfId),
-    pdfQScale(src.pdfQScale),
-    meQScale(src.meQScale)
+    pdfQScale(src.pdfQScale)
 {
     std::copy(src.pdfX, src.pdfX + 2, pdfX);
 }
@@ -35,7 +33,6 @@ GeneratorInfo &GeneratorInfo::operator=(GeneratorInfo const &src)
     std::copy(src.pdfX, src.pdfX + 2, pdfX);
     pdfId = src.pdfId;
     pdfQScale = src.pdfQScale;
-    meQScale = src.meQScale;
     
     return *this;
 }
@@ -48,7 +45,6 @@ void GeneratorInfo::Reset()
     pdfId = 0;
     pdfX[0] = pdfX[1] = 0;
     pdfQScale = 0;
-    meQScale = 0;
 }
 
 
@@ -123,12 +119,6 @@ void GeneratorInfo::SetPdfQScale(double scale)
 }
 
 
-void GeneratorInfo::SetMeQScale(double scale)
-{
-    meQScale = scale;
-}
-
-
 int GeneratorInfo::ProcessId() const
 {
     return processId;
@@ -166,10 +156,4 @@ int GeneratorInfo::PdfId(unsigned index) const
 double GeneratorInfo::PdfQScale() const
 {
     return pdfQScale;
-}
-
-
-double GeneratorInfo::MeQScale() const
-{
-    return meQScale;
 }

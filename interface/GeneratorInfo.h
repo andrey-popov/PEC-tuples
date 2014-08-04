@@ -68,9 +68,6 @@ namespace pec
         /// Sets energy scale used to evaluate PDF, GeV
         void SetPdfQScale(double scale);
         
-        /// Sets energy scale used to evaluate alpha_s in the matrix element, GeV
-        void SetMeQScale(double scale);
-        
         /**
          * \brief Returns process ID
          * 
@@ -103,9 +100,6 @@ namespace pec
         /// Returns energy scale used to evaluate PDF, GeV
         double PdfQScale() const;
         
-        /// Returns energy scale used to evaluate alpha_s in the matrix element, GeV
-        double MeQScale() const;
-        
     private:
         /// Process ID as was set during generation of the sample
         Short_t processId;
@@ -126,8 +120,5 @@ namespace pec
         
         /// Energy scale to evaluate PDF, GeV
         Float_t pdfQScale;
-        
-        /// Energy scale to evaluate alpha_s in ME, GeV
-        Float_t meQScale;
     };
 }
