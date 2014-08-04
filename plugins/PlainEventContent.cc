@@ -56,14 +56,53 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     {
         edm::Exception excp(edm::errors::LogicError);
         excp << "Two sources of jet pile-up ID are expected at maximum while " <<
-         jetPileUpIDTags.size() << "have been provided.\n";
+         jetPileUpIDTags.size() << " have been provided.\n";
         excp.raise();
     }
 }
 
 
-PlainEventContent::~PlainEventContent()
-{}
+void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<bool>("runOnData")->
+     setComment("Indicates whether data or simulation is being processed.");
+    desc.add<InputTag>("primaryVertices")->
+     setComment("Collection of reconstructed primary vertices.");
+    desc.add<InputTag>("electrons")->setComment("Collection of electrons.");
+    desc.add<vector<string>>("eleSelection", vector<string>(0))->
+     setComment("User-defined selections for electrons whose results will be stored in the output "
+     "tree.");
+    desc.add<InputTag>("muons")->setComment("Collection of muons.");
+    desc.add<vector<string>>("muSelection", vector<string>(0))->
+     setComment("User-defined selections for muons whose results will be stored in the ouput "
+     "tree.");
+    desc.add<InputTag>("jets")->setComment("Collection of jets.");
+    desc.add<vector<string>>("jetSelection", vector<string>(0))->
+     setComment("User-defined selections for jets whose results will be stored in the output "
+     "tree.");
+    desc.add<double>("jetMinPt", 20.)->
+     setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
+    desc.add<double>("jetMinRawPt", 10.)->
+     setComment("Jets with raw pt above this threshold will be stored in the output tree.");
+    desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
+    desc.add<InputTag>("generator", InputTag("generator"))->
+     setComment("Tag to access information about generator. If runOnData is true, this parameter "
+     "is ignored.");
+    desc.add<InputTag>("rho", InputTag("kt6PFJets", "rho"))->
+     setComment("Rho (mean angular pt density).");
+    desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
+     setComment("True pile-up information. If runOnData is true, this parameter is ignored.");
+    desc.add<vector<InputTag>>("jetPileUpID", vector<InputTag>(0))->
+     setComment("Value maps with jet pile-up ID. Can contain 0, 1, or 2 entries. In the latter "
+     "case the first InputTag is supposed to denote the map for cut-based ID and the second one "
+     "should provide MVA ID.");
+    
+    descriptions.add("eventContent", desc);
+}
 
 
 void PlainEventContent::beginJob()
@@ -103,18 +142,6 @@ void PlainEventContent::beginJob()
     puInfoPointer = &puInfo;
     outTree->Branch("puInfo", &puInfoPointer);
 }
-
-
-void PlainEventContent::endJob()
-{}
-
-
-void PlainEventContent::beginRun(edm::Run const &run, edm::EventSetup const &setup)
-{}
-
-
-void PlainEventContent::endRun(edm::Run const &run, edm::EventSetup const &setup)
-{}
 
 
 void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &setup)
@@ -506,52 +533,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Fill the output tree
     outTree->Fill();
-}
-
-
-void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
-{
-    // Documentation for descriptions of the configuration is available in [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
-    
-    edm::ParameterSetDescription desc;
-    desc.add<bool>("runOnData")->
-     setComment("Indicates whether data or simulation is being processed.");
-    desc.add<bool>("saveHardInteraction", false)->
-     setComment("Determines if particles from the hard interaction should be stored. It is ignored "
-     "if runOnData is true.");
-    desc.add<InputTag>("primaryVertices")->
-     setComment("Collection of reconstructed primary vertices.");
-    desc.add<InputTag>("electrons")->setComment("Collection of electrons.");
-    desc.add<vector<string>>("eleSelection", vector<string>(0))->
-     setComment("User-defined selections for electrons whose results will be stored in the output "
-     "trees.");
-    desc.add<InputTag>("muons")->setComment("Collection of muons.");
-    desc.add<vector<string>>("muSelection", vector<string>(0))->
-     setComment("User-defined selections for muons whose results will be stored in the ouput "
-     "trees.");
-    desc.add<InputTag>("jets")->setComment("Collection of jets.");
-    desc.add<vector<string>>("jetSelection", vector<string>(0))->
-     setComment("User-defined selections for jets whose results will be stored in the output "
-     "trees.");
-    desc.add<double>("jetMinPt", 20.)->
-     setComment("Jets with pt above this threshold will be stored in the output trees.");
-    desc.add<double>("jetMinRawPt", 10.)->
-     setComment("Jets with raw pt above this threshold will be stored in the output trees.");
-    desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
-    desc.add<InputTag>("generator", InputTag("generator"))->
-     setComment("Tag to access information about generator. If runOnData is true, this parameter "
-     "is ignored.");
-    desc.add<InputTag>("rho", InputTag("kt6PFJets", "rho"))->
-     setComment("Rho (mean angular energy density).");
-    desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
-     setComment("True pile-up information. If runOnData is true, this parameter is ignored.");
-    desc.add<vector<InputTag>>("jetPileUpID", vector<InputTag>(0))->
-     setComment("Value maps with jet pile-up ID. Can contain 0, 1, or 2 entries. In the latter "
-     "case the first InputTag is supposed to denote the map for cut-based ID and the second one "
-     "should provide MVA ID.");
-    
-    descriptions.add("eventContent", desc);
 }
 
 

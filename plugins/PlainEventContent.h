@@ -1,24 +1,3 @@
-/**
- * \file PlainEventContent.h
- * \author Andrey Popov
- * 
- * The plugin defined in this module stores most of basic information in an event in a set of plain
- * ROOT trees. It addresses all the basic objects: charged leptons, jets, and MET. Apart from their
- * four-momenta, a number of other properties such as various ID criteria, isolation, b-tagging, and
- * other characteristics are saved. Although the most of them are defined in code of the plugin, the
- * can provide an arbitrary number of string-based selections, which are evaluated for each object
- * of an appropriate type and whose results are stored in dedicated boolean branches.
- * 
- * The plugin expects a vector of METs instead of a single input tag. It allows to store versions
- * with different corrections as well as systematical variations of MET.
- * 
- * When a simulated event is processed, the plugin stores true jet flavours, information on PDF,
- * particles from the hard interaction, true pile-up configuration, and other details.
- * 
- * The plugin does not store any information on trigger decision.
- */
-
-
 #pragma once
 
 #include <UserCode/SingleTop/interface/Electron.h>
@@ -46,9 +25,19 @@
 
 /**
  * \class PlainEventContent
- * \brief Stores all important information about an event in a set of plain ROOT trees
+ * \author Andrey Popov
+ * \brief This CMSSW plugin saves events in a ROOT file using a very slim format
  * 
- * Consult file's documentation for details.
+ * The plugin stores most of basic objects: muons, electrons, jets, MET. It saves their
+ * four-momenta, isolation, b-tagging discriminators, various IDs, etc. Most of the properties are
+ * defined in the source code, but the user can provide a number of arbitrary string-based selection
+ * criteria, whose results are evaluated and saved.
+ * 
+ * Sctructure of the output file differs between data and simulation, with some additional branches
+ * added in the latter case.
+ * 
+ * Read documentation for data members, especially, storeElectrons, storeMuons, storeJets, and
+ * storeMETs, for further information.
  */
 class PlainEventContent: public edm::EDAnalyzer
 {
@@ -62,25 +51,12 @@ public:
      */
     PlainEventContent(edm::ParameterSet const &cfg);
     
-    /**
-     * \brief Destructor
-     * 
-     * Deletes arrays that keep results of addititonal selections.
-     */
-    ~PlainEventContent();
-    
 public:
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+    
     /// Creates output trees and assigns branches to them
     virtual void beginJob();
-    
-    /// A placeholder; does nothing
-    virtual void endJob();
-    
-    /// Creates an object to access JEC uncertainties
-    virtual void beginRun(edm::Run const &run, edm::EventSetup const &setup);
-    
-    /// Deletes the object to access JEC uncertainties
-    virtual void endRun(edm::Run const &run, edm::EventSetup const &setup);
     
     /**
      * \brief Analyses current event
@@ -89,9 +65,6 @@ public:
      * the trees.
      */
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
-    
-    /// A method to verify plugin's configuration
-    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
 private:
     /// Tags to access collections of electrons, muons, and jets
@@ -115,16 +88,15 @@ private:
      * \brief String-based selection whose result is to be saved
      * 
      * These selections do not affect which objects are stored in the output files. Instead, each
-     * string defines a selection that is evalueated and whose result is saved in a dedicated
-     * boolean branch.
+     * string defines a selection that is evalueated and whose result is saved in the bit field of
+     * the CandidateWithID class.
      */
     std::vector<std::string> const eleSelection, muSelection, jetSelection;
     
     /**
      * \brief Indicates whether an event is data or simulation
      * 
-     * It is used to deduce if the plugin should read generator information or attempt to access
-     * systematical uncertainties.
+     * It is used to deduce if the plugin should read generator information.
      */
     bool const runOnData;
     
@@ -141,16 +113,16 @@ private:
     /// Pile-up information in simulation
     edm::InputTag const puSummaryTag;
     
-    /// Rho (mean angular energy density)
+    /// Rho (mean angular pt density)
     edm::InputTag const rhoTag;
     
     /**
      * \brief Input tags for jet pile-up ID
      * 
      * The vector might contain 0, 1, or 2 elements. If more than 2 elements are provided,
-     * constructor throws an exception. If the vector is empty, no branch to store jet pile-up ID
-     * is added to the output tree. If there are two elements, the first one should refer to the
-     * cut-based ID, and the latter one specifies the MVA ID.
+     * constructor throws an exception. If the vector contains only one element, it is expected to
+     * be the cut-based ID. If there are two elements, the first one should refer to the cut-based
+     * ID, and the latter one specifies the MVA ID.
      */
     std::vector<edm::InputTag> jetPileUpIDTags;
     
@@ -167,10 +139,14 @@ private:
      */
     TTree *outTree;
     
-    /// Basic generator information to be stored in the output file
+    /// Event ID
     pec::EventID eventId;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     pec::EventID *eventIdPointer;
     
     /**
@@ -185,7 +161,11 @@ private:
      */
     std::vector<pec::Electron> storeElectrons;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     std::vector<pec::Electron> *storeElectronsPointer;
     
     /**
@@ -197,7 +177,11 @@ private:
      */
     std::vector<pec::Muon> storeMuons;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     std::vector<pec::Muon> *storeMuonsPointer;
     
     /**
@@ -210,7 +194,11 @@ private:
      */
     std::vector<pec::Jet> storeJets;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     std::vector<pec::Jet> *storeJetsPointer;
         
     /**
@@ -223,20 +211,32 @@ private:
      */
     std::vector<pec::Candidate> storeMETs;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     std::vector<pec::Candidate> *storeMETsPointer;
     
     
     /// Basic generator information to be stored in the output file
     pec::GeneratorInfo generatorInfo;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     pec::GeneratorInfo *generatorInfoPointer;
     
     
     /// Information on pile-up to be stored in the output file
     pec::PileUpInfo puInfo;
     
-    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
     pec::PileUpInfo *puInfoPointer;
 };
