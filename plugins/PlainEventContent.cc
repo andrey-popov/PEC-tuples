@@ -70,9 +70,8 @@ void PlainEventContent::beginJob()
 {
     eventIDTree = fileService->make<TTree>("EventID", "Tree contrains event ID information");
     
-    eventIDTree->Branch("run", &runNumber);
-    eventIDTree->Branch("lumi", &lumiSection);
-    eventIDTree->Branch("event", &eventNumber);
+    eventIdPointer = &eventId;
+    eventIDTree->Branch("eventId", &eventIdPointer);
     
     
     basicInfoTree = fileService->make<TTree>("BasicInfo",
@@ -123,9 +122,9 @@ void PlainEventContent::endRun(edm::Run const &run, edm::EventSetup const &setup
 void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
     // Fill the event ID tree
-    runNumber = event.id().run();
-	eventNumber = event.id().event();
-	lumiSection = event.luminosityBlock();
+    eventId.SetRunNumber(event.id().run());
+    eventId.SetEventNumber(event.id().event());
+    eventId.SetLumiSectionNumber(event.luminosityBlock());
     
     
     // Read the primary vertices
@@ -217,7 +216,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             float correctedECALIso;
             
             if (runOnData)
-                correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, runNumber, true);
+                correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, event.id().run(), true);
             else
                 correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, false);
             //^ Code snippet in the reference above operates with a Gsf electron instead of a PAT

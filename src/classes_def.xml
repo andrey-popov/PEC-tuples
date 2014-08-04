@@ -13,6 +13,7 @@
     <class  name = "std::vector<pec::Electron>" />
     <class  name = "std::vector<pec::Jet>" />
     
+    <class  name = "pec::EventID" />
     <class  name = "pec::PileUpInfo" />
     <class  name = "pec::GeneratorInfo" />
 </lcgdict>

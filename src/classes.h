@@ -4,6 +4,7 @@
 #include <UserCode/SingleTop/interface/Muon.h>
 #include <UserCode/SingleTop/interface/Electron.h>
 #include <UserCode/SingleTop/interface/Jet.h>
+#include <UserCode/SingleTop/interface/EventID.h>
 #include <UserCode/SingleTop/interface/PileUpInfo.h>
 #include <UserCode/SingleTop/interface/GeneratorInfo.h>
 

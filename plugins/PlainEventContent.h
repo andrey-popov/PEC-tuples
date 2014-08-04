@@ -24,8 +24,9 @@
 #include <UserCode/SingleTop/interface/Electron.h>
 #include <UserCode/SingleTop/interface/Muon.h>
 #include <UserCode/SingleTop/interface/Jet.h>
- #include <UserCode/SingleTop/interface/PileUpInfo.h>
- #include <UserCode/SingleTop/interface/GeneratorInfo.h>
+#include <UserCode/SingleTop/interface/EventID.h>
+#include <UserCode/SingleTop/interface/PileUpInfo.h>
+#include <UserCode/SingleTop/interface/GeneratorInfo.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -161,9 +162,11 @@ private:
     /// Tree to store event ID information
     TTree *eventIDTree;
     
-    // Buffers for the event-ID tree
-    ULong64_t runNumber, lumiSection, eventNumber;
+    /// Basic generator information to be stored in the output file
+    pec::EventID eventId;
     
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    pec::EventID *eventIdPointer;
     
     /**
      * \brief Tree to store all general information
