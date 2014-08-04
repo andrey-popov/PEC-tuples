@@ -13,10 +13,6 @@ using namespace std;
 using namespace edm;
 
 
-// Define the static member
-unsigned const GenJetsInfo::maxSize;
-
-
 GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
     jetSrc(cfg.getParameter<InputTag>("jets")),
     jetCut(cfg.getParameter<string>("cut")),
@@ -24,21 +20,30 @@ GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
 {}
 
 
+void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<InputTag>("jets", InputTag("ak5GenJets"))->
+     setComment("Collection of generator-level jets.");
+    desc.add<string>("cut", "")->
+     setComment("Selection to choose which jets should be stored.");
+    desc.add<bool>("saveFlavourCounters", false)->
+     setComment("Indicates if information on flavours of nearby partons should be stored.");
+    
+    descriptions.add("genJets", desc);
+}
+
+
 void GenJetsInfo::beginJob()
 {
     // Create the output tree
     tree = fs->make<TTree>("GenJets", "Properties of generator-level jets");
     
-    // Assign branches of the output tree
-    tree->Branch("jetSize", &jetSize);
-    
-    tree->Branch("jetPt", jetPt, "jetPt[jetSize]/F");
-    tree->Branch("jetEta", jetEta, "jetEta[jetSize]/F");
-    tree->Branch("jetPhi", jetPhi, "jetPhi[jetSize]/F");
-    tree->Branch("jetMass", jetMass, "jetMass[jetSize]/F");
-    
-    if (saveFlavourCounters)
-        tree->Branch("bcMult", bcMult, "bcMult[jetSize]/b");
+    storeJetsPointer = &storeJets;
+    tree->Branch("jets", &storeJetsPointer);
 }
 
 
@@ -59,19 +64,21 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     
     
     // Loop over the jets
-    jetSize = 0;
+    storeJets.clear();
+    pec::GenJet storeJet;  // will reuse same object to fill the vector
     
-    for (unsigned i = 0; i < jets->size() and jetSize < maxSize; ++i)
+    for (unsigned i = 0; i < jets->size(); ++i)
     {
         auto const &j = jets->at(i);
+        storeJet.Reset();
         
         if (jetSelector(j))
         {
             // Save the jet four-momentum
-            jetPt[jetSize] = j.pt();
-            jetEta[jetSize] = j.eta();
-            jetPhi[jetSize] = j.phi();
-            jetMass[jetSize] = j.mass();
+            storeJet.SetPt(j.pt());
+            storeJet.SetEta(j.eta());
+            storeJet.SetPhi(j.phi());
+            storeJet.SetM(j.mass());
             
         
             // Count hadrons with b and c quarks inside the jet
@@ -108,35 +115,18 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                 }
                 
                 
-                bcMult[jetSize] = min<int>(bHadFound.size(), 15) * 16 +
-                 min<int>(cHadFound.size(), 15);
+                storeJet.SetBottomMult(bHadFound.size());
+                storeJet.SetCharmMult(cHadFound.size());
             }
             
             
-            // Update the jet counter
-            ++jetSize;
+            // Add the jet to the vector
+            storeJets.push_back(storeJet);
         }
     }
     
     
     tree->Fill();
-}
-
-
-void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
-{
-    // Documentation for descriptions of the configuration is available in [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
-    
-    edm::ParameterSetDescription desc;
-    desc.add<InputTag>("jets", InputTag("ak5GenJets"))->
-     setComment("Collection of generator-level jets.");
-    desc.add<string>("cut", "")->
-     setComment("Selection to choose which jets should be stored.");
-    desc.add<bool>("saveFlavourCounters", false)->
-     setComment("Indicates if information on flavours of nearby partons should be stored.");
-    
-    descriptions.add("genJets", desc);
 }
 
 

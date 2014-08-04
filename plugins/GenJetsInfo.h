@@ -1,22 +1,6 @@
-/**
- * \file GenJetsInfo.h
- * \author Andrey Popov
- * 
- * The module defines a plugin to save generator-level jets into a plain ROOT tuple. In the default
- * configuration is stores only jet four momenta. If flag saveFlavourCounters is set to true, the
- * plugin saves additionally the number of hadrons with b or c quarks among ancestors of jet
- * constituents.
- * 
- * Usage example:
- *   process.genJets = cms.EDAnalyzer('GenJetsInfo',
- *       jets = cms.InputTag('ak5GenJets'),
- *       cut = cms.string('pt > 8.'),
- *       saveFlavourCounters = cms.bool(True))
- * An empty cut (default one) means that all jets will be saved.
- */
-
-
 #pragma once
+
+#include <UserCode/SingleTop/interface/GenJet.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -30,32 +14,47 @@
 
 #include <TTree.h>
 
+#include <vector>
 
-/// A class to save generator-level jets
+
+/**
+ * \class GenJetsInfo
+ * \author Andrey Popov
+ * \brief A CMSSW plugin to save generator-level jets
+ * 
+ * Saves generator-level jets in a ROOT file. In the default configuration the plugin stores only
+ * their four momenta. If the flag saveFlavourCounters is set to true, it saves additionally the
+ * numbers of hadrons with b or c quarks among ancestors of jet's constituents (as was done in
+ * AN-2012/251).
+ */
 class GenJetsInfo: public edm::EDAnalyzer
 {
 public:
     /// Constructor from a configuration fragment
     GenJetsInfo(edm::ParameterSet const &cfg);
-
+    
 public:
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+    
     /// Creates the output tree and assigns it branches
     void beginJob();
     
     /// Fills the output tree with generator-level jets
     void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
-    /// A method to verify plugin's configuration
-    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
-
 private:
     /// Input tag to identify the collection of generator-level jets
     edm::InputTag const jetSrc;
     
-    /// String defining a selection for the jets
+    /**
+     * \brief String defining a selection for the jets
+     * 
+     * If the string is empty, all jets are saved.
+     */
     std::string const jetCut;
     
-    /// Indicates whether the plugin should store information on flavours of nearby partons
+    /// Indicates whether the plugin should store information on flavours of jet constituents
     bool const saveFlavourCounters;
     
     /// A service to write to ROOT files
@@ -64,18 +63,18 @@ private:
     /// The output tree (owned by the TFile service)
     TTree *tree;
     
-    /// Maximal size of buffer arrays used to preallocate them
-    static unsigned const maxSize = 64;
+    /**
+     * \brief Trimmed generator-level jets to be stored in the output file
+     * 
+     * Depending on the flag saveFlavourCounters, the jets will or will not contain information on
+     * the numbers of B and C hadrons inside them.
+     */
+    std::vector<pec::GenJet> storeJets;
     
-    // Output buffers
-    UChar_t jetSize;
-    
-    Float_t jetPt[maxSize];
-    Float_t jetEta[maxSize];
-    Float_t jetPhi[maxSize];
-    Float_t jetMass[maxSize];
-    
-    // Number of hadrons with b or c quarks among jet constituents. Constructed as the number of
-    //B hadrons multiplied by 16 plus number of c hadrons
-    UChar_t bcMult[maxSize];
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
+    std::vector<pec::GenJet> *storeJetsPointer;
 };
