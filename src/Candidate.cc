@@ -24,6 +24,15 @@ Candidate &Candidate::operator=(Candidate const &src)
 }
 
 
+void Candidate::Reset()
+{
+    pt = 0;
+    eta = 0;
+    phi = 0;
+    mass = 0;
+}
+
+
 void Candidate::SetPt(double pt_)
 {
     pt = pt_;

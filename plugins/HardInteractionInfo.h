@@ -1,5 +1,7 @@
 #pragma once
 
+#include <UserCode/SingleTop/interface/GenParticle.h>
+
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -12,11 +14,16 @@
 
 #include <TTree.h>
 
+#include <vector>
+
 
 /**
  * \class HardInteractionInfo
  * \author Andrey Popov
  * \brief Stores particles from the hard interaction in a ROOT file
+ * 
+ * Particles from the hard interaction are identified with their status, which is hard-coded to the
+ * value used in Pythia 6.
  */
 class HardInteractionInfo: public edm::EDAnalyzer
 {
@@ -41,19 +48,16 @@ private:
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
     
-    /// Maximal size to allocate buffer arrays
-    static unsigned const maxSize = 64;
-    
     /// Tree to be written in the output ROOT file
     TTree *outTree;
     
-    // Information about the hard interaction (status-3 particles). The beam particles (the protons)
-    //are skipped
-    UChar_t hardPartSize;  // number of the saved particles
-    Char_t hardPartPdgId[maxSize];  // their PDG ID
-    Char_t hardPartFirstMother[maxSize], hardPartLastMother[maxSize];  // indices of mothers
-    Float_t hardPartPt[maxSize];    // four-momenta of the particles
-    Float_t hardPartEta[maxSize];   //
-    Float_t hardPartPhi[maxSize];   //
-    Float_t hardPartMass[maxSize];  //
+    /// Trimmed generator-level particles to be stored in the output file
+    std::vector<pec::GenParticle> storeParticles;
+    
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
+    std::vector<pec::GenParticle> *storeParticlesPointer;
 };

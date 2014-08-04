@@ -8,10 +8,6 @@ using namespace std;
 using namespace edm;
 
 
-// A static data member
-unsigned const HardInteractionInfo::maxSize;
-
-
 HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg):
     genParticlesTag(cfg.getParameter<InputTag>("genParticles"))
 {}
@@ -32,16 +28,8 @@ void HardInteractionInfo::beginJob()
     outTree = fileService->make<TTree>("HardInteraction",
      "Tree contrains generator-level particles from the hard interaction");
     
-    outTree->Branch("hardPartSize", &hardPartSize);
-    outTree->Branch("hardPartPdgId", hardPartPdgId, "hardPartPdgId[hardPartSize]/B");
-    outTree->Branch("hardPartFirstMother", hardPartFirstMother,
-     "hardPartFirstMother[hardPartSize]/B");
-    outTree->Branch("hardPartLastMother", hardPartLastMother,
-     "hardPartLastMother[hardPartSize]/B");
-    outTree->Branch("hardPartPt", hardPartPt, "hardPartPt[hardPartSize]/F");
-    outTree->Branch("hardPartEta", hardPartEta, "hardPartEta[hardPartSize]/F");
-    outTree->Branch("hardPartPhi", hardPartPhi, "hardPartPhi[hardPartSize]/F");
-    outTree->Branch("hardPartMass", hardPartMass, "hardPartMass[hardPartSize]/F");
+    storeParticlesPointer = &storeParticles;
+    outTree->Branch("particles", &storeParticlesPointer);
 }
 
 
@@ -51,48 +39,51 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     Handle<View<reco::GenParticle>> genParticles;
     event.getByLabel(genParticlesTag, genParticles);
     
-    hardPartSize = 0;
+    
+    storeParticles.clear();
+    pec::GenParticle storeParticle;  // will reuse same object to fill the vector
+    
+    // Will keep trace of already visited particles to search for mothers in there
     vector<reco::GenParticle const *> visitedParticles;
     
-    for (unsigned i = 2; i < genParticles->size(); ++i)  // skip the protons
+    for (unsigned i = 2; i < genParticles->size(); ++i)
+    //^ The beam particles are skipped, which is why the index starts from 2
     {
         reco::GenParticle const &p = genParticles->at(i);
+        storeParticle.Reset();  // reset the object as it is reused from the previous iteration
         
-        if (p.status() != 3)  // all the status 3 particles are at the beginning of listing
+        if (p.status() != 3)  // all the status 3 particles are at the beginning of the listing
             break;
         
-        int const nMothers = p.numberOfMothers();
+        
+        unsigned const nMothers = p.numberOfMothers();
         
         if (nMothers > 0)
         {
             auto it = find(visitedParticles.begin(), visitedParticles.end(), p.mother(0));
-            hardPartFirstMother[hardPartSize] = (it != visitedParticles.end()) ?
-             it - visitedParticles.begin() : -1;
-            //^ The indices correspond to the position in the stored arrays, not genParticles
+            
+            if (it != visitedParticles.end())
+                storeParticle.SetFirstMotherIndex(it - visitedParticles.begin());
             
             if (nMothers > 1)
             {
-                it = find(visitedParticles.begin(), visitedParticles.end(),
-                 p.mother(nMothers - 1));
-                hardPartLastMother[hardPartSize] = (it != visitedParticles.end()) ?
-                 it - visitedParticles.begin() : -1;
+                it = find(visitedParticles.begin(), visitedParticles.end(), p.mother(nMothers - 1));
+                
+                if (it != visitedParticles.end())
+                    storeParticle.SetLastMotherIndex(it - visitedParticles.begin());
             }
-            else
-                hardPartLastMother[hardPartSize] = hardPartFirstMother[hardPartSize];
             
         }
-        else
-            hardPartFirstMother[hardPartSize] = hardPartLastMother[hardPartSize] = -1;
         
-        hardPartPdgId[hardPartSize] = p.pdgId();
-        hardPartPt[hardPartSize] = p.pt();
-        hardPartEta[hardPartSize] = p.eta();
-        hardPartPhi[hardPartSize] = p.phi();
-        hardPartMass[hardPartSize] = p.mass();
+        storeParticle.SetPdgId(p.pdgId());
+        storeParticle.SetPt(p.pt());
+        storeParticle.SetEta(p.eta());
+        storeParticle.SetPhi(p.phi());
+        storeParticle.SetM(p.mass());
         
         
-        ++hardPartSize;
         visitedParticles.push_back(&genParticles->at(i));
+        storeParticles.push_back(storeParticle);
     }
     
     

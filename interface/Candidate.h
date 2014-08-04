@@ -27,6 +27,9 @@ namespace pec
         Candidate &operator=(Candidate const &src);
         
     public:
+        /// Resets the object to a state right after the default initialisation
+        virtual void Reset();
+        
         /// Sets transverse momentum (GeV/c)
         void SetPt(double pt);
         
