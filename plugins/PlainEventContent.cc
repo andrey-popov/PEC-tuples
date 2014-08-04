@@ -103,14 +103,9 @@ void PlainEventContent::beginJob()
         generatorTree = fileService->make<TTree>("GeneratorInfo",
          "The tree keeps some generator information");
         
-        generatorTree->Branch("processID", &processID);
-        generatorTree->Branch("genWeight", &genWeight);
+        generatorInfoPointer = &generatorInfo;
+        generatorTree->Branch("genInfo", &generatorInfoPointer);
         
-        generatorTree->Branch("pdfX1", &pdfX1);
-        generatorTree->Branch("pdfX2", &pdfX2);
-        generatorTree->Branch("pdfQ", &pdfQ);
-        generatorTree->Branch("pdfId1", &pdfId1);
-        generatorTree->Branch("pdfId2", &pdfId2);
         
         if (saveHardInteraction)
         {
@@ -542,24 +537,21 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         Handle<GenEventInfoProduct> generator;
         event.getByLabel(generatorTag, generator);
         
-        processID = generator->signalProcessID();
-        genWeight = generator->weight();
+        generatorInfo.Reset();
+        //^ Same object is used for all events, hence need to reset it
+        
+        generatorInfo.SetProcessId(generator->signalProcessID());
+        generatorInfo.SetWeight(generator->weight());
+        generatorInfo.SetMeQScale(generator->qScale());
+        
         
         GenEventInfoProduct::PDF const *pdf = generator->pdf();
         
         if (pdf)
         {
-            pdfX1 = pdf->x.first;
-            pdfX2 = pdf->x.second;
-            pdfQ = pdf->scalePDF;
-            pdfId1 = pdf->id.first;
-            pdfId2 = pdf->id.second;
-        }
-        else  // information on PDF is not available for datasets with particle gun
-        {
-            pdfX1 = pdfX2 = -1.f;
-            pdfQ = -1.f;
-            pdfId1 = pdfId2 = -100;
+            generatorInfo.SetPdfXs(pdf->x.first, pdf->x.second);
+            generatorInfo.SetPdfIds(pdf->id.first, pdf->id.second);
+            generatorInfo.SetPdfQScale(pdf->scalePDF);
         }
     }
     

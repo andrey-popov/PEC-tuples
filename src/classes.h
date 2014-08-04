@@ -5,6 +5,7 @@
 #include <UserCode/SingleTop/interface/Electron.h>
 #include <UserCode/SingleTop/interface/Jet.h>
 #include <UserCode/SingleTop/interface/PileUpInfo.h>
+#include <UserCode/SingleTop/interface/GeneratorInfo.h>
 
 #include <vector>
 

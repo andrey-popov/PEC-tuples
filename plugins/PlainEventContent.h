@@ -25,6 +25,7 @@
 #include <UserCode/SingleTop/interface/Muon.h>
 #include <UserCode/SingleTop/interface/Jet.h>
  #include <UserCode/SingleTop/interface/PileUpInfo.h>
+ #include <UserCode/SingleTop/interface/GeneratorInfo.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -241,13 +242,12 @@ private:
      */
     TTree *generatorTree;
     
-    Short_t processID;  // process ID; e.g. different subprocesses in MadGraph get different IDs
-    Float_t genWeight;  // generator weight of an event
+    /// Basic generator information to be stored in the output file
+    pec::GeneratorInfo generatorInfo;
     
-    Float_t pdfX1, pdfX2;  // momenta fraction carried by initial-state partons
-    Float_t pdfQ;  // scale used to evaluate PDF
-    Char_t pdfId1, pdfId2;  // ID of the initial-state partons; gluons are encoded by code 0
-    
+    /// ROOT needs a variable with a pointer to an object to store the object in a tree
+    pec::GeneratorInfo *generatorInfoPointer;
+        
     // Information about the hard interaction (status-3 particles). The beam particles (the protons)
     //are skipped
     UChar_t hardPartSize;  // number of the saved particles
