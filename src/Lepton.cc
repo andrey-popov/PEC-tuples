@@ -8,7 +8,7 @@ using namespace pec;
 
 Lepton::Lepton():
     CandidateWithID(),
-    charge(false), relIso(0.), dB(0.)
+    charge(false), relIso(0), dB(0)
 {}
 
 
@@ -27,6 +27,16 @@ Lepton &Lepton::operator=(Lepton const &src)
     dB = src.dB;
     
     return *this;
+}
+
+
+void Lepton::Reset()
+{
+    CandidateWithID::Reset();
+    
+    charge = false;
+    relIso = 0;
+    dB = 0;
 }
 
 

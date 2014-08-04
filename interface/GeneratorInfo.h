@@ -23,7 +23,7 @@ namespace pec
         GeneratorInfo &operator=(GeneratorInfo const &src);
         
     public:
-        /// Cleans this
+        /// Resets the object to a state right after the default initialisation
         void Reset();
         
         /**

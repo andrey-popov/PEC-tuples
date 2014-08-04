@@ -23,6 +23,9 @@ namespace pec
         Lepton &operator=(Lepton const &src);
         
     public:
+        /// Resets the object to a state right after the default initialisation
+        virtual void Reset();
+        
         /**
          * \brief Sets lepton charge
          * 

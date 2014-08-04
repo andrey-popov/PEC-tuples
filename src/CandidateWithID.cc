@@ -27,6 +27,14 @@ CandidateWithID &CandidateWithID::operator=(CandidateWithID const &src)
 }
 
 
+void CandidateWithID::Reset()
+{
+    Candidate::Reset();
+    
+    id = 0;
+}
+
+
 void CandidateWithID::SetBit(unsigned index, bool value /*= true*/)
 {
     if (index >= 8)

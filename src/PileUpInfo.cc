@@ -31,6 +31,15 @@ PileUpInfo &PileUpInfo::operator=(PileUpInfo const &src)
 }
 
 
+void PileUpInfo::Reset()
+{
+    numPV = 0;
+    rho = 0;
+    trueNumPU = 0;
+    inTimeNumPU = 0;
+}
+
+
 void PileUpInfo::SetNumPV(unsigned numPV_)
 {
     numPV = numPV_;

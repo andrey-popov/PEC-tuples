@@ -23,6 +23,9 @@ namespace pec
         EventID &operator=(EventID const &src);
         
     public:
+        /// Resets the object to a state right after the default initialisation
+        void Reset();
+        
         /// Sets run number
         void SetRunNumber(unsigned long long run);
         

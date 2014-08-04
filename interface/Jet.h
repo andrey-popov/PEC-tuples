@@ -56,6 +56,9 @@ namespace pec
         Jet &operator=(Jet const &src);
         
     public:
+        /// Resets the object to a state right after the default initialisation
+        virtual void Reset();
+        
         /// Sets the value of the CSV b-tagging discriminator
         void SetBTagCSV(double bTag);
         

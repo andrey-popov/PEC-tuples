@@ -46,6 +46,21 @@ Jet &Jet::operator=(Jet const &src)
 }
 
 
+void Jet::Reset()
+{
+    CandidateWithID::Reset();
+    
+    bTagCSV = bTagTCHP = 0;
+    secVertexMass = 0;
+    area = 0;
+    charge = 0;
+    pullAngle = 0;
+    pileUpID = 0;
+    flavourAlgorithmic = 0;
+    flavourPhysics = 0;
+}
+
+
 void Jet::SetBTagCSV(double bTag)
 {
     bTagCSV = bTag;

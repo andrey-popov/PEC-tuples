@@ -20,3 +20,9 @@ Muon &Muon::operator=(Muon const &src)
     
     return *this;
 }
+
+
+void Muon::Reset()
+{
+    Lepton::Reset();
+}

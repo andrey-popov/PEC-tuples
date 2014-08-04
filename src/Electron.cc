@@ -6,7 +6,7 @@ using namespace pec;
 
 Electron::Electron():
     Lepton(),
-    cutBasedID(0), mvaID(0.)
+    cutBasedID(0), mvaID(0)
 {}
 
 
@@ -24,6 +24,15 @@ Electron &Electron::operator=(Electron const &src)
     mvaID = src.mvaID;
     
     return *this;
+}
+
+
+void Electron::Reset()
+{
+    Lepton::Reset();
+    
+    cutBasedID = 0;
+    mvaID = 0;
 }
 
 

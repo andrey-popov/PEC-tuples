@@ -23,6 +23,9 @@ namespace pec
         PileUpInfo &operator=(PileUpInfo const &src);
         
     public:
+        /// Resets the object to a state right after the default initialisation
+        void Reset();
+        
         /// Sets the number of good reconstructed primary vertices
         void SetNumPV(unsigned numPV);
         

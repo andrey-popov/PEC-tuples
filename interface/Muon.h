@@ -15,6 +15,9 @@ namespace pec
     class Muon: public Lepton
     {
     public:
+        /// Resets the object to a state right after the default initialisation
+        virtual void Reset();
+        
         /// Constructor with no parameters
         Muon();
         

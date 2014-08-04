@@ -26,6 +26,9 @@ namespace pec
         CandidateWithID &operator=(CandidateWithID const &src);
         
     public:
+        /// Resets the object to a state right after the default initialisation
+        virtual void Reset();
+        
         /**
          * \brief Sets or unsets an ID bit
          * 

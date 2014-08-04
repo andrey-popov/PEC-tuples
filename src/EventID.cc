@@ -28,6 +28,14 @@ EventID &EventID::operator=(EventID const &src)
 }
 
 
+void EventID::Reset()
+{
+    run = 0;
+    lumi = 0;
+    event = 0;
+}
+
+
 void EventID::SetRunNumber(unsigned long long run_)
 {
     run = run_;

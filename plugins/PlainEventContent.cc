@@ -147,6 +147,8 @@ void PlainEventContent::beginJob()
 void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
     // Fill the event ID tree
+    eventId.Reset();
+    
     eventId.SetRunNumber(event.id().run());
     eventId.SetEventNumber(event.id().event());
     eventId.SetLumiSectionNumber(event.luminosityBlock());
@@ -190,6 +192,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     for (unsigned i = 0; i < srcElectrons->size(); ++i)
     {
         pat::Electron const &el = srcElectrons->at(i);
+        storeElectron.Reset();
         
         
         // Set four-momentum. Mass is ignored
@@ -287,6 +290,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     for (unsigned i = 0; i < srcMuons->size(); ++i)
     {
         pat::Muon const &mu = srcMuons->at(i);
+        storeMuon.Reset();
         
         
         // Set four-momentum. Mass is ignored
@@ -348,6 +352,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     {
         pat::Jet const &j = srcJets->at(i);
         reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
+        storeJet.Reset();
         
         if (j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt)
         {
@@ -473,6 +478,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         Handle<View<pat::MET>> met;
         event.getByLabel(*tag, met);
         
+        storeMET.Reset();
+        
         storeMET.SetPt(met->front().pt());
         storeMET.SetPhi(met->front().phi());
         
@@ -506,6 +513,9 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Save the pile-up information
+    puInfo.Reset();
+    //^ Same object is used for all events, hence need to reset it
+    
     puInfo.SetNumPV(vertices->size());
 
     Handle<double> rho;
