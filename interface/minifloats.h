@@ -2,6 +2,8 @@
 
 #include <Rtypes.h>
 
+#include <cmath>
+
 
 /**
  * \brief Conversion functions to provide a 16-bit representation for a storage of floating-point
@@ -44,7 +46,8 @@ namespace minifloat
      * numbers nor NaN, infinities, or negative zero. Numbers that fall outside the representable
      * range are rounded either to zero or to the largest (in absolute value) representable number.
      */
-    UShort_t encodeGenericSigned(unsigned nBitFrac, int expBias, double value);
+    template<unsigned nBitFrac, int expBias>
+    UShort_t encodeGenericSigned(double value);
     
     /**
      * \brief Decodes a generic signed floating-point number
@@ -52,7 +55,8 @@ namespace minifloat
      * Performs a back transformation of a result of the function encodeGenericSigned. Consult its
      * documentation for details.
      */
-    double decodeGenericSigned(unsigned nBitFrac, int expBias, UShort_t representation);
+    template<unsigned nBitFrac, int expBias>
+    double decodeGenericSigned(UShort_t representation);
     
     /**
      * \brief Encodes a floating-point angle defined over a range [-pi, pi)
@@ -67,4 +71,106 @@ namespace minifloat
      * This is a specialisation of the funtion decodeUniformRange.
      */
     double decodeAngle(UShort_t representation);
+}
+
+
+// Implementations of templated functions
+template<unsigned nBitFrac, int expBias>
+UShort_t minifloat::encodeGenericSigned(double value)
+{
+    // A short-cut for zero
+    if (value == 0.)  // true for both positive and negative zeros
+        return 0;
+    
+    
+    // A variable to build the representation
+    UShort_t repr = 0;
+    
+    
+    // Parse the value into the significand and the exponent
+    int e;
+    double frac = std::frexp(value, &e);
+    
+    // The returned significand is in the range [0.5, 1), but [1, 2) is more comfortable. Rearrange
+    //the significand and the exponent accordingly
+    frac *= 2;
+    --e;
+    
+    
+    // Check if the number is not too small. If it is the case, simply encode as zero (do not mess
+    //with subnormal numbers)
+    if (e + expBias < 0)
+        return 0;
+    
+    // Check if the number is too large
+    if (e + expBias >= (1 << (16 - nBitFrac - 1)))
+    {
+        if (value > 0.)
+            return (1 << 15) - 1;  // i.e. all bits but the highest one are set to 1
+        else
+            return (1 << 16) - 1;  // i.e. all bits are set to 1
+    }
+    
+    
+    // Extract the sign and make the significand positive
+    if (frac < 0.)
+    {
+        repr |= (1 << 15);
+        frac = -frac;
+    }
+    
+    
+    // Encode the significand in the lowest bits
+    unsigned fracRepr = std::floor((frac - 1.) * (1 << nBitFrac));
+    
+    if (fracRepr >= (1 << nBitFrac))
+    //^ Could happen if in reality frac >= 2 because of rounding errors
+        fracRepr = (1 << nBitFrac) - 1;
+    
+    repr |= fracRepr;
+    
+    
+    // Encode the exponent. It has already been checked that the number (e + expBias) can be encoded
+    //with appropriate bits. Just put this number into its place in the representation.
+    repr |= (unsigned(e + expBias) << nBitFrac);
+    
+    
+    // Everything is done
+    return repr;
+}
+
+
+template<unsigned nBitFrac, int expBias>
+double minifloat::decodeGenericSigned(UShort_t representation)
+{
+    // A short-cut for zero
+    if (representation == 0)
+        return 0.;
+    
+    
+    // A variable to accumulate the result
+    double res;
+    
+    
+    // Extract the significand (fraction) encoded in the nBitFrac lowest bits
+    unsigned const fracRepr = representation & ((1 << nBitFrac) - 1);
+    
+    // Decode the significand and put it into the result. It occupies the range [1, 2)
+    res = 1. + fracRepr / double(1 << nBitFrac);
+    
+    
+    // Extract the sign, which is encoded in the highest bit
+    if (representation & (1 << 15))  // this is a negative number
+        res = -res;
+    
+    
+    // Extract the exponent encoded in the remaining bits
+    unsigned const e = (representation & ((1 << 15) - 1)) >> nBitFrac;
+    
+    // Include the exponent in the result
+    res = std::ldexp(res, e - expBias);
+    
+    
+    // Everything is done
+    return res;
 }
