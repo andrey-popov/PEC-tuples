@@ -2,28 +2,6 @@
  * \file PartonShowerOutcome.h
  * \author Andrey Popov
  * 
- * The module defines a cmsRun plugin to save properties of selected particles in the final state
- * after parton shower but before hadronisation. It is intended to be used for heavy-flavour quarks
- * to allow classification of W+jets or ttbar+jets events, but it can be used for other particles
- * as well.
- * 
- * User can choose particles to be saved by giving a list of absolute values of allowed PDG ID. In
- * addition to the filtering on PDG ID, a particle must have status 2 and have a daughter that is
- * either stable (has status 1) or is a special object (PDG ID from 81 to 100, which most notably
- * includes strings and clusters).
- * 
- * For each particle that satisfies the above requirements several properties are stored in a plain
- * ROOT tree. The plugins saves their PDG ID and three-momentum in parametrisation (pt, eta, phi).
- * The mass (or energy) component is dropped to save space as it can be recovered easily from type
- * of the particle and in most cases is not needed at all (for instance, to perform angular matching
- * with reconstructed jets). In addition to it each particle is classified depending on its origin.
- * If it is an immediate daughter of a beam particle, it is assigned code ParticleOrigin::Proton
- * (see the corresponding enumeration defined below). If its first mother with status 3 is a
- * granddaughter of a beam particle, the particle is from ISR. In all the rest cases it is
- * attributed to FSR.
- * 
- * In order to fully classify a W+jets event, results of this plugin should be complemented with
- * information about hard process.
  * 
  * Example configuration of the plugin:
  *   heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
@@ -32,6 +10,8 @@
  */
 
 #pragma once
+
+#include <UserCode/SingleTop/interface/ShowerParton.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -53,33 +33,37 @@
  * \class PartonShowerOutcome
  * \brief Saves information about a final state after the parton shower
  * 
- * Consult the file's documentation section for details.
+ * The plugin saves properties of selected particles in the final state after the parton shower but
+ * before hadronisation. It is intended to be used for heavy-flavour quarks to allow classification
+ * of W+jets or ttbar+jets events, but it can be deployed for other particles as well.
+ * 
+ * User can choose particles to be saved by giving a list of absolute values of allowed PDG ID. In
+ * addition to the filtering on PDG ID, a particle must have status 2 and have a daughter that is
+ * either stable (has status 1) or is a special object (PDG ID from 81 to 100, which most notably
+ * includes strings and clusters). It means that the plugin is suitable for events showered with
+ * Pythia 6 only.
+ * 
+ * Selected particles are stored as instances of the class pec::ShowerParton. Consult documentation
+ * for this class for further details.
+ * 
+ * In order to fully classify a W+jets event, results of this plugin should be complemented with
+ * information about the hard scattering.
  */
 class PartonShowerOutcome: public edm::EDAnalyzer
 {
-private:
-    /// Specifies the origin of a particle
-    enum class ParticleOrigin
-    {
-        Undefined = 0,
-        ISR = 1,    // initial-state radiation
-        FSR = 2,    // final-state radiation
-        Proton = 3  // an immediate daughter of one of the initial beam particles
-    };
-    
 public:
     /// Constructor from a configuration
     PartonShowerOutcome(edm::ParameterSet const &cfg);
     
 public:
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+    
     /// Creates the output tree
     virtual void beginJob();
     
     /// Processes the current event and fills the output tree
     virtual void analyze(edm::Event const &event, edm::EventSetup const &eventSetup);
-    
-    /// A method to verify plugin's configuration
-    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
 private:
     /**
@@ -91,7 +75,7 @@ private:
      * one, the particle is classified as ISR. Otherwise it is attributed to FSR. Note that
      * descendants of particles in the final state of the hard process are also considered as FSR.
      */
-    static ParticleOrigin DeduceOrigin(reco::Candidate const &particle);
+    static pec::ShowerParton::Origin DeduceOrigin(reco::Candidate const &particle);
     
 private:
     /// Absolute values of PDG ID of particles to be saved
@@ -110,24 +94,18 @@ private:
      */
     TTree *outTree;
     
-    /// Maximal number of particles that can be stored in an event
-    static int const maxSize = 32;
-    
-    
-    // Output buffers
-    /// Number of particles stored by the plugin in the current event
-    UChar_t bfSize;
-    
-    /// PDG ID of a particle
-    Short_t bfPdgId[maxSize];
+    /**
+     * \brief Trimmer shower partons to be stored in the output file
+     * 
+     * Masses are set to zero for a more efficient compression as they can be recovered from PDG ID
+     * easily.
+     */
+    std::vector<pec::ShowerParton> storePartons;
     
     /**
-     * \brief Encodes the origin of a particle
+     * \brief An auxiliary pointer
      * 
-     * Possible values are given by the ParticleOrigin enumeration.
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
      */
-    UChar_t bfOrigin[maxSize];
-    
-    /// Three-momentum of a particle
-    Float_t bfPt[maxSize], bfEta[maxSize], bfPhi[maxSize];
+    std::vector<pec::ShowerParton> *storePartonsPointer;
 };

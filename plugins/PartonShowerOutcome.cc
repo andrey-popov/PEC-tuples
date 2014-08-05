@@ -1,13 +1,9 @@
-#include <UserCode/SingleTop/plugins/PartonShowerOutcome.h>
+#include "PartonShowerOutcome.h"
 
 #include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
 #include <algorithm>
-
-
-// Static const data member
-int const PartonShowerOutcome::maxSize;
 
 
 PartonShowerOutcome::PartonShowerOutcome(edm::ParameterSet const &cfg):
@@ -16,19 +12,29 @@ PartonShowerOutcome::PartonShowerOutcome(edm::ParameterSet const &cfg):
 {}
 
 
+void PartonShowerOutcome::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+{
+    // Documentation for descriptions of the configuration is available in [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
+    
+    edm::ParameterSetDescription desc;
+    desc.add<edm::InputTag>("genParticles", edm::InputTag("genParticles"))->
+     setComment("Name of collection of generator particles.");
+    desc.add<std::vector<int>>("absPdgId", std::vector<int>{4, 5})->
+     setComment("Absolute values of PDG ID of particles to be stored.");
+    
+    descriptions.add("heavyFlavours", desc);
+}
+
+
 void PartonShowerOutcome::beginJob()
 {
     // Create the output tree
     outTree = fileService->make<TTree>("PartonShowerInfo",
      "Properties of selected particles from parton shower");
     
-    // Assign branches to the tree
-    outTree->Branch("psSize", &bfSize, "psSize/b");
-    outTree->Branch("psPdgId", bfPdgId, "psPdgId[psSize]/S");
-    outTree->Branch("psOrigin", bfOrigin, "psOrigin[psSize]/b");
-    outTree->Branch("psPt", bfPt, "psPt[psSize]/F");
-    outTree->Branch("psEta", bfEta, "psEta[psSize]/F");
-    outTree->Branch("psPhi", bfPhi, "psPhi[psSize]/F");
+    storePartonsPointer = &storePartons;
+    outTree->Branch("partons", &storePartonsPointer);
 }
 
 
@@ -40,7 +46,8 @@ void PartonShowerOutcome::analyze(edm::Event const &event, edm::EventSetup const
     
     
     // Loop over the generator particles
-    int nParticles = 0;
+    storePartons.clear();
+    pec::ShowerParton storeParton;  // same object will be reused to fill the vector
     
     for (reco::GenParticle const &p: *genParticles)
     {
@@ -53,6 +60,7 @@ void PartonShowerOutcome::analyze(edm::Event const &event, edm::EventSetup const
         if (std::find(absPdgIdToSave.begin(), absPdgIdToSave.end(), abs(p.pdgId())) ==
          absPdgIdToSave.end())
             continue;
+        
         
         // Keep only particles in the final state of parton shower. Their daughters are either
         //stable particles (status 1) or strings on clusters. The latter is generalised to daugthers
@@ -74,34 +82,28 @@ void PartonShowerOutcome::analyze(edm::Event const &event, edm::EventSetup const
             continue;
         
         
+        // An appropriate parton has been found. Save its properties
+        storeParton.Reset();
         
-        // Fill arrays with information about the current particle
-        bfPdgId[nParticles] = p.pdgId();
-        bfPt[nParticles] = p.pt();
-        bfEta[nParticles] = p.eta();
-        bfPhi[nParticles] = p.phi();
+        storeParton.SetPt(p.pt());
+        storeParton.SetEta(p.eta());
+        storeParton.SetPhi(p.phi());
         
-        // Deduce the origin of the particle
-        bfOrigin[nParticles] = int(DeduceOrigin(p));
+        storeParton.SetPdgId(p.pdgId());
+        storeParton.SetOrigin(DeduceOrigin(p));
         
         
-        // Finally, increase the counter and break the loop if maximal allowed number of particles
-        //is reached
-        ++nParticles;
-        
-        if (nParticles == maxSize)
-            break;
+        // The particle has been set up. Push it into the vector
+        storePartons.push_back(storeParton);
     }
     
     
-    // Specify the total number of particles to be written and fill the output tree
-    bfSize = nParticles;
+    // Fill the output tree
     outTree->Fill();
 }
 
 
-PartonShowerOutcome::ParticleOrigin PartonShowerOutcome::DeduceOrigin(
- reco::Candidate const &particle)
+pec::ShowerParton::Origin PartonShowerOutcome::DeduceOrigin(reco::Candidate const &particle)
 {
     // Check mothers recursively until the first particle with status 3 is found
     reco::Candidate const *p = &particle;
@@ -123,31 +125,16 @@ PartonShowerOutcome::ParticleOrigin PartonShowerOutcome::DeduceOrigin(
     // If the given particle is an immediate daughter of a beam particle, then its first mother with
     //status 3 (the beam particle) has no mothers
     if (p->numberOfMothers() == 0)
-        return ParticleOrigin::Proton;
+        return pec::ShowerParton::Origin::Proton;
     
     // All ISR has a valence quark as its mother. A valence quark is an immediate daughter of a beam
     //particle and thus has no grand mothers
     if (p->mother(0)->numberOfMothers() == 0)
-        return ParticleOrigin::ISR;
+        return pec::ShowerParton::Origin::ISR;
     
     // All the rest is an immediate or indirect dauther of two sea partons picked for the initial
     //state of the hard process. It is classified as FSR
-    return ParticleOrigin::FSR;
-}
-
-
-void PartonShowerOutcome::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
-{
-    // Documentation for descriptions of the configuration is available in [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
-    
-    edm::ParameterSetDescription desc;
-    desc.add<edm::InputTag>("genParticles", edm::InputTag("genParticles"))->
-     setComment("Name of collection of generator particles.");
-    desc.add<std::vector<int>>("absPdgId")->
-     setComment("Absolute values of PDG ID of particles to be stored.");
-    
-    descriptions.add("heavyFlavours", desc);
+    return pec::ShowerParton::Origin::FSR;
 }
 
 

@@ -6,6 +6,7 @@
 #include <UserCode/SingleTop/interface/Jet.h>
 #include <UserCode/SingleTop/interface/GenParticle.h>
 #include <UserCode/SingleTop/interface/GenJet.h>
+#include <UserCode/SingleTop/interface/ShowerParton.h>
 
 #include <UserCode/SingleTop/interface/EventID.h>
 #include <UserCode/SingleTop/interface/PileUpInfo.h>
@@ -23,3 +24,4 @@ template class std::vector<pec::Electron>;
 template class std::vector<pec::Jet>;
 template class std::vector<pec::GenParticle>;
 template class std::vector<pec::GenJet>;
+template class std::vector<pec::ShowerParton>;

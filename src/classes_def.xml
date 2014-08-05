@@ -7,6 +7,7 @@
     <class  name = "pec::Jet" />
     <class  name = "pec::GenParticle" />
     <class  name = "pec::GenJet" />
+    <class  name = "pec::ShowerParton" />
     
     <class  name = "std::vector<pec::Candidate>" />
     <class  name = "std::vector<pec::CandidateWithID>" />
@@ -16,6 +17,7 @@
     <class  name = "std::vector<pec::Jet>" />
     <class  name = "std::vector<pec::GenParticle>" />
     <class  name = "std::vector<pec::GenJet>" />
+    <class  name = "std::vector<pec::ShowerParton>" />
     
     <class  name = "pec::EventID" />
     <class  name = "pec::PileUpInfo" />
