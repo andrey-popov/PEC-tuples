@@ -63,9 +63,32 @@ namespace pec
         double M() const;
         
     private:
+        /**
+         * \brief Transverse momentum, GeV/c
+         * 
+         * 
+         */
         Float_t pt;
+        
+        /**
+         * \brief Pseudorapidity
+         * 
+         * 
+         */
         Float_t eta;
-        Float_t phi;
+        
+        /**
+         * \brief Azimuthal angle, [-pi, pi)
+         * 
+         * Encoded with minifloats functions.
+         */
+        UShort_t phi;
+        
+        /**
+         * \brief Mass, GeV/c^2
+         * 
+         * 
+         */
         Float_t mass;
     };
 }

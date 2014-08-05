@@ -1,10 +1,11 @@
 #include <UserCode/SingleTop/interface/Candidate.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 using namespace pec;
 
 
 Candidate::Candidate():
-    pt(0.), eta(0.), phi(0.), mass(0.)
+    pt(0.), eta(0.), phi(0), mass(0.)
 {}
 
 
@@ -47,7 +48,7 @@ void Candidate::SetEta(double eta_)
 
 void Candidate::SetPhi(double phi_)
 {
-    phi = phi_;
+    phi = minifloat::encodeAngle(phi_);
 }
 
 
@@ -71,7 +72,7 @@ double Candidate::Eta() const
 
 double Candidate::Phi() const
 {
-    return phi;
+    return minifloat::decodeAngle(phi);
 }
 
 
