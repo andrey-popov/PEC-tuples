@@ -33,30 +33,33 @@ namespace minifloat
     double decodeUniformRange(double min, double max, UShort_t representation);
     
     /**
-     * \brief Encodes a generic signed floating-point number
+     * \brief Encodes a generic floating-point number
      * 
-     * The user specifies desired number of bits to be used for significand and the offset for the
-     * exponent (the offset is added to the actual exponent, i.e. it should be positive in order to
-     * allow representing of numbers smaller than 1). To have a representation resembling binary16
-     * in the IEE 754 standard, one should set nBitFrac = 10 and expBias = 14.
+     * The user specifies if the number is signed, the desired number of bits to be used for the
+     * significand and the offset for the exponent (the offset is added to the actual exponent, i.e.
+     * it should be positive in order to allow representing numbers smaller than 1). To have a
+     * representation resembling binary16 from the IEE 754 standard, one should set isSigned = true,
+     * nBitFrac = 10 and expBias = 14.
      * 
-     * The value must not be NaN or infinity. Positive and negative zeros are not distinguished.
+     * The value must not be a NaN or infinity. If isSigned is false, the value must not be
+     * negative. For performance reasons these conditions are not checked, and the behaviour is
+     * undefined if they are violated. Positive and negative zeros are not distinguished.
      * 
      * The implementation does not comply with the IEE 754 standard. It does not support subnormal
-     * numbers nor NaN, infinities, or negative zero. Numbers that fall outside the representable
+     * numbers, NaN, infinities, or negative zero. Numbers that fall outside the representable
      * range are rounded either to zero or to the largest (in absolute value) representable number.
      */
-    template<unsigned nBitFrac, int expBias>
-    UShort_t encodeGenericSigned(double value);
+    template<bool isSigned, unsigned nBitFrac, int expBias>
+    UShort_t encodeGeneric(double value);
     
     /**
-     * \brief Decodes a generic signed floating-point number
+     * \brief Decodes a generic floating-point number
      * 
-     * Performs a back transformation of a result of the function encodeGenericSigned. Consult its
+     * Performs a back transformation of a result of the function encodeGeneric. Consult its
      * documentation for details.
      */
-    template<unsigned nBitFrac, int expBias>
-    double decodeGenericSigned(UShort_t representation);
+    template<bool isSigned, unsigned nBitFrac, int expBias>
+    double decodeGeneric(UShort_t representation);
     
     /**
      * \brief Encodes a floating-point angle defined over a range [-pi, pi)
@@ -75,8 +78,8 @@ namespace minifloat
 
 
 // Implementations of templated functions
-template<unsigned nBitFrac, int expBias>
-UShort_t minifloat::encodeGenericSigned(double value)
+template<bool isSigned, unsigned nBitFrac, int expBias>
+UShort_t minifloat::encodeGeneric(double value)
 {
     // A short-cut for zero
     if (value == 0.)  // true for both positive and negative zeros
@@ -85,6 +88,13 @@ UShort_t minifloat::encodeGenericSigned(double value)
     
     // A variable to build the representation
     UShort_t repr = 0;
+    
+    
+    // Number of bits in the exponent
+    unsigned nBitExp = 16 - nBitFrac;
+    
+    if (isSigned)
+        --nBitExp;
     
     
     // Parse the value into the significand and the exponent
@@ -103,9 +113,9 @@ UShort_t minifloat::encodeGenericSigned(double value)
         return 0;
     
     // Check if the number is too large
-    if (e + expBias >= (1 << (16 - nBitFrac - 1)))
+    if (e + expBias >= (1 << nBitExp))
     {
-        if (value > 0.)
+        if (isSigned and value > 0.)
             return (1 << 15) - 1;  // i.e. all bits but the highest one are set to 1
         else
             return (1 << 16) - 1;  // i.e. all bits are set to 1
@@ -113,7 +123,7 @@ UShort_t minifloat::encodeGenericSigned(double value)
     
     
     // Extract the sign and make the significand positive
-    if (frac < 0.)
+    if (isSigned and frac < 0.)
     {
         repr |= (1 << 15);
         frac = -frac;
@@ -140,8 +150,8 @@ UShort_t minifloat::encodeGenericSigned(double value)
 }
 
 
-template<unsigned nBitFrac, int expBias>
-double minifloat::decodeGenericSigned(UShort_t representation)
+template<bool isSigned, unsigned nBitFrac, int expBias>
+double minifloat::decodeGeneric(UShort_t representation)
 {
     // A short-cut for zero
     if (representation == 0)
@@ -160,12 +170,18 @@ double minifloat::decodeGenericSigned(UShort_t representation)
     
     
     // Extract the sign, which is encoded in the highest bit
-    if (representation & (1 << 15))  // this is a negative number
+    if (isSigned and representation & (1 << 15))  // this is a negative number
         res = -res;
     
     
     // Extract the exponent encoded in the remaining bits
-    unsigned const e = (representation & ((1 << 15) - 1)) >> nBitFrac;
+    unsigned e;
+    
+    if (isSigned)
+        e = (representation & ((1 << 15) - 1)) >> nBitFrac;
+    else
+        e = (representation & ((1 << 16) - 1)) >> nBitFrac;
+    
     
     // Include the exponent in the result
     res = std::ldexp(res, e - expBias);
