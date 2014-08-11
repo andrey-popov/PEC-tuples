@@ -5,7 +5,7 @@ using namespace pec;
 
 
 Candidate::Candidate():
-    pt(0.), eta(0.), phi(0), mass(0.)
+    pt(0), eta(0), phi(0), mass(0)
 {}
 
 
@@ -36,13 +36,13 @@ void Candidate::Reset()
 
 void Candidate::SetPt(double pt_)
 {
-    pt = pt_;
+    pt = minifloat::encodeGeneric<false, 12, 2>(pt_);
 }
 
 
 void Candidate::SetEta(double eta_)
 {
-    eta = eta_;
+    eta = minifloat::encodeUniformRange(-10., 10., eta_);
 }
 
 
@@ -54,19 +54,19 @@ void Candidate::SetPhi(double phi_)
 
 void Candidate::SetM(double mass_)
 {
-    mass = mass_;
+    mass = minifloat::encodeGeneric<false, 12, 2>(mass_);
 }
 
 
 double Candidate::Pt() const
 {
-    return pt;
+    return minifloat::decodeGeneric<false, 12, 2>(pt);
 }
 
 
 double Candidate::Eta() const
 {
-    return eta;
+    return minifloat::decodeUniformRange(-10., 10., eta);
 }
 
 
@@ -78,5 +78,5 @@ double Candidate::Phi() const
 
 double Candidate::M() const
 {
-    return mass;
+    return minifloat::decodeGeneric<false, 12, 2>(mass);
 }

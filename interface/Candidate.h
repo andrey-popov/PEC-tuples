@@ -9,6 +9,8 @@ namespace pec
      * \class Candidate
      * \author Andrey Popov
      * \brief Stores four-momentum
+     * 
+     * Components of the four-momentum are compressed using minifloat functions.
      */
     class Candidate
     {
@@ -66,29 +68,31 @@ namespace pec
         /**
          * \brief Transverse momentum, GeV/c
          * 
-         * 
+         * Encoded as a generic minifloat with parameters (false, 12, 2). Represents a range
+         * [0.25, 16k].
          */
-        Float_t pt;
+        UShort_t pt;
         
         /**
          * \brief Pseudorapidity
          * 
-         * 
+         * Encoded with a uniform minifloat at a range (-10., 10.).
          */
         Float_t eta;
         
         /**
          * \brief Azimuthal angle, [-pi, pi)
          * 
-         * Encoded with minifloats functions.
+         * Encoded with a uniform minifloat at a range (-pi, pi).
          */
         UShort_t phi;
         
         /**
          * \brief Mass, GeV/c^2
          * 
-         * 
+         * Encoded as a generic minifloat with parameters (false, 12, 2). Represents a range
+         * [0.25, 16k].
          */
-        Float_t mass;
+        UShort_t mass;
     };
 }
