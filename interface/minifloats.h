@@ -42,13 +42,12 @@ namespace minifloat
      * resembling binary16 from the IEE 754-2008 standard, one should set isSigned = true,
      * nBitFrac = 10, and expBias = 15.
      * 
-     * The value must not be a NaN or infinity. If isSigned is false, the value must not be
-     * negative. For performance reasons these conditions are not checked, and the behaviour is
-     * undefined if they are violated. Positive and negative zeros are not distinguished.
+     * The value must not be a NaN or infinity. Positive and negative zeros are not distinguished.
+     * If isSigned is false, negative values are mapped to zero. Values that are too large to be
+     * represented are rounded to the closest representable numbers.
      * 
      * The implementation does not comply fully with the IEE 754 standard. It does not support NaNs,
-     * infinities, or negative zero. Numbers that fall outside the representable range are rounded
-     * to the largest (in absolute value) representable number.
+     * infinities, or negative zero.
      */
     template<bool isSigned, unsigned nBitFrac, int expBias>
     UShort_t encodeGeneric(double value);
@@ -84,6 +83,10 @@ UShort_t minifloat::encodeGeneric(double value)
 {
     // A short-cut for the zero as it is a popular value
     if (value == 0.)  // true for both positive and negative zeros
+        return 0;
+    
+    // Negative values for an unsigned target are also encoded as zeros
+    if (not isSigned and value < 0.)
         return 0;
     
     
