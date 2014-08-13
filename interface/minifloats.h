@@ -37,17 +37,18 @@ namespace minifloat
      * 
      * The user specifies if the number is signed, the desired number of bits to be used for the
      * significand and the offset for the exponent (the offset is added to the actual exponent, i.e.
-     * it should be positive in order to allow representing numbers smaller than 1). To have a
-     * representation resembling binary16 from the IEE 754 standard, one should set isSigned = true,
-     * nBitFrac = 10 and expBias = 14.
+     * it should be positive in order to allow representing numbers smaller than 1 with normalised
+     * values). Subnormal numbers are supported in the representation. To have a representation
+     * resembling binary16 from the IEE 754-2008 standard, one should set isSigned = true,
+     * nBitFrac = 10, and expBias = 15.
      * 
      * The value must not be a NaN or infinity. If isSigned is false, the value must not be
      * negative. For performance reasons these conditions are not checked, and the behaviour is
      * undefined if they are violated. Positive and negative zeros are not distinguished.
      * 
-     * The implementation does not comply with the IEE 754 standard. It does not support subnormal
-     * numbers, NaN, infinities, or negative zero. Numbers that fall outside the representable
-     * range are rounded either to zero or to the largest (in absolute value) representable number.
+     * The implementation does not comply fully with the IEE 754 standard. It does not support NaNs,
+     * infinities, or negative zero. Numbers that fall outside the representable range are rounded
+     * to the largest (in absolute value) representable number.
      */
     template<bool isSigned, unsigned nBitFrac, int expBias>
     UShort_t encodeGeneric(double value);
@@ -81,7 +82,7 @@ namespace minifloat
 template<bool isSigned, unsigned nBitFrac, int expBias>
 UShort_t minifloat::encodeGeneric(double value)
 {
-    // A short-cut for zero
+    // A short-cut for the zero as it is a popular value
     if (value == 0.)  // true for both positive and negative zeros
         return 0;
     
@@ -97,22 +98,17 @@ UShort_t minifloat::encodeGeneric(double value)
         --nBitExp;
     
     
-    // Parse the value into the significand and the exponent
+    // Parse the value into the significand and the exponent. It works even for subnormal numbers
     int e;
     double frac = std::frexp(value, &e);
     
-    // The returned significand is in the range [0.5, 1), but [1, 2) is more comfortable. Rearrange
-    //the significand and the exponent accordingly
+    // The returned significand is in the range [0.5, 1) (if not zero), but [1, 2) is more
+    //comfortable. Rearrange the significand and the exponent accordingly
     frac *= 2;
     --e;
     
     
-    // Check if the number is not too small. If it is the case, simply encode as zero (do not mess
-    //with subnormal numbers)
-    if (e + expBias < 0)
-        return 0;
-    
-    // Check if the number is too large
+    // Check if the number is too large to be representable
     if (e + expBias >= (1 << nBitExp))
     {
         if (isSigned and value > 0.)
@@ -130,19 +126,42 @@ UShort_t minifloat::encodeGeneric(double value)
     }
     
     
-    // Encode the significand in the lowest bits
-    unsigned fracRepr = std::floor((frac - 1.) * (1 << nBitFrac));
+    // Deal with subnormal numbers
+    if (e + expBias < 0)
+    {
+        // The subnormal significand is encoded as unsigned(value / 2^(-expBias) * (1 << nBitFrac)),
+        //which is simplified to the expression below
+        unsigned const fracRepr = unsigned(std::ldexp(frac, e + expBias + nBitFrac));
+        
+        // Build the result
+        if (fracRepr >= (1 << nBitFrac))  // might happen because of rounding
+            return repr | (1 << nBitFrac);
+            //^ This is the smallest (in absolute value) normal number with appropriate sign: the
+            //exponent is 0x1, the significand is 0x0
+        else
+            return repr | fracRepr;
+            //^ The exponent bits are zero, so there is no need to set them
+    }
     
-    if (fracRepr >= (1 << nBitFrac))
-    //^ Could happen if in reality frac >= 2 because of rounding errors
-        fracRepr = (1 << nBitFrac) - 1;
+    // If the workflow reaches this point, the number in the target representation is not subnormal
+    
+    
+    // Encode the significand
+    unsigned fracRepr = unsigned((frac - 1.) * (1 << nBitFrac));
+    
+    if (fracRepr >= (1 << nBitFrac))  // might happen because of rounding
+    {
+        // Round the number towards the smallest significand in the next order of magnitude
+        fracRepr = 0;
+        ++e;
+    }
     
     repr |= fracRepr;
     
     
-    // Encode the exponent. It has already been checked that the number (e + expBias) can be encoded
-    //with appropriate bits. Just put this number into its place in the representation.
-    repr |= (unsigned(e + expBias) << nBitFrac);
+    // Encode the exponent, which is non-negative. It is increased by 1 as a zero exponent is
+    //reserved to indicate a subnormal number
+    repr |= (unsigned(e + expBias + 1) << nBitFrac);
     
     
     // Everything is done
@@ -153,40 +172,34 @@ UShort_t minifloat::encodeGeneric(double value)
 template<bool isSigned, unsigned nBitFrac, int expBias>
 double minifloat::decodeGeneric(UShort_t representation)
 {
-    // A short-cut for zero
+    // A short-cut for the zero as it is a popular value
     if (representation == 0)
         return 0.;
     
     
-    // A variable to accumulate the result
-    double res;
-    
-    
     // Extract the significand (fraction) encoded in the nBitFrac lowest bits
     unsigned const fracRepr = representation & ((1 << nBitFrac) - 1);
+    double frac = fracRepr / double(1 << nBitFrac);
     
-    // Decode the significand and put it into the result. It occupies the range [1, 2)
-    res = 1. + fracRepr / double(1 << nBitFrac);
-    
-    
-    // Extract the sign, which is encoded in the highest bit
-    if (isSigned and representation & (1 << 15))  // this is a negative number
-        res = -res;
+
+    // Extract the sign from the highest bit
+    int const sign = (isSigned and representation & (1 << 15)) ? -1 : +1;
     
     
-    // Extract the exponent encoded in the remaining bits
+    // Extract the exponent encoded in the highest bits
     unsigned e;
     
     if (isSigned)
-        e = (representation & ((1 << 15) - 1)) >> nBitFrac;
+        e = (representation & ((1 << 15) - 1)) >> nBitFrac;  // mask out the sign bit
     else
-        e = (representation & ((1 << 16) - 1)) >> nBitFrac;
+        e = representation >> nBitFrac;
     
     
-    // Include the exponent in the result
-    res = std::ldexp(res, e - expBias);
-    
-    
-    // Everything is done
-    return res;
+    // Build the result
+    if (e == 0)
+        // This is a subnormal number
+        return sign * std::ldexp(frac, -expBias);
+    else
+        // This is a normal floating-point number
+        return sign * std::ldexp(1. + frac, e - expBias - 1);
 }
