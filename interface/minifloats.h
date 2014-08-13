@@ -108,8 +108,9 @@ UShort_t minifloat::encodeGeneric(double value)
     --e;
     
     
-    // Check if the number is too large to be representable
-    if (e + expBias >= (1 << nBitExp))
+    // Check if the number is too large to be representable. Note that the exponent is increased by
+    //one when stored
+    if (e + expBias + 1 >= (1 << nBitExp))
     {
         if (isSigned and value > 0.)
             return (1 << 15) - 1;  // i.e. all bits but the highest one are set to 1
