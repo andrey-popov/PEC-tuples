@@ -36,13 +36,13 @@ void Candidate::Reset()
 
 void Candidate::SetPt(double pt_)
 {
-    pt = minifloat::encodeGeneric<false, 12, 2>(pt_);
+    pt = minifloat::encodeGeneric<false, 12, 1>(pt_);
 }
 
 
 void Candidate::SetEta(double eta_)
 {
-    eta = minifloat::encodeUniformRange(-10., 10., eta_);
+    eta = minifloat::encodeGeneric<true, 13, -1>(eta_);
 }
 
 
@@ -54,19 +54,19 @@ void Candidate::SetPhi(double phi_)
 
 void Candidate::SetM(double mass_)
 {
-    mass = minifloat::encodeGeneric<false, 12, 2>(mass_);
+    mass = minifloat::encodeGeneric<false, 12, 1>(mass_);
 }
 
 
 double Candidate::Pt() const
 {
-    return minifloat::decodeGeneric<false, 12, 2>(pt);
+    return minifloat::decodeGeneric<false, 12, 1>(pt);
 }
 
 
 double Candidate::Eta() const
 {
-    return minifloat::decodeUniformRange(-10., 10., eta);
+    return minifloat::decodeGeneric<true, 13, -1>(eta);
 }
 
 
@@ -78,5 +78,5 @@ double Candidate::Phi() const
 
 double Candidate::M() const
 {
-    return minifloat::decodeGeneric<false, 12, 2>(mass);
+    return minifloat::decodeGeneric<false, 12, 1>(mass);
 }
