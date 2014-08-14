@@ -79,7 +79,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (true, 13, -1), the range representable
          * with normal numbers is [2, 16).
          */
-        Float_t eta;
+        UShort_t eta;
         
         /**
          * \brief Azimuthal angle, [-pi, pi)
@@ -91,8 +91,8 @@ namespace pec
         /**
          * \brief Mass, GeV/c^2
          * 
-         * Encoded as a generic minifloat with parameters (false, 12, 1), the range representable
-         * with normal numbers is [0.5, 16k).
+         * Encoded as a generic minifloat with parameters (false, 12, 2), the range representable
+         * with normal numbers is [0.25, 8k).
          */
         UShort_t mass;
     };

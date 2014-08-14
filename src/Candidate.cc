@@ -54,7 +54,7 @@ void Candidate::SetPhi(double phi_)
 
 void Candidate::SetM(double mass_)
 {
-    mass = minifloat::encodeGeneric<false, 12, 1>(mass_);
+    mass = minifloat::encodeGeneric<false, 12, 2>(mass_);
 }
 
 
@@ -78,5 +78,5 @@ double Candidate::Phi() const
 
 double Candidate::M() const
 {
-    return minifloat::decodeGeneric<false, 12, 1>(mass);
+    return minifloat::decodeGeneric<false, 12, 2>(mass);
 }

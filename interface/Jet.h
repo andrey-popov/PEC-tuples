@@ -102,7 +102,11 @@ namespace pec
         /// Returns the value of the THCP b-tagging discriminator
         double BTagTCHP() const;
         
-        /// Returns mass of the secondary vertex associated with the jet
+        /**
+         * \brief Returns mass of the secondary vertex associated with the jet
+         * 
+         * When there is no secondary vertex associated with the jet, the method returns 0.
+         */
         double SecVertexMass() const;
         
         /// Returns jet area
@@ -141,28 +145,45 @@ namespace pec
         int Flavour(FlavourType type) const;
         
     private:
-        /// Values of b-tagging discriminators
-        Float_t bTagCSV, bTagTCHP;
+        /**
+         * \brief Values of b-tagging discriminators
+         * 
+         * Encoded as a generic minifloat with parameters (true, 12, 1), the range representable
+         * with normal numbers is [0.5, 64).
+         */
+        UShort_t bTagCSV, bTagTCHP;
         
-        /// Mass of the secondary vertex associated to the jet (if any)
-        Float_t secVertexMass;
+        /**
+         * \brief Mass of the secondary vertex associated to the jet (if any)
+         * 
+         * Encoded as a generic minifloat with parameters (false, 12, 2), the range representable
+         * with normal numbers is [0.25, 8k).
+         */
+        UShort_t secVertexMass;
         
-        /// Jet area
-        Float_t area;
+        /**
+         * \brief Jet area
+         * 
+         * Encoded as a generic minifloat with parameters (false, 14, 0), the range representable
+         * with normal numbers is [1, 8).
+         */
+        UShort_t area;
         
         /**
          * \brief Electric charge of the jet
          * 
-         * See documentation for the method Charge.
+         * See documentation for the method Charge. Encoded with a uniform minifloat at a
+         * range [-1, 1].
          */
-        Float_t charge;
+        UShort_t charge;
         
         /**
          * \brief Jet pull angle
          * 
-         * See documentation for the method PullAngle.
+         * See documentation for the method PullAngle. Encoded with a uniform minifloat at a
+         * range (-pi, pi).
          */
-        Float_t pullAngle;
+        UShort_t pullAngle;
         
         /**
          * \brief Encodes jet pile-up ID

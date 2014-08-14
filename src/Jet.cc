@@ -1,4 +1,5 @@
 #include <UserCode/SingleTop/interface/Jet.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 #include <stdexcept>
 
@@ -63,37 +64,42 @@ void Jet::Reset()
 
 void Jet::SetBTagCSV(double bTag)
 {
-    bTagCSV = bTag;
+    bTagCSV = minifloat::encodeGeneric<true, 12, 1>(bTag);
 }
 
 
 void Jet::SetBTagTCHP(double bTag)
 {
-    bTagTCHP = bTag;
+    bTagTCHP = minifloat::encodeGeneric<true, 12, 1>(bTag);
 }
 
 
 void Jet::SetSecVertexMass(double mass)
 {
-    secVertexMass = mass;
+    // Usually, the mass is set to a negative value when there is no secondary vertex associated
+    //with a jet. Do not to waste one bit for the sign, so reset the mass to zero in such cases
+    if (mass < 0.)
+        mass = 0.;
+    
+    secVertexMass = minifloat::encodeGeneric<false, 12, 2>(mass);
 }
 
 
 void Jet::SetArea(double area_)
 {
-    area = area_;
+    area = minifloat::encodeGeneric<false, 14, 0>(area_);
 }
 
 
 void Jet::SetCharge(double charge_)
 {
-    charge = charge_;
+    charge = minifloat::encodeUniformRange(-1., 1., charge_);
 }
 
 
 void Jet::SetPullAngle(double angle)
 {
-    pullAngle = angle;
+    pullAngle = minifloat::encodeAngle(angle);
 }
 
 
@@ -153,37 +159,37 @@ void Jet::SetFlavour(FlavourType type, int flavour)
 
 double Jet::BTagCSV() const
 {
-    return bTagCSV;
+    return minifloat::decodeGeneric<true, 12, 1>(bTagCSV);
 }
 
 
 double Jet::BTagTCHP() const
 {
-    return bTagTCHP;
+    return minifloat::decodeGeneric<true, 12, 1>(bTagTCHP);
 }
 
 
 double Jet::SecVertexMass() const
 {
-    return secVertexMass;
+    return minifloat::decodeGeneric<false, 12, 2>(secVertexMass);
 }
 
 
 double Jet::Area() const
 {
-    return area;
+    return minifloat::decodeGeneric<false, 14, 0>(area);
 }
 
 
 double Jet::Charge() const
 {
-    return charge;
+    return minifloat::decodeUniformRange(-1., 1., charge);
 }
 
 
 double Jet::PullAngle() const
 {
-    return pullAngle;
+    return minifloat::decodeAngle(pullAngle);
 }
 
 
