@@ -59,32 +59,50 @@ namespace minifloat
     /**
      * \brief Encodes a floating-point value defined over a finite range
      * 
-     * Represents the given value with an index of a bin of a uniform histogram defined over the
-     * range. The range is specified by arguments min and max; the upper edge is not included. The
-     * value must not be a NaN or infinity, otherwise the behaviour is undefined. If the value
-     * falls outside the range, it is silently changed to the nearest representable number.
+     * Representable numbers are distributed uniformly over the range [min, max], the edges are
+     * included. The value must not be a NaN or infinity, otherwise the behaviour is undefined. If
+     * the value falls outside the range, it is silently rounded to the nearest edge.
      */
-    UShort_t encodeUniformRange(double min, double max, double value);
+    UShort_t encodeRange(double min, double max, double value);
     
     /**
      * \brief Decodes a floating-point value defined over a finite range
      * 
-     * Performs an inverse operation w.r.t. function encodeUniformRange. Consult its documentation
+     * Performs an inverse operation w.r.t. function encodeRange. Consult its documentation for
+     * details.
+     */
+    double decodeRange(double min, double max, UShort_t representation);
+    
+    /**
+     * \brief Encodes a floating-point value defined over a finite circular range
+     * 
+     * Represents a value defined over a circular range [min, max), where max is mapped back to min.
+     * Representable numbers are distributed uniformly over the range, the upper edge is not
+     * included. The value must not be a NaN or infinity, otherwise the behaviour is undefined. If
+     * the value falls outside the range, an appropriate number of whole periods is subtracted from
+     * it in order to get a representable number.
+     */
+    UShort_t encodeCircular(double min, double max, double value);
+    
+    /**
+     * \brief Decodes a floating-point value defined over a finite range
+     * 
+     * Performs an inverse operation w.r.t. function encodeCircular. Consult its documentation
      * for details.
      */
-    double decodeUniformRange(double min, double max, UShort_t representation);
+    double decodeCircular(double min, double max, UShort_t representation);
     
     /**
      * \brief Encodes a floating-point angle defined over a range [-pi, pi)
      * 
-     * This is a specialisation of the funtion encodeUniformRange.
+     * This is a specialisation of the funtion encodeCircular.
      */
     UShort_t encodeAngle(double value);
     
     /**
      * \brief Decodes a floating-point angle defined over a range [-pi, pi)
      * 
-     * This is a specialisation of the funtion decodeUniformRange.
+     * This is a specialisation of the function decodeCircular.
      */
     double decodeAngle(UShort_t representation);
 }

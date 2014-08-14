@@ -1,18 +1,17 @@
 #include <UserCode/SingleTop/interface/minifloats.h>
 
 
-UShort_t minifloat::encodeUniformRange(double min, double max, double value)
+UShort_t minifloat::encodeRange(double min, double max, double value)
 {
-    // The allowed range is split into bins of equal size. Find the lower edge of the bin to which
-    //the given value belongs
-    double const res = std::floor((value - min) / (max - min) * 65536.);
+    // Should map value = min to 0 and value = max to 65535
+    long const res = std::lrint((value - min) / (max - min) * 65535.);
     
     
-    // Make sure the result is in the supported range for the representation
-    if (res >= 65536.)
+    // Check over- and underflows
+    if (res >= 65536)
         return 65535;
     
-    if (res < 0.)
+    if (res < 0)
         return 0;
     
     
@@ -22,21 +21,34 @@ UShort_t minifloat::encodeUniformRange(double min, double max, double value)
 }
 
 
-double minifloat::decodeUniformRange(double min, double max, UShort_t representation)
+double minifloat::decodeRange(double min, double max, UShort_t representation)
 {
-    return min + (max - min) * (double(representation) + 0.5) / 65536.;
-    //^ The decoded value should correspond to the centre of the bin given by the representation.
-    //This is why 0.5 is added
+    return min + (max - min) * double(representation) / 65535.;
+}
+
+
+UShort_t minifloat::encodeCircular(double min, double max, double value)
+{
+    long const resNorm = std::lrint((value - min) * 65536. / (max - min)) % 65536;
+    //^ The result might be negative
+    
+    return ((resNorm >= 0) ? resNorm : 65536 + resNorm);
+}
+
+
+double minifloat::decodeCircular(double min, double max, UShort_t representation)
+{
+    return min + (max - min) * double(representation) / 65536.;
 }
 
 
 UShort_t minifloat::encodeAngle(double value)
 {
-    return minifloat::encodeUniformRange(-M_PI, M_PI, value);
+    return minifloat::encodeCircular(-M_PI, M_PI, value);
 }
 
 
 double minifloat::decodeAngle(UShort_t representation)
 {
-    return minifloat::decodeUniformRange(-M_PI, M_PI, representation);
+    return minifloat::decodeCircular(-M_PI, M_PI, representation);
 }

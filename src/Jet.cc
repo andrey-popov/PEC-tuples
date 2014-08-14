@@ -93,7 +93,7 @@ void Jet::SetArea(double area_)
 
 void Jet::SetCharge(double charge_)
 {
-    charge = minifloat::encodeUniformRange(-1., 1., charge_);
+    charge = minifloat::encodeRange(-1., 1., charge_);
 }
 
 
@@ -183,7 +183,7 @@ double Jet::Area() const
 
 double Jet::Charge() const
 {
-    return minifloat::decodeUniformRange(-1., 1., charge);
+    return minifloat::decodeRange(-1., 1., charge);
 }
 
 
