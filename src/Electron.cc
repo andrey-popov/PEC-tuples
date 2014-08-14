@@ -1,4 +1,5 @@
 #include <UserCode/SingleTop/interface/Electron.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 
 using namespace pec;
@@ -44,7 +45,7 @@ void Electron::SetCutBasedID(unsigned mask)
 
 void Electron::SetMvaID(double mva)
 {
-    mvaID = mva;
+    mvaID = minifloat::encodeRange(-1., 1., mva);
 }
 
 
@@ -56,5 +57,5 @@ UChar_t Electron::CutBasedID() const
 
 double Electron::MvaID() const
 {
-    return mvaID;
+    return minifloat::decodeRange(-1., 1., mvaID);
 }

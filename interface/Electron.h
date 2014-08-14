@@ -68,8 +68,8 @@ namespace pec
         /**
          * \brief MVA-based ID
          * 
-         * See documentation for the SetMvaID method.
+         * See documentation for the SetMvaID method. Encoded with a minifloat on a range [-1, 1].
          */
-        Float_t mvaID;
+        UShort_t mvaID;
     };
 }

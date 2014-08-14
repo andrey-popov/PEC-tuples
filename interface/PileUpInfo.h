@@ -72,15 +72,21 @@ namespace pec
         /// Number of good reconstructed primary vertices
         UChar_t numPV;
         
-        /// Average angular pt density, GeV
-        Float_t rho;
+        /**
+         * \brief Average angular pt density, GeV
+         * 
+         * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
+         * with normal numbers is [0.5, 64).
+         */
+        UShort_t rho;
         
         /**
          * \brief "True" number of pile-up interactions
          * 
-         * Zero in case of real data.
+         * Zero in case of real data. Encoded as a generic minifloat with parameters
+         * (false, 13, -1), the range representable with normal numbers is [2, 256).
          */
-        Float_t trueNumPU;
+        UShort_t trueNumPU;
         
         /**
          * \brief Number of pile-up interactions in the in-time bunch crossing

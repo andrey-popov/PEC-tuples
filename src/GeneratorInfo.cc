@@ -1,4 +1,5 @@
 #include <UserCode/SingleTop/interface/GeneratorInfo.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 #include <algorithm>
 #include <stdexcept>
@@ -56,7 +57,7 @@ void GeneratorInfo::SetProcessId(int processId_)
 
 void GeneratorInfo::SetWeight(double weight_)
 {
-    weight = weight_;
+    weight = minifloat::encodeGeneric<true, 10, 14>(weight_);
 }
 
 
@@ -74,7 +75,7 @@ void GeneratorInfo::SetPdfX(unsigned index, double x)
     
     
     // Set the fraction
-    pdfX[index] = x;
+    pdfX[index] = minifloat::encodeGeneric<false, 13, 7>(x);
 }
 
 
@@ -115,7 +116,7 @@ void GeneratorInfo::SetPdfIds(int id1, int id2)
 
 void GeneratorInfo::SetPdfQScale(double scale)
 {
-    pdfQScale = scale;
+    pdfQScale = minifloat::encodeGeneric<false, 12, 0>(scale);
 }
 
 
@@ -127,7 +128,7 @@ int GeneratorInfo::ProcessId() const
 
 double GeneratorInfo::Weight() const
 {
-    return weight;
+    return minifloat::decodeGeneric<true, 10, 14>(weight);
 }
 
 
@@ -136,7 +137,7 @@ double GeneratorInfo::PdfX(unsigned index) const
     if (index > 1)
         throw std::logic_error("GeneratorInfo::PdfX: Illegal parton index.");
     
-    return pdfX[index];
+    return minifloat::decodeGeneric<false, 13, 7>(pdfX[index]);
 }
 
 
@@ -155,5 +156,5 @@ int GeneratorInfo::PdfId(unsigned index) const
 
 double GeneratorInfo::PdfQScale() const
 {
-    return pdfQScale;
+    return minifloat::decodeGeneric<false, 12, 0>(pdfQScale);
 }

@@ -104,11 +104,21 @@ namespace pec
         /// Process ID as was set during generation of the sample
         Short_t processId;
         
-        /// Generator-level weight
-        Float_t weight;
+        /**
+         * \brief Generator-level weight
+         * 
+         * Encoded as a generic minifloat with parameters (true, 10, 14), the range representable
+         * with normal numbers is [6.1e-5, 1.3e5s).
+         */
+        UShort_t weight;
         
-        /// Momenta fractions carried by initial-state partons
-        Float_t pdfX[2];
+        /**
+         * \brief Momenta fractions carried by initial-state partons
+         * 
+         * Encoded as a generic minifloat with parameters (false, 13, 7), the range representable
+         * with normal numbers is [7.8e-3, 1).
+         */
+        UShort_t pdfX[2];
         
         /**
          * \brief ID of initial-state partons
@@ -118,7 +128,12 @@ namespace pec
          */
         UChar_t pdfId;
         
-        /// Energy scale to evaluate PDF, GeV
-        Float_t pdfQScale;
+        /**
+         * \brief Energy scale to evaluate PDF, GeV
+         * 
+         * Encoded as a generic minifloat with parameters (false, 12, 0), the range representable
+         * with normal numbers is [1, 32k).
+         */
+        UShort_t pdfQScale;
     };
 }

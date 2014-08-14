@@ -49,7 +49,11 @@ namespace pec
         /// Returns relative isolation
         double RelIso() const;
         
-        /// Returns transverse impact parameter (cm)
+        /**
+         * \brief Returns transverse impact parameter (cm)
+         * 
+         * The returned value is always positive.
+         */
         double DB() const;
         
     private:
@@ -60,10 +64,20 @@ namespace pec
          */
         Bool_t charge;
         
-        /// Relative isolation
-        Float_t relIso;
+        /**
+         * \brief Relative isolation
+         * 
+         * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
+         * with normal numbers is [0.5, 64).
+         */
+        UShort_t relIso;
         
-        /// Transverse impact parameter
-        Float_t dB;
+        /**
+         * \brief Transverse impact parameter
+         * 
+         * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
+         * with normal numbers is [0.5, 64).
+         */
+        UShort_t dB;
     };
 }

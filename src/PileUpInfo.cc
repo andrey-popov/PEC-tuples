@@ -1,4 +1,5 @@
 #include <UserCode/SingleTop/interface/PileUpInfo.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 
 using namespace pec;
@@ -48,13 +49,13 @@ void PileUpInfo::SetNumPV(unsigned numPV_)
 
 void PileUpInfo::SetRho(double rho_)
 {
-    rho = rho_;
+    rho = minifloat::encodeGeneric<false, 13, 1>(rho_);
 }
 
 
 void PileUpInfo::SetTrueNumPU(double lambda)
 {
-    trueNumPU = lambda;
+    trueNumPU = minifloat::decodeGeneric<false, 13, -1>(lambda);
 }
 
 
@@ -72,13 +73,13 @@ unsigned PileUpInfo::NumPV() const
 
 double PileUpInfo::Rho() const
 {
-    return rho;
+    return minifloat::decodeGeneric<false, 13, 1>(rho);
 }
 
 
 double PileUpInfo::TrueNumPU() const
 {
-    return trueNumPU;
+    return minifloat::decodeGeneric<false, 13, -1>(trueNumPU);
 }
 
 

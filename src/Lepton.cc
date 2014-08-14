@@ -1,4 +1,5 @@
 #include <UserCode/SingleTop/interface/Lepton.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 #include <stdexcept>
 
@@ -51,13 +52,14 @@ void Lepton::SetCharge(int charge_)
 
 void Lepton::SetRelIso(double relIso_)
 {
-    relIso = relIso_;
+    relIso = minifloat::encodeGeneric<false, 13, 1>(relIso_);
 }
 
 
 void Lepton::SetDB(double dB_)
 {
-    dB = dB_;
+    // The impact parameter is encoded as an unsigned number. Make sure it is not negate
+    dB = minifloat::encodeGeneric<false, 13, 1>(fabs(dB_));
 }
 
 
@@ -69,11 +71,11 @@ int Lepton::Charge() const
 
 double Lepton::RelIso() const
 {
-    return relIso;
+    return minifloat::decodeGeneric<false, 13, 1>(relIso);
 }
 
 
 double Lepton::DB() const
 {
-    return dB;
+    return minifloat::decodeGeneric<false, 13, 1>(dB);
 }
