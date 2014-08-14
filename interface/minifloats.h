@@ -6,32 +6,22 @@
 
 
 /**
- * \brief Conversion functions to provide a 16-bit representation for a storage of floating-point
+ * \brief Conversion functions to provide a 16-bit representation for storage of floating-point
  * numbers
  * \author Andrey Popov
  * 
+ * The namespace defines pairs of functions to convert floating-point numbers (with a double
+ * precision) to or from a 16-bit representation. Two families of conversion functions are provided:
+ * one represents numbers from a finite range using a uniform binning, the other implements a custom
+ * format that loosely follows the IEE 754-2008 standard. For the sake of platform independence, the
+ * conversions never assume that the bit format of floating-point numbers in the system's native
+ * representation is known.
  * 
+ * In addition to generic conversion functions that depend on parameters, their specialisations are
+ * provided to be used as short-cuts in some cases.
  */
 namespace minifloat
 {
-    /**
-     * \brief Encodes a floating-point value defined over a finite range
-     * 
-     * Represents the given value with an index of a bin of a uniform histogram defined over the
-     * range. The range is specified by arguments min and max; the upper edge is not included. The
-     * value must not be a NaN or infinity, otherwise the behaviour is undefined. If the value
-     * falls outside the range, it is silently changed to the nearest representable number.
-     */
-    UShort_t encodeUniformRange(double min, double max, double value);
-    
-    /**
-     * \brief Decodes a floating-point value defined over a finite range
-     * 
-     * Performs an inverse operation w.r.t. function encodeUniformRange. Consult its documentation
-     * for details.
-     */
-    double decodeUniformRange(double min, double max, UShort_t representation);
-    
     /**
      * \brief Encodes a generic floating-point number
      * 
@@ -40,7 +30,12 @@ namespace minifloat
      * it should be positive in order to allow representing numbers smaller than 1 with normalised
      * values). Subnormal numbers are supported in the representation. To have a representation
      * resembling binary16 from the IEE 754-2008 standard, one should set isSigned = true,
-     * nBitFrac = 10, and expBias = 15.
+     * nBitFrac = 10, and expBias = 14.
+     * 
+     * The range of representable normal positive numbers is from 2^(-expBias) (included) to
+     * 2^(2^nBitExp - expBias - 1) (excluded), where nBitExp is the number of bits to represent the
+     * exponent, i.e. (16 - nBitFrac) or (15 - nBitFrac) depending on whether the number is signed.
+     * The minimal positive subnormal number is 2^(-nBitFrac - expBias).
      * 
      * The value must not be a NaN or infinity. Positive and negative zeros are not distinguished.
      * If isSigned is false, negative values are mapped to zero. Values that are too large to be
@@ -60,6 +55,24 @@ namespace minifloat
      */
     template<bool isSigned, unsigned nBitFrac, int expBias>
     double decodeGeneric(UShort_t representation);
+    
+    /**
+     * \brief Encodes a floating-point value defined over a finite range
+     * 
+     * Represents the given value with an index of a bin of a uniform histogram defined over the
+     * range. The range is specified by arguments min and max; the upper edge is not included. The
+     * value must not be a NaN or infinity, otherwise the behaviour is undefined. If the value
+     * falls outside the range, it is silently changed to the nearest representable number.
+     */
+    UShort_t encodeUniformRange(double min, double max, double value);
+    
+    /**
+     * \brief Decodes a floating-point value defined over a finite range
+     * 
+     * Performs an inverse operation w.r.t. function encodeUniformRange. Consult its documentation
+     * for details.
+     */
+    double decodeUniformRange(double min, double max, UShort_t representation);
     
     /**
      * \brief Encodes a floating-point angle defined over a range [-pi, pi)

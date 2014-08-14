@@ -69,7 +69,7 @@ namespace pec
          * \brief Transverse momentum, GeV/c
          * 
          * Encoded as a generic minifloat with parameters (false, 12, 1), the range representable
-         * with normal numbers is [0.25, 16k].
+         * with normal numbers is [0.5, 16k).
          */
         UShort_t pt;
         
@@ -77,7 +77,7 @@ namespace pec
          * \brief Pseudorapidity
          * 
          * Encoded as a generic minifloat with parameters (true, 13, -1), the range representable
-         * with normal numbers is [2, 16].
+         * with normal numbers is [2, 16).
          */
         Float_t eta;
         
@@ -92,7 +92,7 @@ namespace pec
          * \brief Mass, GeV/c^2
          * 
          * Encoded as a generic minifloat with parameters (false, 12, 1), the range representable
-         * with normal numbers is [0.25, 16k].
+         * with normal numbers is [0.5, 16k).
          */
         UShort_t mass;
     };
