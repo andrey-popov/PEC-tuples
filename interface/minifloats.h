@@ -171,6 +171,15 @@ UShort_t minifloat::encodeGeneric(double value)
         // Round the number towards the smallest significand in the next order of magnitude
         fracRepr = 0;
         ++e;
+        
+        // Since the exponent was increased, it might be overflowing now
+        if (e + expBias + 1 >= (1 << nBitExp))
+        {
+            if (isSigned and value > 0.)
+                return (1 << 15) - 1;  // i.e. all bits but the highest one are set to 1
+            else
+                return (1 << 16) - 1;  // i.e. all bits are set to 1
+        }
     }
     
     repr |= fracRepr;
