@@ -1,16 +1,20 @@
 #!/bin/bash
 
-# Use the latest release recommended for 2012 data
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATRecipes?rev=302#CMSSW_5_3_X_pro2012
-release="CMSSW_5_3_11"
+# At the moment there are no specific recommendations for PAT in 72X. I use the latest release in
+# the family
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATRecipes?rev=308
+release="CMSSW_7_2_3_patch1"
 scramv1 project CMSSW $release  # cmsrel alias expanded
 
 cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
-# Use this interface to determine which tags are included in the release if needed (go to "Release
-# management" section):
-# https://cmstags.cern.ch/tc/#Releases
+
+####################################################################################################
+# Everything below this line is outdated
+
+exit 0
+
 
 
 # Tags for the latest PAT release V08-09-62. Tags recommended for tau reconstruction are ignored
