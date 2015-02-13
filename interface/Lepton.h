@@ -22,6 +22,9 @@ namespace pec
         /// Assignment operator
         Lepton &operator=(Lepton const &src);
         
+        /// Trivial virtual destructor
+        virtual ~Lepton();
+        
     public:
         /// Resets the object to a state right after the default initialisation
         virtual void Reset();

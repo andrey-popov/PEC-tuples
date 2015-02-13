@@ -27,6 +27,10 @@ CandidateWithID &CandidateWithID::operator=(CandidateWithID const &src)
 }
 
 
+CandidateWithID::~CandidateWithID()
+{}
+
+
 void CandidateWithID::Reset()
 {
     Candidate::Reset();

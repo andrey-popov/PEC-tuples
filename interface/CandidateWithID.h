@@ -25,6 +25,9 @@ namespace pec
         /// Assignment operator
         CandidateWithID &operator=(CandidateWithID const &src);
         
+        /// Trivial virtual descructor
+        virtual ~CandidateWithID();
+        
     public:
         /// Resets the object to a state right after the default initialisation
         virtual void Reset();

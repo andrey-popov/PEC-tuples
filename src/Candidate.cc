@@ -25,6 +25,10 @@ Candidate &Candidate::operator=(Candidate const &src)
 }
 
 
+Candidate::~Candidate()
+{}
+
+
 void Candidate::Reset()
 {
     pt = 0;

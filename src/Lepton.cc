@@ -31,6 +31,10 @@ Lepton &Lepton::operator=(Lepton const &src)
 }
 
 
+Lepton::~Lepton()
+{}
+
+
 void Lepton::Reset()
 {
     CandidateWithID::Reset();
