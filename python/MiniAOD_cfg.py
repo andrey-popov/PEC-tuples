@@ -21,8 +21,22 @@ import re
 __author__ = 'Andrey Popov'
 
 
-# The skeleton PAT configuration
-from PhysicsTools.PatAlgos.patTemplate_cfg import *
+# Create a process
+import FWCore.ParameterSet.Config as cms
+process = cms.Process('Analysis')
+
+
+# Enable MessageLogger
+process.load('FWCore.MessageLogger.MessageLogger_cfi')
+
+# Reduce verbosity
+process.MessageLogger.cerr.FwkReport.reportEvery = 100
+
+
+# Ask to print a summary in the log
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True))
+
 
 
 # The configuration supports options that can be given in the command line or pycfg_params in the
@@ -71,13 +85,20 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Set the default global tag
+# Set the global tag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
+
+# Set the default global tag if user has not given any
 # https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=516#PHYS14_exercise_72X
 if len(options.globalTag) == 0:
     if runOnData:
         options.globalTag = 'N/A'
     else:
         options.globalTag = 'PHYS14_25_V3'
+    
+    print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
 
 
 # Parse jet selection
@@ -92,6 +113,8 @@ print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThr
 
 
 # Define the input files to be used for testing
+process.source = cms.Source('PoolSource')
+
 if runOnData:
     from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
     process.source.fileNames = filesRelValSingleMuMINIAOD
@@ -108,9 +131,6 @@ if len(options.sourceFile) > 0:
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
-
-# Reduce the verbosity for a local run
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 
 # Define the paths. There is one path per each channel (electron or muon).
@@ -137,52 +157,17 @@ paths = PathManager(process.elPath, process.muPath)
 # Filter on the first vertex properties. The produced vertex collection is the same as in [1]
 # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
-    src = cms.InputTag('offlinePrimaryVertices'),
+    src = cms.InputTag('offlineSlimmedPrimaryVertices'),
     cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.'))
 
 paths.append(process.goodOfflinePrimaryVertices)
 
 
-# Specify the JEC needed
-if options.noCHS:
-    inputJetCorrLabel = ('AK5PF', ['L1FastJet', 'L2Relative', 'L3Absolute'])
-else:
-    inputJetCorrLabel = ('AK5PFchs', ['L1FastJet', 'L2Relative', 'L3Absolute'])
-
-if runOnData:
-    inputJetCorrLabel[1].append('L2L3Residual')
-
-
-# PF2PAT setup. The code snippet is inspired by [1]. In order to make life simplier, the (empty)
-# postfix is hard-coded. See [2] for information on MET corrections with PFBRECO and PAT
-# [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/PhysicsTools/PatExamples/test/patTuple_52x_jec_cfg.py?revision=1.1&view=markup
-# [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMetAnalysis#Type_I_II_0_with_PF2PAT
-from PhysicsTools.PatAlgos.tools.pfTools import usePF2PAT
-usePF2PAT(process, runPF2PAT = True, runOnMC = not runOnData, postfix = '',
-    jetAlgo = 'AK5', jetCorrections = inputJetCorrLabel,
-    pvCollection = cms.InputTag('goodOfflinePrimaryVertices'),
-    typeIMetCorrections = runOnData,  # in case of MC the corrections are added with MET unc. tool
-    outputModules = [])
-
-# A recommended setting for JEC with CHS
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
-process.pfPileUp.checkClosestZVertex = False
-
-
-# We do not consider tau-leptons in the analysis (they are included in jets)
-process.pfNoTau.enable = False
-
-
-
 # Define the leptons
-from UserCode.SingleTop.ObjectsDefinitions_cff import *
+# from UserCode.SingleTop.ObjectsDefinitions_cff import *
 
-eleQualityCuts = DefineElectrons(process, process.patPF2PATSequence, runOnData)
-muQualityCuts = DefineMuons(process, process.patPF2PATSequence, runOnData)
-
-
-# Add the PF2PAT sequence to the paths
-paths.append(process.patPF2PATSequence)
+# eleQualityCuts = DefineElectrons(process, process.patPF2PATSequence, runOnData)
+# muQualityCuts = DefineMuons(process, process.patPF2PATSequence, runOnData)
 
 
 # Include the event filters
@@ -193,35 +178,35 @@ paths.append(process.patPF2PATSequence)
 
 
 # Define the MET
-metCollections = DefineMETs(process, paths, runOnData, inputJetCorrLabel[1][-1])
+# metCollections = DefineMETs(process, paths, runOnData, inputJetCorrLabel[1][-1])
 
 
 # Define the jets
-DefineJets(process, paths, runOnData, options.noCHS)
+# DefineJets(process, paths, runOnData, options.noCHS)
 
 
 # The loose event selection
-process.countTightPatElectrons = process.countPatElectrons.clone(
-    src = 'patElectronsForEventSelection',
-    minNumber = 1, maxNumber = 999)
-process.countTightPatMuons = process.countPatMuons.clone(
-    src = 'patMuonsForEventSelection',
-    minNumber = 1, maxNumber = 999)
+# process.countTightPatElectrons = process.countPatElectrons.clone(
+#     src = 'patElectronsForEventSelection',
+#     minNumber = 1, maxNumber = 999)
+# process.countTightPatMuons = process.countPatMuons.clone(
+#     src = 'patMuonsForEventSelection',
+#     minNumber = 1, maxNumber = 999)
 
-process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
-    src = cms.VInputTag('analysisPatJets'),
-    cut = cms.string('pt > ' + str(jetPtThreshold)),
-    minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999))
-if not runOnData:
-    process.countGoodJets.src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
-     'smearedPatJetsResUp', 'smearedPatJetsResUp',
-     'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt')
+# process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
+#     src = cms.VInputTag('analysisPatJets'),
+#     cut = cms.string('pt > ' + str(jetPtThreshold)),
+#     minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999))
+# if not runOnData:
+#     process.countGoodJets.src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
+#      'smearedPatJetsResUp', 'smearedPatJetsResUp',
+#      'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt')
 
-if elChan:
-    process.elPath += process.countTightPatElectrons
-if muChan:
-    process.muPath += process.countTightPatMuons
-paths.append(process.countGoodJets)
+# if elChan:
+#     process.elPath += process.countTightPatElectrons
+# if muChan:
+#     process.muPath += process.countTightPatMuons
+# paths.append(process.countGoodJets)
 
 
 
@@ -306,9 +291,3 @@ postfix = '_' + string.join([random.choice(string.letters) for i in range(3)], '
 
 process.TFileService = cms.Service('TFileService',
     fileName = cms.string(options.outputName + postfix + '.root'))
-
-
-# Remove the output module (it is declared in patTemplate_cfg)
-process.outpath.remove(process.out)
-del process.out
-

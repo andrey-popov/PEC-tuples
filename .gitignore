@@ -20,3 +20,7 @@ __init__.py
 
 # ROOT files from test runs
 /*.root
+
+# Files with notes
+*.txt
+
