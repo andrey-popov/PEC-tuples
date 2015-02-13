@@ -199,11 +199,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         storeElectron.SetCutBasedID(el.electronID("simpleEleId70cIso"));
         
         // Conversion rejection. True for a "good" electron
-        storeElectron.SetBit(0, el.passConversionVeto() and
-         (el.gsfTrack()->trackerExpectedHitsInner().numberOfHits() <= 0));
+        storeElectron.SetBit(0, el.passConversionVeto());
         //^ See [1]. The decision is stored by PATElectronProducer based on the collection
-        //"allConversions" (the name is hard-coded). The additional requirement to reject electrons
-        //from the photon conversion is set according to [2].
+        //"allConversions" (the name is hard-coded). In the past, there used to be an additional
+        //requirement to reject electrons from the photon conversion is set according to [2]; but
+        //it caused a compile error in 72X and has been dropped
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
         //[2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel#Electrons
         
