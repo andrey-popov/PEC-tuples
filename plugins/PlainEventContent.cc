@@ -13,8 +13,6 @@
 
 #include <EgammaAnalysis/ElectronTools/interface/EcalIsolationCorrector.h>
 
-#include <CMGTools/External/interface/PileupJetIdentifier.h>
-
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
@@ -49,17 +47,8 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     generatorTag(cfg.getParameter<InputTag>("generator")),
     primaryVerticesTag(cfg.getParameter<InputTag>("primaryVertices")),
     puSummaryTag(cfg.getParameter<InputTag>("puInfo")),
-    rhoTag(cfg.getParameter<InputTag>("rho")),
-    jetPileUpIDTags(cfg.getParameter<vector<InputTag>>("jetPileUpID"))
-{
-    if (jetPileUpIDTags.size() > 2)
-    {
-        edm::Exception excp(edm::errors::LogicError);
-        excp << "Two sources of jet pile-up ID are expected at maximum while " <<
-         jetPileUpIDTags.size() << " have been provided.\n";
-        excp.raise();
-    }
-}
+    rhoTag(cfg.getParameter<InputTag>("rho"))
+{}
 
 
 void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
@@ -96,10 +85,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Rho (mean angular pt density).");
     desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
      setComment("True pile-up information. If runOnData is true, this parameter is ignored.");
-    desc.add<vector<InputTag>>("jetPileUpID", vector<InputTag>(0))->
-     setComment("Value maps with jet pile-up ID. Can contain 0, 1, or 2 entries. In the latter "
-     "case the first InputTag is supposed to denote the map for cut-based ID and the second one "
-     "should provide MVA ID.");
     
     descriptions.add("eventContent", desc);
 }
@@ -329,13 +314,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     event.getByLabel(jetTag, srcJets);
     
     
-    // Jet pile-up ID maps
-    vector<Handle<ValueMap<int>>> jetPileUpIDHandles(jetPileUpIDTags.size());
-    
-    for (unsigned i = 0; i < jetPileUpIDTags.size(); ++i)
-        event.getByLabel(jetPileUpIDTags.at(i), jetPileUpIDHandles.at(i));
-    
-    
     // Construct the jet selectors
     vector<StringCutObjectSelector<pat::Jet>> jetSelectors;
     
@@ -408,40 +386,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             storeJet.SetPullAngle(atan2(pullPhi, pullY));
             
             
-            // Pack jet pile-up ID into a single short. If single pile-up ID is provided in the
-            //plugin's configuration, it is assumed to be cut-based. If two IDs are given, the first
-            //one is cut-based, and the second is MVA.
-            if (jetPileUpIDHandles.size() > 0)
-            {
-                int const pileUpID = (*jetPileUpIDHandles.at(0))[srcJets->refAt(i)];
-                
-                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
-                 pec::Jet::PileUpIDWorkingPoint::Loose,
-                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose));
-                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
-                 pec::Jet::PileUpIDWorkingPoint::Medium,
-                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium));
-                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::CutBased,
-                 pec::Jet::PileUpIDWorkingPoint::Tight,
-                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight));
-            }
-            
-            if (jetPileUpIDHandles.size() > 1)
-            {
-                int const pileUpID = (*jetPileUpIDHandles.at(1))[srcJets->refAt(i)];
-                
-                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
-                 pec::Jet::PileUpIDWorkingPoint::Loose,
-                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kLoose));
-                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
-                 pec::Jet::PileUpIDWorkingPoint::Medium,
-                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kMedium));
-                storeJet.SetPileUpID(pec::Jet::PileUpIDAlgo::MVA,
-                 pec::Jet::PileUpIDWorkingPoint::Tight,
-                 PileupJetIdentifier::passJetId(pileUpID, PileupJetIdentifier::kTight));
-            }
-            
-            
+
             if (!runOnData)
             // These are variables is from the generator tree, but it's more convenient to
             //calculate it here

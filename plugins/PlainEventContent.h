@@ -116,16 +116,6 @@ private:
     /// Rho (mean angular pt density)
     edm::InputTag const rhoTag;
     
-    /**
-     * \brief Input tags for jet pile-up ID
-     * 
-     * The vector might contain 0, 1, or 2 elements. If more than 2 elements are provided,
-     * constructor throws an exception. If the vector contains only one element, it is expected to
-     * be the cut-based ID. If there are two elements, the first one should refer to the cut-based
-     * ID, and the latter one specifies the MVA ID.
-     */
-    std::vector<edm::InputTag> jetPileUpIDTags;
-    
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
