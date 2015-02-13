@@ -11,8 +11,6 @@
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <DataFormats/VertexReco/interface/Vertex.h>
 
-#include <EgammaAnalysis/ElectronTools/interface/EcalIsolationCorrector.h>
-
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
@@ -165,11 +163,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         eleSelectors.push_back(*sel);
     
     
-    // A corrector for ECAL-based electron isolation [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMS/EcalIsolationCorrection2012Data
-    EcalIsolationCorrector ecalIsoCorr(true);
-    
-    
     // Loop through the electron collection and fill the relevant variables
     storeElectrons.clear();
     pec::Electron storeElectron;  // will reuse this object to fill the vector
@@ -213,38 +206,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         //from the photon conversion is set according to [2].
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
         //[2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel#Electrons
-        
-        
-        // Trigger-emulating preselection for MVA ID [1]
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
-        bool passTriggerPreselection = false;
-        
-        if (el.dr03TkSumPt() / pt < 0.2 and /* ECAL-based isolation is addressed later */
-         el.dr03HcalTowerSumEt() / pt < 0.2 and
-         el.gsfTrack()->trackerExpectedHitsInner().numberOfLostHits() == 0)
-        {
-            // Calculate a corrected ECAL-based isolation as described in [1]. The corrected
-            //isolation might be negative (confirmed by Matteo Sani privately)
-            //[1] https://twiki.cern.ch/twiki/bin/view/CMS/EcalIsolationCorrection2012Data
-            float correctedECALIso;
-            
-            if (runOnData)
-                correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, event.id().run(), true);
-            else
-                correctedECALIso = ecalIsoCorr.correctForHLTDefinition(el, false);
-            //^ Code snippet in the reference above operates with a Gsf electron instead of a PAT
-            //one given here, but it only reads an isolation from it and check if it is in the
-            //barrel [1]; thus, a PAT electron is also suitable
-            //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/src/EcalIsolationCorrector.cc?view=markup
-            
-            // Check the rest of requirements for trigger-emulating preselection
-            if (correctedECALIso / pt < 0.2)
-                passTriggerPreselection =  (fabs(el.superCluster()->eta()) < 1.479) ?
-                 (el.sigmaIetaIeta() < 0.014 and el.hadronicOverEm() < 0.15) :
-                 (el.sigmaIetaIeta() < 0.035 and el.hadronicOverEm() < 0.10);
-        }
-        
-        storeElectron.SetBit(1, passTriggerPreselection);
         
         
         // Evaluate user-defined selectors if any
