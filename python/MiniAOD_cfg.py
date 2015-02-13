@@ -11,6 +11,7 @@
     The workflow can be controlled through the VarParsing options defined in the code below.
     """
 
+import sys
 import random
 import string
 import re
@@ -71,12 +72,12 @@ muChan = (options.channels.find('m') != -1)
 
 
 # Set the default global tag
+# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=516#PHYS14_exercise_72X
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = 'FT53_V21A_AN6'
+        options.globalTag = 'N/A'
     else:
-        options.globalTag = 'START53_V27'
-process.GlobalTag.globaltag = options.globalTag + '::All'
+        options.globalTag = 'PHYS14_25_V3'
 
 
 # Parse jet selection
@@ -90,28 +91,14 @@ jetPtThreshold = int(jetSelParsed.group(2))
 print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThreshold, 'GeV/c.'
 
 
-# Rerun jet probability calibration when running over simulation [1-2]. Real data form 22Jan2013
-# rereco is fine
-# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG?rev=169#2012_Data_and_MC_EPS13_prescript
-# [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagJetProbabilityCalibration?rev=24#Calibration_in_53x_Data_and_MC
-if not runOnData:
-    process.GlobalTag.toGet = cms.VPSet(
-        cms.PSet(record = cms.string('BTagTrackProbability2DRcd'),
-           tag = cms.string('TrackProbabilityCalibration_2D_MC53X_v2'),
-           connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')),
-        cms.PSet(record = cms.string('BTagTrackProbability3DRcd'),
-           tag = cms.string('TrackProbabilityCalibration_3D_MC53X_v2'),
-           connect = cms.untracked.string('frontier://FrontierPrep/CMS_COND_BTAU')))
-
-
 # Define the input files to be used for testing
-# if runOnData:
-#     from PhysicsTools.PatAlgos.patInputFiles_cff import filesSingleMuRECO
-#     process.source.fileNames = filesSingleMuRECO
-# else:
-#     from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarAODSIM
-#     process.source.fileNames = filesRelValProdTTbarAODSIM
-process.source.fileNames = cms.untracked.vstring('/store/relval/CMSSW_5_3_6-START53_V14/RelValProdTTbar/AODSIM/v2/00000/76ED0FA6-1E2A-E211-B8F1-001A92971B72.root')
+if runOnData:
+    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
+    process.source.fileNames = filesRelValSingleMuMINIAOD
+else:
+    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarPileUpMINIAODSIM
+    process.source.fileNames = filesRelValProdTTbarPileUpMINIAODSIM
+# process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
 if len(options.sourceFile) > 0:
     process.source.fileNames = cms.untracked.vstring(options.sourceFile)
@@ -199,10 +186,10 @@ paths.append(process.patPF2PATSequence)
 
 
 # Include the event filters
-from UserCode.SingleTop.EventFilters_cff import ApplyEventFilters
-ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
-    runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
-paths.append(process.eventFiltersSequence)
+# from UserCode.SingleTop.EventFilters_cff import ApplyEventFilters
+# ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
+#     runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
+# paths.append(process.eventFiltersSequence)
 
 
 # Define the MET
@@ -240,71 +227,71 @@ paths.append(process.countGoodJets)
 
 # Modules to save the needed information to the ROOT file
 # Save the info on the specified triggers
-process.trigger = cms.EDFilter('SlimTriggerResults',
-    triggers = cms.vstring(
-        'Mu17', 'Mu24', 'Mu24_eta2p1', 'Mu30', 'Mu30_eta2p1',
-        'IsoMu20_eta2p1', 'IsoMu24', 'IsoMu24_eta2p1', 'IsoMu30', 'IsoMu30_eta2p1',
-        'IsoMu34_eta2p1', 'IsoMu40_eta2p1',
-        'Ele17_CaloIdL_CaloIsoVL', 'Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL',
-        'Ele22_CaloIdL_CaloIsoVL', 'Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL', 'Ele27_WP80',
-        'Ele30_CaloIdVT_TrkIdT', 'Ele32_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL',
-        'IsoMu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'IsoMu17_eta2p1_CentralPFNoPUJet30',
-        'Mu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'Mu24_CentralPFJet30_CentralPFJet25',
-        'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30_BTagIPIter',
-        'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30'),
-    filter = cms.bool(False),
-    savePrescale = cms.bool(options.runOnData),
-    triggerProcessName = cms.string(options.hltProcess))
+# process.trigger = cms.EDFilter('SlimTriggerResults',
+#     triggers = cms.vstring(
+#         'Mu17', 'Mu24', 'Mu24_eta2p1', 'Mu30', 'Mu30_eta2p1',
+#         'IsoMu20_eta2p1', 'IsoMu24', 'IsoMu24_eta2p1', 'IsoMu30', 'IsoMu30_eta2p1',
+#         'IsoMu34_eta2p1', 'IsoMu40_eta2p1',
+#         'Ele17_CaloIdL_CaloIsoVL', 'Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL',
+#         'Ele22_CaloIdL_CaloIsoVL', 'Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL', 'Ele27_WP80',
+#         'Ele30_CaloIdVT_TrkIdT', 'Ele32_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL',
+#         'IsoMu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'IsoMu17_eta2p1_CentralPFNoPUJet30',
+#         'Mu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'Mu24_CentralPFJet30_CentralPFJet25',
+#         'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30_BTagIPIter',
+#         'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30'),
+#     filter = cms.bool(False),
+#     savePrescale = cms.bool(options.runOnData),
+#     triggerProcessName = cms.string(options.hltProcess))
 
 # Save the event content
-if options.noCHS:
-    puIdProducerLabel = 'puJetMva'
-else:
-    puIdProducerLabel = 'puJetMvaChs'
+# if options.noCHS:
+#     puIdProducerLabel = 'puJetMva'
+# else:
+#     puIdProducerLabel = 'puJetMvaChs'
 
-process.eventContent = cms.EDAnalyzer('PlainEventContent',
-    runOnData = cms.bool(runOnData),
-    electrons = cms.InputTag('nonIsolatedLoosePatElectrons'),
-    eleSelection = eleQualityCuts,
-    muons = cms.InputTag('nonIsolatedLoosePatMuons'),
-    muSelection = muQualityCuts,
-    jets = cms.InputTag('analysisPatJets'),
-    jetMinPt = cms.double(20.),
-    jetMinRawPt = cms.double(10.),
-    METs = cms.VInputTag(*metCollections),
-    generator = cms.InputTag('generator'),
-    primaryVertices = cms.InputTag('offlinePrimaryVertices'),
-    puInfo = cms.InputTag('addPileupInfo'),
-    rho = cms.InputTag('kt6PFJets', 'rho'),
-    jetPileUpID = cms.VInputTag(
-        cms.InputTag(puIdProducerLabel, 'cutbasedId'),
-        cms.InputTag(puIdProducerLabel, 'fullId')))
+# process.eventContent = cms.EDAnalyzer('PlainEventContent',
+#     runOnData = cms.bool(runOnData),
+#     electrons = cms.InputTag('nonIsolatedLoosePatElectrons'),
+#     eleSelection = eleQualityCuts,
+#     muons = cms.InputTag('nonIsolatedLoosePatMuons'),
+#     muSelection = muQualityCuts,
+#     jets = cms.InputTag('analysisPatJets'),
+#     jetMinPt = cms.double(20.),
+#     jetMinRawPt = cms.double(10.),
+#     METs = cms.VInputTag(*metCollections),
+#     generator = cms.InputTag('generator'),
+#     primaryVertices = cms.InputTag('offlinePrimaryVertices'),
+#     puInfo = cms.InputTag('addPileupInfo'),
+#     rho = cms.InputTag('kt6PFJets', 'rho'),
+#     jetPileUpID = cms.VInputTag(
+#         cms.InputTag(puIdProducerLabel, 'cutbasedId'),
+#         cms.InputTag(puIdProducerLabel, 'fullId')))
 
-paths.append(process.trigger, process.eventContent)
+# paths.append(process.trigger, process.eventContent)
 
 
 # Save information about the hard interaction
-if options.saveHardInteraction:
-    process.hardInteraction = cms.EDAnalyzer('HardInteractionInfo',
-        genParticles = cms.InputTag('genParticles'))
-    paths.append(process.hardInteraction)
+# if options.saveHardInteraction:
+#     process.hardInteraction = cms.EDAnalyzer('HardInteractionInfo',
+#         genParticles = cms.InputTag('genParticles'))
+#     paths.append(process.hardInteraction)
 
 
 # Save information on heavy-flavour quarks
-if options.saveHeavyFlavours:
-    process.heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
-        absPdgId = cms.vint32(4, 5),
-        genParticles = cms.InputTag('genParticles'))
-    paths.append(process.heavyFlavours)
+# if options.saveHeavyFlavours:
+#     process.heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
+#         absPdgId = cms.vint32(4, 5),
+#         genParticles = cms.InputTag('genParticles'))
+#     paths.append(process.heavyFlavours)
 
 
 # Save information on generator-level jets
-if options.saveGenJets:
-    process.genJets = cms.EDAnalyzer('GenJetsInfo',
-        jets = cms.InputTag('ak5GenJets'),
-        cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
-        saveFlavourCounters = cms.bool(True))
-    paths.append(process.genJets)
+# if options.saveGenJets:
+#     process.genJets = cms.EDAnalyzer('GenJetsInfo',
+#         jets = cms.InputTag('ak5GenJets'),
+#         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
+#         saveFlavourCounters = cms.bool(True))
+#     paths.append(process.genJets)
 
 
 # In case one of the channels is not requested for the processing, remove it
