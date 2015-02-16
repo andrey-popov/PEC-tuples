@@ -271,12 +271,14 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Save information on generator-level jets
-# if options.saveGenJets:
-#     process.genJets = cms.EDAnalyzer('GenJetsInfo',
-#         jets = cms.InputTag('ak5GenJets'),
-#         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
-#         saveFlavourCounters = cms.bool(True))
-#     paths.append(process.genJets)
+if options.saveGenJets:
+    process.genJets = cms.EDAnalyzer('GenJetsInfo',
+        jets = cms.InputTag('slimmedGenJets'),
+        cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
+        saveFlavourCounters = cms.bool(False))
+        #^ Do not attempt to access jet flavours for the time being. Will need to adapt to pruned
+        #generator particles
+    paths.append(process.genJets)
 
 
 # In case one of the channels is not requested for the processing, remove it

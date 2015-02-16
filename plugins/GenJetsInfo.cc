@@ -27,7 +27,7 @@ void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
     
     edm::ParameterSetDescription desc;
-    desc.add<InputTag>("jets", InputTag("ak4GenJets"))->
+    desc.add<InputTag>("jets", InputTag("slimmedGenJets"))->
      setComment("Collection of generator-level jets.");
     desc.add<string>("cut", "")->
      setComment("Selection to choose which jets should be stored.");
