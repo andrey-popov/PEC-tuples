@@ -7,7 +7,7 @@
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
-#include <FWCore/Utilities/interface/InputTag.h>
+#include <DataFormats/JetReco/interface/GenJet.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -44,8 +44,8 @@ public:
     void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
 private:
-    /// Input tag to identify the collection of generator-level jets
-    edm::InputTag const jetSrc;
+    /// Collection of generator-level jets
+    edm::EDGetTokenT<edm::View<reco::GenJet>> jetToken;
     
     /**
      * \brief String defining a selection for the jets

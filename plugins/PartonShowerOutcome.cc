@@ -7,9 +7,11 @@
 
 
 PartonShowerOutcome::PartonShowerOutcome(edm::ParameterSet const &cfg):
-    absPdgIdToSave(cfg.getParameter<std::vector<int>>("absPdgId")),
-    genParticlesSrc(cfg.getParameter<edm::InputTag>("genParticles"))
-{}
+    absPdgIdToSave(cfg.getParameter<std::vector<int>>("absPdgId"))
+{
+    genParticlesToken =
+     consumes<edm::View<reco::GenParticle>>(cfg.getParameter<edm::InputTag>("genParticles"));
+}
 
 
 void PartonShowerOutcome::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
@@ -42,7 +44,7 @@ void PartonShowerOutcome::analyze(edm::Event const &event, edm::EventSetup const
 {
     // Read the generator particles in the current event
     edm::Handle<edm::View<reco::GenParticle>> genParticles;
-    event.getByLabel(genParticlesSrc, genParticles);
+    event.getByToken(genParticlesToken, genParticles);
     
     
     // Loop over the generator particles

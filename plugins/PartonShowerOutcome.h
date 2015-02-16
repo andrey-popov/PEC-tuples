@@ -81,8 +81,8 @@ private:
     /// Absolute values of PDG ID of particles to be saved
     std::vector<int> absPdgIdToSave;
     
-    /// An input tag to read generator particles
-    edm::InputTag genParticlesSrc;
+    /// Collection of generator-level particles
+    edm::EDGetTokenT<edm::View<reco::GenParticle>> genParticlesToken;
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;

@@ -3,17 +3,10 @@
 #include <FWCore/Framework/interface/EventSetup.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Utilities/interface/EDMException.h>
+#include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
-#include <DataFormats/PatCandidates/interface/Jet.h>
-#include <DataFormats/PatCandidates/interface/Electron.h>
-#include <DataFormats/PatCandidates/interface/Muon.h>
-#include <DataFormats/PatCandidates/interface/MET.h>
-#include <DataFormats/VertexReco/interface/Vertex.h>
-
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
-#include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
-#include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
 
 #include <TLorentzVector.h>
 #include <Math/GenVector/VectorUtil.h>
@@ -28,11 +21,6 @@ using namespace std;
 
 
 PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
-    electronTag(cfg.getParameter<InputTag>("electrons")),
-    muonTag(cfg.getParameter<InputTag>("muons")),
-    jetTag(cfg.getParameter<InputTag>("jets")),
-    metTags(cfg.getParameter<vector<InputTag>>("METs")),
-    
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
     
@@ -40,13 +28,21 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     muSelection(cfg.getParameter<vector<string>>("muSelection")),
     jetSelection(cfg.getParameter<vector<string>>("jetSelection")),
     
-    runOnData(cfg.getParameter<bool>("runOnData")),
+    runOnData(cfg.getParameter<bool>("runOnData"))
+{
+    electronToken = consumes<edm::View<pat::Electron>>(cfg.getParameter<InputTag>("electrons"));
+    muonToken = consumes<edm::View<pat::Muon>>(cfg.getParameter<InputTag>("muons"));
+    jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     
-    generatorTag(cfg.getParameter<InputTag>("generator")),
-    primaryVerticesTag(cfg.getParameter<InputTag>("primaryVertices")),
-    puSummaryTag(cfg.getParameter<InputTag>("puInfo")),
-    rhoTag(cfg.getParameter<InputTag>("rho"))
-{}
+    for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("METs"))
+        metTokens.emplace_back(consumes<edm::View<pat::MET>>(tag));
+    
+    generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
+    primaryVerticesToken =
+     consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
+    puSummaryToken = consumes<edm::View<PileupSummaryInfo>>(cfg.getParameter<InputTag>("puInfo"));
+    rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
+}
 
 
 void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
@@ -139,7 +135,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Read the primary vertices
     Handle<reco::VertexCollection> vertices;
-    event.getByLabel(primaryVerticesTag, vertices);
+    event.getByToken(primaryVerticesToken, vertices);
     
     if (vertices->size() == 0)
     {
@@ -152,7 +148,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     // Fill the tree with basic information
     // Read the electron collection
     Handle<View<pat::Electron>> srcElectrons;
-    event.getByLabel(electronTag, srcElectrons);
+    event.getByToken(electronToken, srcElectrons);
     
     
     // Construct the electron selectors (s. SWGuidePhysicsCutParser)
@@ -220,7 +216,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Read the muon collection
     Handle<View<pat::Muon>> srcMuons;
-    event.getByLabel(muonTag, srcMuons);
+    event.getByToken(muonToken, srcMuons);
     
     // Constuct the muon selectors
     vector<StringCutObjectSelector<pat::Muon>> muSelectors;
@@ -272,7 +268,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Read the jets collections
     Handle<View<pat::Jet>> srcJets;
-    event.getByLabel(jetTag, srcJets);
+    event.getByToken(jetToken, srcJets);
     
     
     // Construct the jet selectors
@@ -379,10 +375,10 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     storeMETs.clear();
     pec::Candidate storeMET;  // will reuse this object to fill the vector
     
-    for (vector<InputTag>::const_iterator tag = metTags.begin(); tag != metTags.end(); ++tag)
+    for (auto const &metToken: metTokens)
     {
         Handle<View<pat::MET>> met;
-        event.getByLabel(*tag, met);
+        event.getByToken(metToken, met);
         
         storeMET.Reset();
         
@@ -398,7 +394,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     if (!runOnData)
     {
         Handle<GenEventInfoProduct> generator;
-        event.getByLabel(generatorTag, generator);
+        event.getByToken(generatorToken, generator);
         
         generatorInfo.Reset();
         //^ Same object is used for all events, hence need to reset it
@@ -425,7 +421,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     puInfo.SetNumPV(vertices->size());
 
     Handle<double> rho;
-    event.getByLabel(rhoTag, rho);
+    event.getByToken(rhoToken, rho);
     
     puInfo.SetRho(*rho);
     
@@ -433,7 +429,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     if (!runOnData)
     {
         Handle<View<PileupSummaryInfo>> puSummary;
-        event.getByLabel(puSummaryTag, puSummary);
+        event.getByToken(puSummaryToken, puSummary);
         
         puInfo.SetTrueNumPU(puSummary->front().getTrueNumInteractions());
         //^ The true number of interactions is same for all bunch crossings

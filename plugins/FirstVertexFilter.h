@@ -5,7 +5,9 @@
 
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
-#include <FWCore/Utilities/interface/InputTag.h>
+
+#include <DataFormats/VertexReco/interface/VertexFwd.h>
+#include <DataFormats/VertexReco/interface/Vertex.h>
 
 #include <string>
 
@@ -37,7 +39,7 @@ public:
     
 private:
     /// Input collection of vertices
-    edm::InputTag src;
+    edm::EDGetTokenT<reco::VertexCollection> verticesToken;
     
     /// String cut to filter vertices
     std::string cut;

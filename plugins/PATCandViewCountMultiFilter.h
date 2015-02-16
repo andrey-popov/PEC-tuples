@@ -49,7 +49,7 @@ private:
      * 
      * They are expected to contain instances of a class convertable to reco::Candidate.
      */
-    std::vector<edm::InputTag> sources;
+    std::vector<edm::EDGetTokenT<edm::View<reco::Candidate>>> sourceTokens;
     
     /// Desired selection to filter candidates
     StringCutObjectSelector<reco::Candidate> selection;

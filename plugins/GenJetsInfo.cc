@@ -2,8 +2,9 @@
 
 #include <DataFormats/Candidate/interface/Candidate.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
-#include <DataFormats/JetReco/interface/GenJet.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
+#include <FWCore/Utilities/interface/InputTag.h>
+
 #include <FWCore/Framework/interface/MakerMacros.h>
 
 #include <Math/GenVector/VectorUtil.h>
@@ -14,10 +15,11 @@ using namespace edm;
 
 
 GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
-    jetSrc(cfg.getParameter<InputTag>("jets")),
     jetCut(cfg.getParameter<string>("cut")),
     saveFlavourCounters(cfg.getParameter<bool>("saveFlavourCounters"))
-{}
+{
+    jetToken = consumes<View<reco::GenJet>>(cfg.getParameter<InputTag>("jets"));
+}
 
 
 void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
@@ -26,7 +28,7 @@ void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
     
     edm::ParameterSetDescription desc;
-    desc.add<InputTag>("jets", InputTag("ak5GenJets"))->
+    desc.add<InputTag>("jets", InputTag("ak4GenJets"))->
      setComment("Collection of generator-level jets.");
     desc.add<string>("cut", "")->
      setComment("Selection to choose which jets should be stored.");
@@ -51,7 +53,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
     // Read the collection of generator-level jets
     Handle<View<reco::GenJet>> jets;
-    event.getByLabel(jetSrc, jets);
+    event.getByToken(jetToken, jets);
     
     
     // Construct the jet selector

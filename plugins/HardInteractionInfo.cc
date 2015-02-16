@@ -1,6 +1,7 @@
 #include "HardInteractionInfo.h"
 
-#include <DataFormats/HepMCCandidate/interface/GenParticle.h>
+#include <FWCore/Utilities/interface/InputTag.h>
+
 #include <FWCore/Framework/interface/MakerMacros.h>
 
 
@@ -8,9 +9,11 @@ using namespace std;
 using namespace edm;
 
 
-HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg):
-    genParticlesTag(cfg.getParameter<InputTag>("genParticles"))
-{}
+HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg)
+{
+    genParticlesToken =
+     consumes<View<reco::GenParticle>>(cfg.getParameter<InputTag>("genParticles"));
+}
 
 
 void HardInteractionInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
@@ -37,7 +40,7 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
 {
     // Read the generator-level particles
     Handle<View<reco::GenParticle>> genParticles;
-    event.getByLabel(genParticlesTag, genParticles);
+    event.getByToken(genParticlesToken, genParticles);
     
     
     storeParticles.clear();

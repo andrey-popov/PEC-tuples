@@ -6,21 +6,23 @@
 
 
 PATCandViewCountMultiFilter::PATCandViewCountMultiFilter(edm::ParameterSet const &cfg):
-    sources(cfg.getParameter<std::vector<edm::InputTag>>("src")),
     selection(cfg.getParameter<std::string>("cut")),
     minNumber(cfg.getParameter<unsigned>("minNumber")),
     maxNumber(cfg.getParameter<unsigned>("maxNumber"))
-{}
+{
+    for (edm::InputTag const &tag: cfg.getParameter<std::vector<edm::InputTag>>("src"))
+        sourceTokens.emplace_back(consumes<edm::View<reco::Candidate>>(tag));
+}
 
 
 bool PATCandViewCountMultiFilter::filter(edm::Event &event, edm::EventSetup const &eventSetup)
 {
     // Loop over the input collections
-    for (edm::InputTag const &source: sources)
+    for (auto const &sourceToken: sourceTokens)
     {
         // Get the collection
         edm::Handle<edm::View<reco::Candidate>> collection;
-        event.getByLabel(source, collection);
+        event.getByToken(sourceToken, collection);
         
         
         // Loop over the collection and count how many candidates pass the selection

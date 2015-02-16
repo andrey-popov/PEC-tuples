@@ -12,7 +12,14 @@
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
-#include <FWCore/Utilities/interface/InputTag.h>
+
+#include <DataFormats/PatCandidates/interface/Jet.h>
+#include <DataFormats/PatCandidates/interface/Electron.h>
+#include <DataFormats/PatCandidates/interface/Muon.h>
+#include <DataFormats/PatCandidates/interface/MET.h>
+#include <DataFormats/VertexReco/interface/Vertex.h>
+#include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
+#include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -67,16 +74,22 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
 private:
-    /// Tags to access collections of electrons, muons, and jets
-    edm::InputTag const electronTag, muonTag, jetTag;
+    /// Collection of electrons
+    edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
+    
+    /// Collection of muons
+    edm::EDGetTokenT<edm::View<pat::Muon>> muonToken;
+    
+    /// Collection of jets
+    edm::EDGetTokenT<edm::View<pat::Jet>> jetToken;
     
     /**
-     * \brief Tags to access collections of MET
+     * \brief MET collections
      * 
      * The plugin reads not a single MET but a vector of them. It allows to store MET with various
      * corrections as well as its systematical variations.
      */
-    std::vector<edm::InputTag> const metTags;
+    std::vector<edm::EDGetTokenT<edm::View<pat::MET>>> metTokens;
     
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;
@@ -101,20 +114,24 @@ private:
     bool const runOnData;
     
     /**
-     * \brief Tags to access generator information
+     * \brief Generator information
      * 
-     * They are ignored in case of real data.
+     * Ignored in data.
      */
-    edm::InputTag const generatorTag;
+    edm::EDGetTokenT<GenEventInfoProduct> generatorToken;
     
-    /// Tag to access reconstructed primary vertices
-    edm::InputTag const primaryVerticesTag;
+    /// Collection of reconstructed primary vertices
+    edm::EDGetTokenT<reco::VertexCollection> primaryVerticesToken;
     
-    /// Pile-up information in simulation
-    edm::InputTag const puSummaryTag;
+    /**
+     * \brief Pile-up information in simulation
+     * 
+     * Ignored in data.
+     */
+    edm::EDGetTokenT<edm::View<PileupSummaryInfo>> puSummaryToken;
     
     /// Rho (mean angular pt density)
-    edm::InputTag const rhoTag;
+    edm::EDGetTokenT<double> rhoToken;
     
     
     /// An object to handle the output ROOT file

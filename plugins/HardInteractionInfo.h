@@ -7,7 +7,8 @@
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
-#include <FWCore/Utilities/interface/InputTag.h>
+
+#include <DataFormats/HepMCCandidate/interface/GenParticle.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -42,8 +43,8 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
 private:
-    /// A tag to access generator-level particles
-    edm::InputTag const genParticlesTag;
+    /// Collection of generator-level particles
+    edm::EDGetTokenT<edm::View<reco::GenParticle>> genParticlesToken;
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
