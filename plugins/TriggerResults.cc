@@ -1,4 +1,4 @@
-#include <UserCode/SingleTop/plugins/TriggerResults.h>
+#include "TriggerResults.h"
 
 #include <FWCore/Common/interface/TriggerResultsByName.h>
 #include <FWCore/Utilities/interface/EDMException.h>

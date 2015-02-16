@@ -1,4 +1,4 @@
-#include <UserCode/SingleTop/plugins/SlimTriggerResults.h>
+#include "SlimTriggerResults.h"
 
 #include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Common/interface/TriggerResultsByName.h>

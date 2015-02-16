@@ -1,4 +1,4 @@
-#include <UserCode/SingleTop/plugins/GenJetsInfo.h>
+#include "GenJetsInfo.h"
 
 #include <DataFormats/Candidate/interface/Candidate.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>

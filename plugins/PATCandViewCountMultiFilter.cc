@@ -1,4 +1,4 @@
-#include <UserCode/SingleTop/plugins/PATCandViewCountMultiFilter.h>
+#include "PATCandViewCountMultiFilter.h"
 
 #include <FWCore/Framework/interface/MakerMacros.h>
 
