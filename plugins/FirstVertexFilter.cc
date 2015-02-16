@@ -39,13 +39,13 @@ bool FirstVertexFilter::filter(edm::Event &event, const edm::EventSetup &eventSe
     
     // Details on string-based selectors can be found in SWGuidePhysicsCutParser
     StringCutObjectSelector<reco::Vertex> selector(cut);
-    std::auto_ptr<reco::VertexCollection> selectedVertices(new reco::VertexCollection);
+    std::unique_ptr<reco::VertexCollection> selectedVertices(new reco::VertexCollection);
     
     for (reco::VertexCollection::const_iterator v = vertices->begin(); v != vertices->end(); ++v)
         if (selector(*v))
             selectedVertices->push_back(*v);
     
-    event.put(selectedVertices);
+    event.put(move(selectedVertices));
     
     return selector(vertices->front());
 }
