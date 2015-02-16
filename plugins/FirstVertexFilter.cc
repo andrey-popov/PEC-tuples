@@ -25,8 +25,10 @@ FirstVertexFilter::FirstVertexFilter(const edm::ParameterSet &cfg):
 void FirstVertexFilter::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
     edm::ParameterSetDescription desc;
-    desc.add<edm::InputTag>("src")->setComment("Source collection of vertices.");
-    desc.add<string>("cut")->setComment("Selection to apply to the vertices.");
+    desc.add<edm::InputTag>("src", edm::InputTag("offlineSlimmedPrimaryVertices"))->
+     setComment("Source collection of vertices.");
+    desc.add<string>("cut", "!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.")->
+     setComment("Selection to apply to the vertices.");
     
     descriptions.add("firstVertexFilter", desc);
 }
