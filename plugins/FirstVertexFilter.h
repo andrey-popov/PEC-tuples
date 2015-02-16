@@ -1,39 +1,44 @@
-/**
- * \author Andrey Popov
- *
- * The plugin performs string-based filtering on the first vertex in the collection given. The
- * vertices that pass the selection are put into the event content in a separate collection.
- * 
- * Usage example:
- *   process.goodOfflinePrimaryVertices = cms.EDFilter("FirstVertexFilter",
- *      src = cms.InputTag("offlinePrimaryVertices"),
- *      cut = cms.string("!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2."))
- */
-
-#ifndef SINGLE_TOP_FIRST_VERTEX_FILTER
-#define SINGLE_TOP_FIRST_VERTEX_FILTER
+#pragma once
 
 #include <FWCore/Framework/interface/EDFilter.h>
 #include <FWCore/Framework/interface/Event.h>
+
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
+#include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
 #include <string>
 
 
+/**
+ * \class FirstVertexFilter
+ * \author Andrey Popov
+ * \brief This CMSSW plugin performs selection on the first primary vertex
+ *
+ * The plugin performs string-based filtering on the first vertex in the collection given. The
+ * vertices that pass the selection are put into the event content in a separate collection.
+ */
 class FirstVertexFilter: public edm::EDFilter
 {
-	public:
-		explicit FirstVertexFilter(const edm::ParameterSet &);
-		~FirstVertexFilter();
+public:
+    /// Constructor
+    FirstVertexFilter(const edm::ParameterSet &cfg);
 
-	private:
-		virtual void beginJob();
-		virtual bool filter(edm::Event &, const edm::EventSetup &);
-		virtual void endJob();
-
-		edm::InputTag src;
-		std::string cut;
+public:
+    /// A method to verify plugin's configuration
+    static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
+    
+    /**
+     * \brief Checks if the event should be kept depending on properties of the first vertex
+     * 
+     * Stores vertices that pass the selection in a separate collection.
+     */
+    virtual bool filter(edm::Event &event, const edm::EventSetup &eventSetup);
+    
+private:
+    /// Input collection of vertices
+    edm::InputTag src;
+    
+    /// String cut to filter vertices
+    std::string cut;
 };
-
-#endif
