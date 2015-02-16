@@ -229,31 +229,28 @@ DefineJets(process, paths)
 #     triggerProcessName = cms.string(options.hltProcess))
 
 # Save the event content
-# if options.noCHS:
-#     puIdProducerLabel = 'puJetMva'
-# else:
-#     puIdProducerLabel = 'puJetMvaChs'
-
-# process.eventContent = cms.EDAnalyzer('PlainEventContent',
-#     runOnData = cms.bool(runOnData),
-#     electrons = cms.InputTag('analysisPatElectrons'),
-#     eleIDMaps = eleIDMaps,
-#     eleSelection = eleQualityCuts,
-#     muons = cms.InputTag('analysisPatMuons'),
-#     muSelection = muQualityCuts,
-#     jets = cms.InputTag('analysisPatJets'),
-#     jetMinPt = cms.double(20.),
-#     jetMinRawPt = cms.double(10.),
-#     METs = cms.VInputTag(*metCollections),
-#     generator = cms.InputTag('generator'),
-#     primaryVertices = cms.InputTag('offlinePrimaryVertices'),
-#     puInfo = cms.InputTag('addPileupInfo'),
-#     rho = cms.InputTag('kt6PFJets', 'rho'),
-#     jetPileUpID = cms.VInputTag(
-#         cms.InputTag(puIdProducerLabel, 'cutbasedId'),
-#         cms.InputTag(puIdProducerLabel, 'fullId')))
+process.eventContent = cms.EDAnalyzer('PlainEventContent',
+    runOnData = cms.bool(runOnData),
+    electrons = cms.InputTag('analysisPatElectrons'),
+    eleIDMaps = cms.VInputTag(eleIDMaps),
+    eleSelection = eleQualityCuts,
+    muons = cms.InputTag('analysisPatMuons'),
+    muSelection = muQualityCuts,
+    jets = cms.InputTag('analysisPatJets'),
+    jetMinPt = cms.double(20.),
+    jetMinRawPt = cms.double(10.),
+    # METs = cms.VInputTag(*metCollections),
+    METs = cms.VInputTag(cms.InputTag('')),
+    generator = cms.InputTag('generator'),
+    primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    puInfo = cms.InputTag('addPileupInfo'),
+    rho = cms.InputTag('fixedGridRhoFastjetAll'))
+    #^ There are several various versions of rho stored in an event. Apparently, this is the one
+    # used for JEC [1]
+    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/jes/497.html?inline=-1
 
 # paths.append(process.trigger, process.eventContent)
+paths.append(process.eventContent)
 
 
 # Save information about the hard interaction

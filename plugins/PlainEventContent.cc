@@ -28,8 +28,10 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     muonToken = consumes<edm::View<pat::Muon>>(cfg.getParameter<InputTag>("muons"));
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     
+    #if 0
     for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("METs"))
         metTokens.emplace_back(consumes<edm::View<pat::MET>>(tag));
+    #endif
     
     for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("eleIDMaps"))
         eleIDMapTokens.emplace_back(consumes<edm::ValueMap<bool>>(tag));
@@ -297,6 +299,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
             
             
+            #if 0
             // Calculate the jet pull angle
             double const y = rawP4.Rapidity();
             double const phi = rawP4.phi();
@@ -320,6 +323,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //the polar angle only, it is not necessary
             
             storeJet.SetPullAngle(atan2(pullPhi, pullY));
+            #endif
             
             
 
@@ -350,6 +354,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     }
     
     
+    #if 0
     // Read METs
     storeMETs.clear();
     pec::Candidate storeMET;  // will reuse this object to fill the vector
@@ -366,6 +371,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         storeMETs.push_back(storeMET);
     }
+    #endif
     
     
     // Save the generator information (however the jet generator info is already saved)
