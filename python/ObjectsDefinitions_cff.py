@@ -242,43 +242,15 @@ def DefineMuons(process, PFRecoSequence, runOnData):
     return muQualityCuts
 
 
-def DefineJets(process, paths, runOnData, disableCHS):
-    """ Adjusts jet reconstruction. The function must be called after the MET uncertainty tool.
-        The user is expected to operate with the following collections:
+def DefineJets(process, paths):
+    """ Applies quality selection to jets. The user is expected to operate with the following
+        collections:
         
         1. analysisPatJets: jets subjected to recommended quality selection; to be used in the
         analysis.
-        
-        2. cleanPatJets: jets from PFBRECO embedded in pat::Jet class and passing loose jet ID; if
-        disableCHS is True, the collection is cleaned against muons and electrons; to be used with
-        the MET uncertainty tool.
     """
     
-    # Switch off CHS is requested. Adjust jet cleaning accordingly
-    if disableCHS:
-        # Jets are built from all PF candidates, including pile-up ones
-        process.pfJets.src = 'particleFlow'
-        process.pfNoJet.bottomCollection = 'particleFlow'
-        
-        # Remove cleaning against objects that are not considered
-        del(process.cleanPatJets.checkOverlaps.taus)
-        del(process.cleanPatJets.checkOverlaps.photons)
-        del(process.cleanPatJets.checkOverlaps.tkIsoElectrons)
-        
-        # Collections of muons and electrons used to clean jets are same as for the MET uncertainty
-        # tool
-        process.cleanPatJets.checkOverlaps.muons.src = 'selectedPatMuons'
-        process.cleanPatJets.checkOverlaps.muons.requireNoOverlaps = True
-        process.cleanPatJets.checkOverlaps.electrons.src = 'selectedPatElectrons'
-        process.cleanPatJets.checkOverlaps.electrons.requireNoOverlaps = True
-    else:
-        process.cleanPatJets.checkOverlaps = cms.PSet()
-    
-    for p in paths.paths:
-        p.replace(process.selectedPatJets, process.selectedPatJets + process.cleanPatJets)
-    
-    
-    # Jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
+    # Set jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
     # HF-hadron energy is defined below differently from the formula in [2]. However, the formula
     # is written for uncorrected jets, while JEC-corrected ones are used below. One can rescale the
     # jet energy in the formula, but the expression below yields the same result. All accessors to
@@ -290,53 +262,14 @@ def DefineJets(process, paths, runOnData, disableCHS):
      'neutralEmEnergyFraction < 0.99 & (abs(eta) < 2.4 & chargedEmEnergyFraction < 0.99 & '\
      'chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 | abs(eta) >= 2.4)'
     
-    # Apply the jet ID defined above to selected pat jets. It will be inherited by all the jet
-    # collections considered in the analysis, including those produced by the MET uncertainty tool.
-    # The latter is reasonable as we do not want to apply JEC variation, for instance, to fake jets
-    process.selectedPatJets.cut = jetQualityCut
-    
-    
-    # Jets to be saved in PEC tuples are subjected to an additional selection on kinematics. Note
-    # that jet ID has already been applied
-    process.analysisPatJets = process.selectedPatJets.clone(
-        src = 'cleanPatJets',
-        cut = 'pt > 5. & abs(eta) < 4.7')
+    # Select jets that pass the above ID and some kinematical cuts
+    process.analysisPatJets = cms.EDFilter('PATJetSelector',
+        src = cms.InputTag('slimmedJets'),
+        cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetQualityCut))
     
     
     paths.append(process.analysisPatJets)
-    
-    
-    # Finally, switch on the tag infos. It is needed to access the secondary vertex [1]
-    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714/2/1/1.html
-    process.patJets.addTagInfos = True
-    
-    
-    # Add jet pile-up ID [1]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-    # WARNING: The package looks quite raw, many adjustments have been made by hand with no official
-    # recommendation. This tool should not be used in a physics analysis
-    process.load('CMGTools.External.pujetidsequence_cff')
-    
-    # By default, PU ID is calculated for selectedPatJets, but analysers need it to be associated
-    # with collection analysisPatJets
-    for m in [process.puJetIdChs, process.puJetMvaChs, process.puJetId, process.puJetMva]:
-        m.jets = 'analysisPatJets'
-    
-    # XML files with configuration of the "full" BDT are resolved from a wrong location. Correct it.
-    # The file I use here is identical to the one recommended in [1]
-    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1508/3.html
-    process.puJetMvaChs.algos[0].tmvaWeights = 'CMGTools/External/data/' + \
-     process.puJetMvaChs.algos[0].tmvaWeights.value().split('/')[3]
-    #^ That is just not to retype file's basename
-    
-    if disableCHS:
-        paths.append(process.puJetIdSqeuence)
-        
-        # Make labels same as in the CHS version
-        process.puJetMva.algos[0].label = 'full'
-        process.puJetMva.algos[1].label = 'cutbased'
-    else:
-        paths.append(process.puJetIdSqeuenceChs)
+
 
 
 def DefineMETs(process, paths, runOnData, jecLevel):

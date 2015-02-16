@@ -164,7 +164,7 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Define the leptons
-# from UserCode.SingleTop.ObjectsDefinitions_cff import *
+from UserCode.SingleTop.ObjectsDefinitions_cff import *
 
 # eleQualityCuts = DefineElectrons(process, process.patPF2PATSequence, runOnData)
 # muQualityCuts = DefineMuons(process, process.patPF2PATSequence, runOnData)
@@ -182,7 +182,7 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Define the jets
-# DefineJets(process, paths, runOnData, options.noCHS)
+DefineJets(process, paths)
 
 
 # The loose event selection

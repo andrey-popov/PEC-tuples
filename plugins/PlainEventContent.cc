@@ -283,22 +283,11 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());
+            storeJet.SetBTagCSV(j.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"));
             
-            storeJet.SetBTagCSV(j.bDiscriminator("combinedSecondaryVertexBJetTags"));
-            storeJet.SetBTagTCHP(j.bDiscriminator("trackCountingHighPurBJetTags"));
-            
-            
-            // Calculate the secondary vertex mass [1-3]
-            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookPATExampleTrackBJet#ExerCise5
-            //[2] https://hypernews.cern.ch/HyperNews/CMS/get/btag/718/1.html
-            //[3] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/2714.html
-            double secVertexMass = -100.;
-            reco::SecondaryVertexTagInfo const *svTagInfo = j.tagInfoSecondaryVertex();
-            
-            if (svTagInfo and svTagInfo->nVertices() > 0)
-                secVertexMass = svTagInfo->secondaryVertex(0).p4().mass();
-            
-            storeJet.SetSecVertexMass(secVertexMass);
+            // Mass of the secondary vertex is available as userFloat [1]
+            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD?rev=32#Jets
+            storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
             
             
             // Calculate the jet pull angle
