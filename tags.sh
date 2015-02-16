@@ -10,6 +10,11 @@ cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
 
+# Electron ID
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=13#Recipe_for_regular_users_for_min
+git cms-merge-topic ikrav:egm_id_phys14
+
+
 ####################################################################################################
 # Everything below this line is outdated
 

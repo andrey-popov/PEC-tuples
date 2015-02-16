@@ -98,6 +98,9 @@ private:
     /// Minimal raw transverse momentum to determine which jets are stored
     double const jetMinRawPt;
     
+    /// Maps with results of cut-based electron IDs
+    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> eleIDMapTokens;
+    
     /**
      * \brief String-based selections for electrons
      * 

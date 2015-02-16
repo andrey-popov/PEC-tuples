@@ -166,8 +166,8 @@ paths.append(process.goodOfflinePrimaryVertices)
 # Define the leptons
 from UserCode.SingleTop.ObjectsDefinitions_cff import *
 
-# eleQualityCuts = DefineElectrons(process, process.patPF2PATSequence, runOnData)
-# muQualityCuts = DefineMuons(process, process.patPF2PATSequence, runOnData)
+eleQualityCuts, eleIDMaps = DefineElectrons(process, paths)
+muQualityCuts = DefineMuons(process, paths)
 
 
 # Include the event filters
@@ -236,9 +236,10 @@ DefineJets(process, paths)
 
 # process.eventContent = cms.EDAnalyzer('PlainEventContent',
 #     runOnData = cms.bool(runOnData),
-#     electrons = cms.InputTag('nonIsolatedLoosePatElectrons'),
+#     electrons = cms.InputTag('analysisPatElectrons'),
+#     eleIDMaps = eleIDMaps,
 #     eleSelection = eleQualityCuts,
-#     muons = cms.InputTag('nonIsolatedLoosePatMuons'),
+#     muons = cms.InputTag('analysisPatMuons'),
 #     muSelection = muQualityCuts,
 #     jets = cms.InputTag('analysisPatJets'),
 #     jetMinPt = cms.double(20.),

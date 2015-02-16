@@ -11,231 +11,98 @@ __author__ = 'Andrey Popov'
 import FWCore.ParameterSet.Config as cms
 
 
-def DefineElectrons(process, PFRecoSequence, runOnData):
-    """ This function adjusts electron reconstruction. Among all the fields being added to the
-        process, the user is expected to use the following only:
+def DefineElectrons(process, paths):
+    """ This function adjusts electrons. The user is expected to use the following products only:
         
-        1. nonIsolatedLoosePatElectrons: maximally loose collection of electrons to be saved in the
-        tuples.
+        1. analysisPatElectrons: loose non-isolated electrons to be saved in tuples.
         
-        2. eleQualityCuts: vector of quality cuts to be applied to the above collection.
+        2. eleIDMaps: input tags to access maps of cut-based electron IDs.
         
-        3. patElectronsForEventSelection: collection to be exploited for an event selection, 
-        contains all the electrons passing a simple pure-kinematic selection.
+        3. eleQualityCuts: vector of quality cuts to be applied to the above collection.
         
-        4. selectedPatElectrons: electrons passing loose cuts in isolation, ID, and kinematics; to
-        be used for the MET uncertainty tool.
+        4. patElectronsForEventSelection: collection of electrons that pass basic kinematical cuts;
+        to be used for the event selection.
     """
-    # Release cuts on compatibility with the first primary vertex, as recommended in [1]
-    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72/1.html
-    process.pfElectronsFromVertex.d0Cut = 9999.
-    process.pfElectronsFromVertex.d0SigCut = 9999.
-    process.pfElectronsFromVertex.dzCut = 9999.
-    process.pfElectronsFromVertex.dzSigCut = 9999.
+    
+    # Collection of electrons that will be stored in tuples
+    process.analysisPatElectrons = cms.EDFilter('PATElectronSelector',
+        src = cms.InputTag('slimmedElectrons'),
+        cut = cms.string('pt > 20. & abs(eta) < 2.5'))
+    
+    paths.append(process.analysisPatElectrons)
     
     
-    # Define a module to produce a value map with rho correction of electron isolation. The
-    # configuration fragment is copied from [1] because it is not included in the current tag of
-    # UserCode/EGamma/EGammaAnalysisTools. General outline of configuration is inspired by [2].
-    # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/python/electronIsolatorFromEffectiveArea_cfi.py?hideattic=0&revision=1.1.2.2&view=markup
-    # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
-    # 
-    # In both real data and simulation an effective area derived from real data (2012 HCP dataset)
-    # is applied. Possible difference between data and simulation is belived to be small [3-4]
-    # [3] https://hypernews.cern.ch/HyperNews/CMS/get/top/1607.html
-    # [4] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1263/1/2/1.html
-    process.elPFIsoValueEA03 = cms.EDFilter('ElectronIsolatorFromEffectiveArea',
-        gsfElectrons = cms.InputTag('gsfElectrons'),
-        pfElectrons = cms.InputTag('pfSelectedElectrons'),
-        rhoIso = cms.InputTag('kt6PFJets', 'rho'),
-        EffectiveAreaType = cms.string('kEleGammaAndNeutralHadronIso03'),
-        EffectiveAreaTarget = cms.string('kEleEAData2012'))
+    # Calculate IDs for analysis electrons. The code is taken from the example in [1]; it looks
+    # quite strange and really badly written
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=13#Recipe_for_regular_users_for_min
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import setupAllVIDIdsInModule, \
+     setupVIDElectronSelection
+    process.load('RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi')
+    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
+    setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
+     'cutBasedElectronID_PHYS14_PU20bx25_V1_miniAOD_cff', setupVIDElectronSelection)
+    
+    paths.append(process.egmGsfElectronIDs)
     
     
-    # Change the isolation cone used in pfIsolatedElectrons to 0.3, as recommended in [1] and [2].
-    # The parameter for the delta-beta correction is initialized with the map for the rho correction
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaCutBasedIdentification?rev=17#Particle_Flow_Isolation
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-    process.pfIsolatedElectrons.isolationValueMapsCharged = cms.VInputTag(
-        cms.InputTag('elPFIsoValueCharged03PFId'))
-    process.pfIsolatedElectrons.isolationValueMapsNeutral = cms.VInputTag(
-        cms.InputTag('elPFIsoValueNeutral03PFId'), cms.InputTag('elPFIsoValueGamma03PFId'))
-    process.pfIsolatedElectrons.deltaBetaIsolationValueMap = cms.InputTag('elPFIsoValueEA03')
-    
-    PFRecoSequence.replace(process.pfIsolatedElectrons,
-     process.elPFIsoValueEA03 * process.pfIsolatedElectrons)
+    # Define labels of electron IDs to be saved
+    eleIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-miniAOD-standalone-'
+    eleIDMaps = [
+        cms.InputTag(eleIDLabelPrefix + 'veto'), cms.InputTag(eleIDLabelPrefix + 'loose'),
+        cms.InputTag(eleIDLabelPrefix + 'medium'), cms.InputTag(eleIDLabelPrefix + 'tight')]
     
     
-    # Adjust parameters for the rho correction [1]. The cut on the isolation value is set in
-    # accordance with [2]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections?rev=4#Electrons
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
-    process.pfIsolatedElectrons.doDeltaBetaCorrection = True
-    process.pfIsolatedElectrons.deltaBetaFactor = -1.
-    process.pfIsolatedElectrons.isolationCut = 0.15
-    
-    
-    # Apply remaining cuts that define veto electrons as required in [1]. It is implemented via an
-    # additional module and not in pfSelectedElectrons, becase all the isolation maps are associated
-    # with the latter collection, and they will be needed also for a looser electron selection
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Veto
-    process.pfElectronsForTopProjection = process.pfSelectedElectrons.clone(
-        src = 'pfIsolatedElectrons',
-        cut = 'pt > 20. & abs(eta) < 2.5')
-    process.pfNoElectron.topCollection = 'pfElectronsForTopProjection'
-    
-    PFRecoSequence.replace(process.pfIsolatedElectrons,
-     process.pfIsolatedElectrons * process.pfElectronsForTopProjection)
-    
-    
-    
-    # Collection pfElectronsForTopProjection, which contains isolated and identified electrons
-    # passing basic kinematical cuts, is used in the top projections. It should also be
-    # provided to the MET uncertainty tool (in case of MC simulated data); however, the latter
-    # expects PAT electrons. Since they cannot be constructed from pfElectronsForTopProjection
-    # collection (isolation ValueMap issues), they should be subjected to an additional selection.
-    
-    
-    # Load modules for cut-based electron ID [1]
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-    process.load('ElectroWeakAnalysis.WENu.simpleEleIdSequence_cff')
-    
-    PFRecoSequence.replace(process.patElectrons, process.simpleEleIdSequence * process.patElectrons)
-    
-    
-    # Load electron MVA ID modules. See an example in [1], which is referenced from [2]
-    # [1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/EgammaAnalysis/ElectronTools/test/patTuple_electronId_cfg.py?view=markup&pathrev=SE_PhotonIsoProducer_MovedIn
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification?rev=45#Recipe_for_53X
-    process.load('EgammaAnalysis.ElectronTools.electronIdMVAProducer_cfi')
-    
-    PFRecoSequence.replace(process.patElectrons, process.mvaTrigV0 * process.patElectrons)
-    
-    # Set an accessor for the MVA ID [1-2] and cut-based ID [3]
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-    # [2] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/UserCode/EGamma/EGammaAnalysisTools/test/patTuple_electronId_cfg.py?revision=1.2&view=markup&pathrev=V00-00-16
-    # [3] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-    process.patElectrons.electronIDSources = cms.PSet(
-        mvaTrigV0 = cms.InputTag('mvaTrigV0'),
-        simpleEleId70cIso = cms.InputTag('simpleEleId70cIso'))
-    
-    # Change the size of the isolation cone for PAT electrons
-    from PhysicsTools.PatAlgos.tools.pfTools import adaptPFIsoElectrons
-    adaptPFIsoElectrons(process, process.patElectrons, '', '03')
-    
-    # Insert the effective-area isolation correction as a user isolation
-    process.patElectrons.isolationValues.user = cms.VInputTag(cms.InputTag('elPFIsoValueEA03'))
-    
-    # Selection to mimic the pfElectronsForTopProjection collection
-    process.selectedPatElectrons.cut = process.pfElectronsForTopProjection.cut.value()
-    
-    
-    
-    # Although the "good" electrons are a subset of the patElectrons collection defined above, it is
-    # usefull to save all the electrons in the event (especially for the QCD studies). Duplicate the
-    # patElectrons module to perform it
-    process.nonIsolatedLoosePatElectrons = process.patElectrons.clone(
-        pfElectronSource = 'pfSelectedElectrons')
-    
-    PFRecoSequence.replace(process.patElectrons, process.patElectrons +
-     process.nonIsolatedLoosePatElectrons)
-    
-    
-    
-    # The above electron collection will be stored in the produced tuples. It is also needed to save
-    # the results of some quality criteria evaluation. Such parameters as pt, eta, isolation,
-    # transverse impact-parameter, MVA ID value, and conversion flag are stored in the tuples,
-    # whereas other criteria are not. Instead they are encoded in the following selection strings
+    # Additional selections to be evaluated
     eleQualityCuts = cms.vstring(
         '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)')
     
     
+    # Define electrons to be used for event selection at the Grid level. They are subjected to
+    # tighter kinematical cuts
+    process.patElectronsForEventSelection = cms.EDFilter('PATElectronSelector',
+        src = cms.InputTag('analysisPatElectrons'),
+        cut = cms.string('pt > 27. & abs(eta) < 2.1'))
     
-    # Finally, a collection for the event selection is needed. It is based on pure kinematical
-    # properties only (the electron is allowed to be non-isolated or be poorly identified). Note
-    # that it is recommended [1] to use momentum of the associated GSF electron
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/B2GRefEventSel#Isolation_and_Corrections_to_Iso
-    process.patElectronsForEventSelection = process.selectedPatElectrons.clone(
-        src = 'nonIsolatedLoosePatElectrons',
-        cut = 'ecalDrivenMomentum.pt > 27. & abs(ecalDrivenMomentum.eta) < 2.5')
-    
-    PFRecoSequence.replace(process.nonIsolatedLoosePatElectrons,
-     process.nonIsolatedLoosePatElectrons + process.patElectronsForEventSelection)
+    paths.append(process.patElectronsForEventSelection)
     
     
     # Return values
-    return eleQualityCuts
+    return eleQualityCuts, eleIDMaps
 
 
 
-def DefineMuons(process, PFRecoSequence, runOnData):
-    """ This function adjusts muon reconstruction. The following collections and variables are
-        expected to be used by the user:
+def DefineMuons(process, paths):
+    """ This function adjusts muons. The following collections and variables are expected to be
+        used by the user:
         
-        1. nonIsolatedLoosePatMuons: collection of loose non-isolated muons to be stored in the
-        tuples.
+        1. analysisPatMuons: collection of loose non-isolated muons to be stored in tuples.
         
         2. muQualityCuts: vector of quality cuts to be applied to the above collection.
         
         3. patMuonsForEventSelection: collection of loose non-isolated muons that pass basic
         kinematical requirements; to be used for an event selection.
-        
-        4. selectedPatMuons: loosely identified and isolated muons, which are expected by the MET
-        uncertainty tool.
     """
     
-    # Release cuts on compatibility with the first primary vertex (similar to electrons)
-    process.pfMuonsFromVertex.d0Cut = 9999.
-    process.pfMuonsFromVertex.d0SigCut = 9999.
-    process.pfMuonsFromVertex.dzCut = 9999.
-    process.pfMuonsFromVertex.dzSigCut = 9999.
+    # Define a collection of muons to be used in the analysis. These muons might be non-isolated
+    process.analysisPatMuons = cms.EDFilter('PATMuonSelector',
+        src = cms.InputTag('slimmedMuons'),
+        cut = cms.string('pt > 10. & abs(eta) < 2.5'))
+    
+    paths.append(process.analysisPatMuons)
     
     
-    # Update definition of loose muons to match [1-2]; isolation is addressed later. It needs to be
-    # confirmed, but it looks like muonRef().isAvailable() returns true always and is required for
-    # consistency only
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Muons
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=46#Loose_Muon
-    process.pfSelectedMuons.cut = 'pt > 10. & abs(eta) < 2.5 & muonRef.isAvailable & '\
-     'muonRef.isPFMuon & (muonRef.isGlobalMuon | isTrackerMuon)'
-    
-    
-    # Enable delta-beta correction for the muon isolation and set the recommended cut [1]
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=46#Muon_Isolation
-    process.pfIsolatedMuons.doDeltaBetaCorrection = True
-    process.pfIsolatedMuons.deltaBetaFactor = -0.5
-    process.pfIsolatedMuons.isolationCut = 0.2
-    
-    
-    # Tight muons are contained in collection patMuons, which is build from the above collection
-    # pfIsolatedMuons, but it is convenient to save also non-isolated muons in order to allow QCD
-    # studies. The task is performed with a duplicate of patMuons module
-    process.nonIsolatedLooseMuonMatch = process.muonMatch.clone(
-        src = 'pfSelectedMuons')
-    process.nonIsolatedLoosePatMuons = process.patMuons.clone(
-        pfMuonSource = 'pfSelectedMuons',
-        genParticleMatch = 'nonIsolatedLooseMuonMatch')
-    
-    PFRecoSequence.replace(process.patMuons, process.patMuons +
-     process.nonIsolatedLooseMuonMatch * process.nonIsolatedLoosePatMuons)
-    if runOnData:
-        PFRecoSequence.remove(process.nonIsolatedLooseMuonMatch)
-    
-    
-    # The above collection of muons is saved in tuples. One can define several sets of quality cuts
-    # here; they would be evaluated for each muon and stored in boolean branches in plugin
-    # PlainEventContent. However, all such selection has been moved to the plugin's code, and the
-    # vector of cuts is empty.
+    # Specify additional selection cuts to be evaluated. They have been migrated into the source
+    # code of plugins, and the list is empty
     muQualityCuts = cms.vstring()
     
     
-    # Finally, a collection for an event selection is needed. It is based on pure kinematical
-    # properties only (the muon is allowed to be non-isolated or be poorly identified)
-    process.patMuonsForEventSelection = process.selectedPatMuons.clone(
-        src = 'nonIsolatedLoosePatMuons',
-        cut = 'pt > 17. & abs(eta) < 2.1')
+    # A collection to be used for an event selection at the Grid level. It applies for tighter
+    # kinematical cuts to muons but allows a muon to be non-isolated or poorly identified
+    process.patMuonsForEventSelection = cms.EDFilter('PATMuonSelector',
+        src = cms.InputTag('analysisPatMuons'),
+        cut = cms.string('pt > 20. & abs(eta) < 2.1'))
     
-    PFRecoSequence.replace(process.nonIsolatedLoosePatMuons,
-     process.nonIsolatedLoosePatMuons + process.patMuonsForEventSelection)
+    paths.append(process.patMuonsForEventSelection)
     
     
     # Return values

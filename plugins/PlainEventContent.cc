@@ -31,6 +31,9 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("METs"))
         metTokens.emplace_back(consumes<edm::View<pat::MET>>(tag));
     
+    for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("eleIDMaps"))
+        eleIDMapTokens.emplace_back(consumes<edm::ValueMap<bool>>(tag));
+    
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     primaryVerticesToken =
      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
@@ -61,6 +64,8 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
     desc.add<InputTag>("primaryVertices")->
      setComment("Collection of reconstructed primary vertices.");
     desc.add<InputTag>("electrons")->setComment("Collection of electrons.");
+    desc.add<vector<InputTag>>("eleIDMaps", vector<InputTag>(0))->
+     setComment("Maps with electron ID decisions.");
     desc.add<vector<string>>("eleSelection", vector<string>(0))->
      setComment("User-defined selections for electrons whose results will be stored in the output "
      "tree.");
@@ -150,10 +155,18 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     }
     
     
+    
     // Fill the tree with basic information
     // Read the electron collection
     Handle<View<pat::Electron>> srcElectrons;
     event.getByToken(electronToken, srcElectrons);
+    
+    
+    // Read electron ID maps
+    vector<Handle<ValueMap<bool>>> eleIDMaps(eleIDMapTokens.size());
+    
+    for (unsigned i = 0; i < eleIDMapTokens.size(); ++i)
+        event.getByToken(eleIDMapTokens.at(i), eleIDMaps.at(i));
     
     
     // Loop through the electron collection and fill the relevant variables
@@ -167,32 +180,29 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         
         // Set four-momentum. Mass is ignored
-        storeElectron.SetPt(el.ecalDrivenMomentum().pt());
-        storeElectron.SetEta(el.ecalDrivenMomentum().eta());
-        storeElectron.SetPhi(el.ecalDrivenMomentum().phi());
-        //^ Gsf momentum is used instead of the one calculated by the particle-flow algorithm
-        //https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel?rev=178#Electrons
-        
-        double const pt = el.ecalDrivenMomentum().pt();  // a short-cut to be used for isolation
+        storeElectron.SetPt(el.pt());
+        storeElectron.SetEta(el.eta());
+        storeElectron.SetPhi(el.phi());
         
         storeElectron.SetCharge(el.charge());
         storeElectron.SetDB(el.dB());
         
-        // Effective-area (rho) correction to isolation [1]
-        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/TwikiTopRefHermeticTopProjections
+        
+        // Isolation with delta-beta correction. The delta-beta factor of 0.5 is taken from
+        //configuration of electron ID modules, which also apply a cut on the isolation
         storeElectron.SetRelIso((el.chargedHadronIso() + max(el.neutralHadronIso() +
-         el.photonIso() - 1. * el.userIsolation("User1Iso"), 0.)) / pt);
+         el.photonIso() - 0.5 * el.puChargedHadronIso(), 0.)) / el.pt());
         
-        // Triggering MVA ID [1]
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification
-        storeElectron.SetMvaID(el.electronID("mvaTrigV0"));
         
-        // Cut-based electron ID [1]
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
-        storeElectron.SetCutBasedID(el.electronID("simpleEleId70cIso"));
+        // Copy electron IDs from the maps
+        Ptr<pat::Electron> const elPtr(srcElectrons, i);
+        
+        for (unsigned i = 0; i < eleIDMaps.size(); ++i)
+            storeElectron.SetBit(i, (*eleIDMaps.at(i))[elPtr]);
+        
         
         // Conversion rejection. True for a "good" electron
-        storeElectron.SetBit(0, el.passConversionVeto());
+        storeElectron.SetBit(eleIDMaps.size(), el.passConversionVeto());
         //^ See [1]. The decision is stored by PATElectronProducer based on the collection
         //"allConversions" (the name is hard-coded). In the past, there used to be an additional
         //requirement to reject electrons from the photon conversion is set according to [2]; but
@@ -203,7 +213,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         // Evaluate user-defined selectors if any
         for (unsigned i = 0; i < eleSelectors.size(); ++i)
-            storeElectron.SetBit(2 + i, eleSelectors[i](el));
+            storeElectron.SetBit(eleIDMaps.size() + 1 + i, eleSelectors[i](el));
         
         
         // The electron is set up. Add it to the vector
@@ -234,11 +244,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         storeMuon.SetCharge(mu.charge());
         storeMuon.SetDB(mu.dB());
         
-        // Relative isolation with delta-beta correction. Logic of the calculation follows [1]. Note
-        //that it is calculated differently from [2], but the adopted recipe is more natural for
-        //PFBRECO
-        //[1] http://cmssw.cvs.cern.ch/cgi-bin/cmssw.cgi/CMSSW/CommonTools/ParticleFlow/interface/IsolatedPFCandidateSelectorDefinition.h?revision=1.4&view=markup
-        //[2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId#Accessing_PF_Isolation_from_reco
+        // Relative isolation with delta-beta correction. Definition from 2012 is used, and it is
+        //likely to change for 2015
         storeMuon.SetRelIso((mu.chargedHadronIso() + max(mu.neutralHadronIso() + mu.photonIso() -
          0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt());
         
