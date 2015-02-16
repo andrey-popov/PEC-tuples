@@ -1,6 +1,5 @@
 #include "FirstVertexFilter.h"
 
-#include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
@@ -13,8 +12,8 @@
 using namespace std;
 
 
-FirstVertexFilter::FirstVertexFilter(const edm::ParameterSet &cfg):
-    cut(cfg.getParameter<std::string>("cut"))
+FirstVertexFilter::FirstVertexFilter(edm::ParameterSet const &cfg):
+    selector(cfg.getParameter<std::string>("cut"))
 {
     verticesToken = consumes<reco::VertexCollection>(cfg.getParameter<edm::InputTag>("src"));
     
@@ -34,21 +33,28 @@ void FirstVertexFilter::fillDescriptions(edm::ConfigurationDescriptions &descrip
 }
 
 
-bool FirstVertexFilter::filter(edm::Event &event, const edm::EventSetup &eventSetup)
+bool FirstVertexFilter::filter(edm::Event &event, edm::EventSetup const &eventSetup)
 {
+    // Read a collection of vertices
     edm::Handle<reco::VertexCollection> vertices;
     event.getByToken(verticesToken, vertices);
     
-    // Details on string-based selectors can be found in SWGuidePhysicsCutParser
-    StringCutObjectSelector<reco::Vertex> selector(cut);
+    
+    // Find vertices that pass the selection
     std::unique_ptr<reco::VertexCollection> selectedVertices(new reco::VertexCollection);
     
-    for (reco::VertexCollection::const_iterator v = vertices->begin(); v != vertices->end(); ++v)
-        if (selector(*v))
-            selectedVertices->push_back(*v);
+    for (reco::Vertex const &v: *vertices)
+    {
+        if (selector(v))
+            selectedVertices->emplace_back(v);
+    }
     
+    
+    // Write the collection of selected vertices in the event
     event.put(move(selectedVertices));
     
+    
+    // Evaluate decision of the filter
     return selector(vertices->front());
 }
 

@@ -6,8 +6,6 @@
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
-#include <CommonTools/Utils/interface/StringCutObjectSelector.h>
-
 #include <TLorentzVector.h>
 #include <Math/GenVector/VectorUtil.h>
 
@@ -22,14 +20,10 @@ using namespace std;
 
 PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
-    jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
-    
-    eleSelection(cfg.getParameter<vector<string>>("eleSelection")),
-    muSelection(cfg.getParameter<vector<string>>("muSelection")),
-    jetSelection(cfg.getParameter<vector<string>>("jetSelection")),
-    
+    jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),    
     runOnData(cfg.getParameter<bool>("runOnData"))
 {
+    // Register required input data
     electronToken = consumes<edm::View<pat::Electron>>(cfg.getParameter<InputTag>("electrons"));
     muonToken = consumes<edm::View<pat::Muon>>(cfg.getParameter<InputTag>("muons"));
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
@@ -42,6 +36,17 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
     puSummaryToken = consumes<edm::View<PileupSummaryInfo>>(cfg.getParameter<InputTag>("puInfo"));
     rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
+    
+    
+    // Construct string-based selectors for all objects
+    for (string const &selection: cfg.getParameter<vector<string>>("eleSelection"))
+        eleSelectors.emplace_back(selection);
+    
+    for (string const &selection: cfg.getParameter<vector<string>>("muSelection"))
+        muSelectors.emplace_back(selection);
+    
+    for (string const &selection: cfg.getParameter<vector<string>>("jetSelection"))
+        jetSelectors.emplace_back(selection);
 }
 
 
@@ -151,14 +156,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     event.getByToken(electronToken, srcElectrons);
     
     
-    // Construct the electron selectors (s. SWGuidePhysicsCutParser)
-    vector<StringCutObjectSelector<pat::Electron>> eleSelectors;
-    
-    for (vector<string>::const_iterator sel = eleSelection.begin(); sel != eleSelection.end();
-     ++sel)
-        eleSelectors.push_back(*sel);
-    
-    
     // Loop through the electron collection and fill the relevant variables
     storeElectrons.clear();
     pec::Electron storeElectron;  // will reuse this object to fill the vector
@@ -218,12 +215,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     Handle<View<pat::Muon>> srcMuons;
     event.getByToken(muonToken, srcMuons);
     
-    // Constuct the muon selectors
-    vector<StringCutObjectSelector<pat::Muon>> muSelectors;
-    
-    for (vector<string>::const_iterator sel = muSelection.begin(); sel != muSelection.end(); ++sel)
-        muSelectors.push_back(*sel);
-    
     
     // Loop through the muon collection and fill the relevant variables
     storeMuons.clear();
@@ -269,14 +260,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     // Read the jets collections
     Handle<View<pat::Jet>> srcJets;
     event.getByToken(jetToken, srcJets);
-    
-    
-    // Construct the jet selectors
-    vector<StringCutObjectSelector<pat::Jet>> jetSelectors;
-    
-    for (vector<string>::const_iterator sel = jetSelection.begin(); sel != jetSelection.end();
-     ++sel)
-        jetSelectors.push_back(*sel);
     
     
     // Loop through the jet collection and fill the relevant variables

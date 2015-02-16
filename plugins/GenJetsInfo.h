@@ -7,7 +7,9 @@
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
+
 #include <DataFormats/JetReco/interface/GenJet.h>
+#include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -48,11 +50,11 @@ private:
     edm::EDGetTokenT<edm::View<reco::GenJet>> jetToken;
     
     /**
-     * \brief String defining a selection for the jets
+     * \brief Selector to filter jets
      * 
      * If the string is empty, all jets are saved.
      */
-    std::string const jetCut;
+    StringCutObjectSelector<reco::Candidate> const jetSelector;
     
     /// Indicates whether the plugin should store information on flavours of jet constituents
     bool const saveFlavourCounters;

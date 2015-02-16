@@ -52,7 +52,7 @@ private:
     std::vector<edm::EDGetTokenT<edm::View<reco::Candidate>>> sourceTokens;
     
     /// Desired selection to filter candidates
-    StringCutObjectSelector<reco::Candidate> selection;
+    StringCutObjectSelector<reco::Candidate> const selection;
     
     /**
      * \brief Allowed range of numbers of candidates that pass the selection

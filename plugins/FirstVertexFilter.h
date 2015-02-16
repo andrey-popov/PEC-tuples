@@ -8,6 +8,7 @@
 
 #include <DataFormats/VertexReco/interface/VertexFwd.h>
 #include <DataFormats/VertexReco/interface/Vertex.h>
+#include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <string>
 
@@ -24,7 +25,7 @@ class FirstVertexFilter: public edm::EDFilter
 {
 public:
     /// Constructor
-    FirstVertexFilter(const edm::ParameterSet &cfg);
+    FirstVertexFilter(edm::ParameterSet const &cfg);
 
 public:
     /// A method to verify plugin's configuration
@@ -35,12 +36,17 @@ public:
      * 
      * Stores vertices that pass the selection in a separate collection.
      */
-    virtual bool filter(edm::Event &event, const edm::EventSetup &eventSetup);
+    virtual bool filter(edm::Event &event, edm::EventSetup const &eventSetup);
     
 private:
     /// Input collection of vertices
     edm::EDGetTokenT<reco::VertexCollection> verticesToken;
     
-    /// String cut to filter vertices
-    std::string cut;
+    /**
+     * \brief Selector to filter vertices
+     * 
+     * String-based selectors are described in [1].
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePhysicsCutParser
+     */
+    StringCutObjectSelector<reco::Vertex> const selector;
 };

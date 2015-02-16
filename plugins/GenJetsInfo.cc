@@ -2,7 +2,6 @@
 
 #include <DataFormats/Candidate/interface/Candidate.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
-#include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
 #include <FWCore/Framework/interface/MakerMacros.h>
@@ -15,7 +14,7 @@ using namespace edm;
 
 
 GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
-    jetCut(cfg.getParameter<string>("cut")),
+    jetSelector(cfg.getParameter<string>("cut")),
     saveFlavourCounters(cfg.getParameter<bool>("saveFlavourCounters"))
 {
     jetToken = consumes<View<reco::GenJet>>(cfg.getParameter<InputTag>("jets"));
@@ -54,10 +53,6 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     // Read the collection of generator-level jets
     Handle<View<reco::GenJet>> jets;
     event.getByToken(jetToken, jets);
-    
-    
-    // Construct the jet selector
-    StringCutObjectSelector<reco::Candidate> jetSelector(jetCut);
     
     
     // Collections of already encountered hadrons with b and c quarks. Needed to prevent double

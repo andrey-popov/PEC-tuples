@@ -13,13 +13,14 @@
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
-#include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/Electron.h>
 #include <DataFormats/PatCandidates/interface/Muon.h>
+#include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <DataFormats/VertexReco/interface/Vertex.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
+#include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -98,13 +99,30 @@ private:
     double const jetMinRawPt;
     
     /**
-     * \brief String-based selection whose result is to be saved
+     * \brief String-based selections for electrons
      * 
      * These selections do not affect which objects are stored in the output files. Instead, each
      * string defines a selection that is evalueated and whose result is saved in the bit field of
      * the CandidateWithID class.
+     * 
+     * Details on implementation are documented in [1].
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePhysicsCutParser
      */
-    std::vector<std::string> const eleSelection, muSelection, jetSelection;
+    std::vector<StringCutObjectSelector<pat::Electron>> eleSelectors;
+    
+    /**
+     * \brief String-based selections for muons
+     * 
+     * See comments for eleSelectors.
+     */
+    std::vector<StringCutObjectSelector<pat::Muon>> muSelectors;
+    
+    /**
+     * \brief String-based selections for jets
+     * 
+     * See comments for eleSelectors.
+     */
+    std::vector<StringCutObjectSelector<pat::Jet>> jetSelectors;
     
     /**
      * \brief Indicates whether an event is data or simulation
