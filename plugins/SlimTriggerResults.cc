@@ -65,7 +65,7 @@ void SlimTriggerResults::beginJob()
 }
 
 
-bool SlimTriggerResults::beginRun(edm::Run &run, edm::EventSetup const &setup)
+void SlimTriggerResults::beginRun(edm::Run const &run, edm::EventSetup const &setup)
 {
     bool menuChanged = false;
     
@@ -101,9 +101,6 @@ bool SlimTriggerResults::beginRun(edm::Run &run, edm::EventSetup const &setup)
         excp << "HLTConfigProvider::init terminated with an error\n";
         excp.raise();
     }
-    
-    
-    return true;
 }
 
 

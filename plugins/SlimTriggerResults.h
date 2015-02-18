@@ -84,13 +84,13 @@ public:
     
 public:
     /// Creates the output tree
-    void beginJob();
+    virtual void beginJob() override;
     
     /// Updates the information on the trigger menu
-    bool beginRun(edm::Run &run, edm::EventSetup const &setup);
+    virtual void beginRun(edm::Run const &run, edm::EventSetup const &setup) override;
     
     /// Fills the output tree for each event
-    bool filter(edm::Event &event, edm::EventSetup const &setup);
+    virtual bool filter(edm::Event &event, edm::EventSetup const &setup) override;
     
 public:
     /// A method to verify plugin's configuration
