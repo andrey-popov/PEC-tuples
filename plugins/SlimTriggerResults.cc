@@ -14,6 +14,7 @@ using namespace std;
 
 
 TriggerState::TriggerState():
+    index(0),
     wasRun(false),
     accept(false),
     prescale(0)
@@ -21,11 +22,10 @@ TriggerState::TriggerState():
 
 
 SlimTriggerResults::SlimTriggerResults(edm::ParameterSet const &cfg):
-    triggerProcessName(cfg.getParameter<string>("triggerProcessName")),
     filterOn(cfg.getParameter<bool>("filter")),
-    savePrescale(cfg.getParameter<bool>("savePrescale"))
+    savePrescales(cfg.getParameter<bool>("savePrescales"))
 {
-    // Loop over the names of triggers the user has provided
+    // Push trigger names provided by the user into a map
     auto const &triggerNames = cfg.getParameter<vector<string>>("triggers");
     
     for (auto const &name: triggerNames)
@@ -45,6 +45,14 @@ SlimTriggerResults::SlimTriggerResults(edm::ParameterSet const &cfg):
         // Finally, insert the basename in the map
         triggers[basename];
     }
+    
+    
+    // Tokens to read trigger details
+    triggerBitsToken =
+     consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("triggerBits"));
+    triggerPrescalesToken =
+     consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("triggerPrescales"));
+
 }
 
 
@@ -59,61 +67,40 @@ void SlimTriggerResults::beginJob()
         triggerTree->Branch((t.first + "__wasRun").c_str(), &t.second.wasRun);
         triggerTree->Branch((t.first + "__accept").c_str(), &t.second.accept);
         
-        if (savePrescale)
+        if (savePrescales)
             triggerTree->Branch((t.first + "__prescale").c_str(), &t.second.prescale);
-    }
-}
-
-
-void SlimTriggerResults::beginRun(edm::Run const &run, edm::EventSetup const &setup)
-{
-    bool menuChanged = false;
-    
-    if (hltConfigProvider.init(run, setup, triggerProcessName, menuChanged))
-    {
-        // Check if the trigger menu has changed. Note it can happen only with a new run
-        if (menuChanged)
-        {
-            // Reset all the trigger buffers
-            for (auto &t: triggers)
-            {
-                t.second.fullName = "";
-                t.second.wasRun = false;
-                t.second.accept = false;
-                t.second.prescale = 0;
-            }
-            
-            // Loop over names of all triggers in the menu
-            for (string const &actualName: hltConfigProvider.triggerNames())
-            {
-                // Update the full trigger name in the associated TriggerState object if the
-                //current trigger's name is among the names of selected triggers
-                auto res = triggers.find(GetTriggerBasename(actualName));
-                
-                if (res != triggers.end())
-                    res->second.fullName = actualName;
-            }
-        }
-    }
-    else
-    {
-        edm::Exception excp(edm::errors::Unknown);
-        excp << "HLTConfigProvider::init terminated with an error\n";
-        excp.raise();
     }
 }
 
 
 bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
 {
-    // Read the trigger results for the current event
-    edm::TriggerResultsByName resultsByName(event.triggerResultsByName(triggerProcessName));
+    // Read trigger decisions for the current event
+    edm::Handle<edm::TriggerResults> triggerBits;
+    event.getByToken(triggerBitsToken, triggerBits);
     
     
-    bool result = false;  // will contain logical OR of all the selected triggers
+    // Check if the trigger configuration has changed and update trigger indices if needed
+    if (triggerBits->parameterSetID() != prevTriggerParameterSetID)
+    {
+        UpdateMenu(event.triggerNames(*triggerBits));
+        prevTriggerParameterSetID = triggerBits->parameterSetID();
+    }
     
     
-    // Fill buffers for all the selected triggers
+    // Read prescales if needed
+    edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
+    
+    if (savePrescales)
+        event.getByToken(triggerPrescalesToken, triggerPrescales);
+    
+    
+    // Overall filter result that will be a logical OR of all selected triggers
+    bool result = true;
+    
+    
+    
+    // Fill buffers for all selected triggers
     for (auto &t: triggers)
     {
         // Continue to the next trigger if the current one is not in the current menu
@@ -122,13 +109,11 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
         
         
         // Update state of the current trigger
-        auto const &pathStatus = resultsByName[t.second.fullName];
+        t.second.wasRun = triggerBits->wasrun(t.second.index);
+        t.second.accept = triggerBits->accept(t.second.index);
         
-        t.second.wasRun = pathStatus.wasrun();
-        t.second.accept = pathStatus.accept();
-        
-        if (savePrescale)
-            t.second.prescale = hltConfigProvider.prescaleValue(event, setup, t.second.fullName);
+        if (savePrescales)
+            t.second.prescale = triggerPrescales->getPrescaleForIndex(t.second.index);
         
         
         if (t.second.wasRun and t.second.accept)
@@ -156,10 +141,12 @@ void SlimTriggerResults::fillDescriptions(edm::ConfigurationDescriptions &descri
     desc.add<bool>("filter", false)->
      setComment("Indicates if an event that does not fire any of the requested triggers should be "
      "rejected.");
-    desc.add<bool>("savePrescale", true)->
+    desc.add<bool>("savePrescales", true)->
      setComment("Specifies whether trigger prescales should be saved.");
-    desc.add<string>("triggerProcessName", "HLT")->
-     setComment("Name of the process in which trigger decisions were evaluated.");
+    desc.add<edm::InputTag>("triggerBits", edm::InputTag("TriggerResults"))->
+     setComment("Trigger decisions.");
+    desc.add<edm::InputTag>("triggerPrescales", edm::InputTag("patTrigger"))->
+     setComment("Packed trigger prescales.");
     
     descriptions.add("triggerInfo", desc);
 }
@@ -194,6 +181,35 @@ string SlimTriggerResults::GetTriggerBasename(string const &name)
     
     
     return basename;
+}
+
+
+void SlimTriggerResults::UpdateMenu(edm::TriggerNames const &triggerNames)
+{
+    // Reset all trigger buffers
+    for (auto &t: triggers)
+    {
+        t.second.index = 0;
+        t.second.fullName = "";
+        t.second.wasRun = false;
+        t.second.accept = false;
+        t.second.prescale = 0;
+    }
+    
+    
+    // Loop over names of all triggers in the menu
+    for (unsigned i = 0; i < triggerNames.size(); ++i)
+    {
+        // Update the full trigger name in the associated TriggerState object if the
+        //current trigger's name is among the names of selected triggers
+        auto res = triggers.find(GetTriggerBasename(triggerNames.triggerName(i)));
+        
+        if (res != triggers.end())
+        {
+            res->second.fullName = triggerNames.triggerName(i);
+            res->second.index = i;
+        }
+    }
 }
 
 

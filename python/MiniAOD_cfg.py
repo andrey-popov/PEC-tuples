@@ -47,8 +47,6 @@ options = VarParsing ('python')
 
 options.register('runOnData', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether it runs on the real data')
-options.register('hltProcess', 'HLT', VarParsing.multiplicity.singleton,
-    VarParsing.varType.string, 'The name of the HLT process')
 options.register('globalTag', '', VarParsing.multiplicity.singleton,
     VarParsing.varType.string, 'The relevant global tag')
 # The outputName is postfixed with ".root" automatically
@@ -211,22 +209,26 @@ DefineJets(process, paths)
 
 
 # Modules to save the needed information to the ROOT file
-# Save the info on the specified triggers
-# process.trigger = cms.EDFilter('SlimTriggerResults',
-#     triggers = cms.vstring(
-#         'Mu17', 'Mu24', 'Mu24_eta2p1', 'Mu30', 'Mu30_eta2p1',
-#         'IsoMu20_eta2p1', 'IsoMu24', 'IsoMu24_eta2p1', 'IsoMu30', 'IsoMu30_eta2p1',
-#         'IsoMu34_eta2p1', 'IsoMu40_eta2p1',
-#         'Ele17_CaloIdL_CaloIsoVL', 'Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL',
-#         'Ele22_CaloIdL_CaloIsoVL', 'Ele27_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL', 'Ele27_WP80',
-#         'Ele30_CaloIdVT_TrkIdT', 'Ele32_CaloIdL_CaloIsoVL_TrkIdVL_TrkIsoVL',
-#         'IsoMu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'IsoMu17_eta2p1_CentralPFNoPUJet30',
-#         'Mu17_eta2p1_CentralPFNoPUJet30_BTagIPIter', 'Mu24_CentralPFJet30_CentralPFJet25',
-#         'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30_BTagIPIter',
-#         'Ele25_CaloIdVT_CaloIsoT_TrkIdT_TrkIsoT_CentralPFNoPUJet30'),
-#     filter = cms.bool(False),
-#     savePrescale = cms.bool(options.runOnData),
-#     triggerProcessName = cms.string(options.hltProcess))
+# Save the info on the specified triggers. The set of triggers is aligned with the menu used in
+# CMSSW_7_2_2_patch1
+process.trigger = cms.EDFilter('SlimTriggerResults',
+    triggers = cms.vstring(
+        'Mu40', 'IsoMu20_eta2p1_IterTrk02', 'IsoMu24_eta2p1_IterTrk02',
+        'Ele27_eta2p1_WP85_Gsf', 'Ele32_eta2p1_WP85_Gsf',
+        'IsoMu20_eta2p1_IterTrk02_TriCentralPFJet60_50_35',
+        'IsoMu20_eta2p1_IterTrk02_TriCentralPFJet40',
+        'IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV',
+        'IsoMu24_eta2p1_IterTrk02_TriCentralPFJet60_50_35',
+        'IsoMu24_eta2p1_IterTrk02_TriCentralPFJet40',
+        'IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV',
+        'Ele27_eta2p1_WP85_Gsf_TriCentralPFJet40', 'Ele27_eta2p1_WP85_Gsf_TriCentralPFJet60_50_35',
+        'Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV', 'Ele32_eta2p1_WP85_Gsf_TriCentralPFJet40',
+        'Ele32_eta2p1_WP85_Gsf_TriCentralPFJet60_50_35',
+        'Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV'),
+    filter = cms.bool(False),
+    savePrescales = cms.bool(options.runOnData),
+    triggerBits = cms.InputTag('TriggerResults', processName = 'HLT'),
+    triggerPrescales = cms.InputTag('patTrigger'))
 
 # Save the event content
 process.eventContent = cms.EDAnalyzer('PlainEventContent',
@@ -249,8 +251,7 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     # used for JEC [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/jes/497.html?inline=-1
 
-# paths.append(process.trigger, process.eventContent)
-paths.append(process.eventContent)
+paths.append(process.trigger, process.eventContent)
 
 
 # Save information about the hard interaction
