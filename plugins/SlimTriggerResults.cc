@@ -14,6 +14,7 @@ using namespace std;
 
 
 TriggerState::TriggerState():
+    inMenu(false),
     index(0),
     wasRun(false),
     accept(false),
@@ -104,7 +105,7 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
     for (auto &t: triggers)
     {
         // Continue to the next trigger if the current one is not in the current menu
-        if (t.second.fullName.length() == 0)
+        if (not t.second.inMenu)
             continue;
         
         
@@ -189,8 +190,8 @@ void SlimTriggerResults::UpdateMenu(edm::TriggerNames const &triggerNames)
     // Reset all trigger buffers
     for (auto &t: triggers)
     {
+        t.second.inMenu = false;
         t.second.index = 0;
-        t.second.fullName = "";
         t.second.wasRun = false;
         t.second.accept = false;
         t.second.prescale = 0;
@@ -206,7 +207,7 @@ void SlimTriggerResults::UpdateMenu(edm::TriggerNames const &triggerNames)
         
         if (res != triggers.end())
         {
-            res->second.fullName = triggerNames.triggerName(i);
+            res->second.inMenu = true;
             res->second.index = i;
         }
     }

@@ -32,8 +32,12 @@ struct TriggerState
     /// Default constructor
     TriggerState();
     
-    /// A fully-qualified name of the trigger
-    std::string fullName;
+    /**
+     * \brief Indicates if the trigger is present in the current menu
+     * 
+     * It might happen that some of triggers requested by user are missing in some of menus.
+     */
+    bool inMenu;
     
     /// Index of the trigger in the (current) menu
     unsigned index;
