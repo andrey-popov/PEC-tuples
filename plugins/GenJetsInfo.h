@@ -27,7 +27,8 @@
  * Saves generator-level jets in a ROOT file. In the default configuration the plugin stores only
  * their four momenta. If the flag saveFlavourCounters is set to true, it saves additionally the
  * numbers of hadrons with b or c quarks among ancestors of jet's constituents (as was done in
- * AN-2012/251).
+ * AN-2012/251). Each hadron is counted only once; it case of ambiguity (when its decay products are
+ * shared among several jets), it is assigned to the harder jet.
  */
 class GenJetsInfo: public edm::EDAnalyzer
 {

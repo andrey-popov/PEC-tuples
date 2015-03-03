@@ -56,8 +56,11 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     event.getByToken(jetToken, jets);
     
     
-    // Collections of already encountered hadrons with b and c quarks. Needed to prevent double
-    //counting
+    // Collections of already encountered hadrons with b and c quarks. They are needed to prevent
+    //double counting of same hadrons. The collections are global for all jets in the event;
+    //therefore if a parton has been counted in a jet, it cannot be counted again even in a
+    //different jet. Since jets are ordered in pt, harder jets have priority in getting the hadrons
+    //assigned
     vector<reco::Candidate const *> bHadFound, cHadFound;
     
     
@@ -82,8 +85,8 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
             // Count hadrons with b and c quarks inside the jet
             if (saveFlavourCounters)
             {
-                bHadFound.clear();
-                cHadFound.clear();
+                // Counters for hadrons with b and c quarks in the current jet
+                unsigned bMult = 0, cMult = 0;
                 
                 
                 // Loop over constituents of the jet
@@ -101,8 +104,8 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                     //particles
                     
                     // Get the first mother
-                    reco::Candidate const *p = dynamic_cast<reco::Candidate const *>(
-                     dynamic_cast<pat::PackedGenParticle const *>(constituent.get())->mother(0));
+                    reco::Candidate const *p =
+                     dynamic_cast<pat::PackedGenParticle const *>(constituent.get())->mother(0);
                     
                     if (not p)
                         continue;
@@ -124,17 +127,23 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                     {
                         // It is a hadron with b quark. Make sure it is a new one
                         if (find(bHadFound.begin(), bHadFound.end(), p) == bHadFound.end())
+                        {
+                            ++bMult;
                             bHadFound.push_back(p);
+                        }
                     }
                     
                     if ((absPdgId / 100) % 10 == 4 or (absPdgId / 1000) % 10 == 4)
                         if (find(cHadFound.begin(), cHadFound.end(), p) == cHadFound.end())
+                        {
+                            ++cMult;
                             cHadFound.push_back(p);
+                        }
                 }
                 
                 
-                storeJet.SetBottomMult(bHadFound.size());
-                storeJet.SetCharmMult(cHadFound.size());
+                storeJet.SetBottomMult(bMult);
+                storeJet.SetCharmMult(cMult);
             }
             
             
