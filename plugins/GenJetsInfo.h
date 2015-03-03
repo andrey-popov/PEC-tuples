@@ -27,8 +27,9 @@
  * Saves generator-level jets in a ROOT file. In the default configuration the plugin stores only
  * their four momenta. If the flag saveFlavourCounters is set to true, it saves additionally the
  * numbers of hadrons with b or c quarks among ancestors of jet's constituents (as was done in
- * AN-2012/251). Each hadron is counted only once; it case of ambiguity (when its decay products are
- * shared among several jets), it is assigned to the harder jet.
+ * AN-2012/251). In the default configuration each hadron is counted only once; it the case of
+ * ambiguity (when its decay products are shared among several jets), it is assigned to the harder
+ * jet. However, this behaviour can be switched off by setting the flag noDoubleCounting to false.
  */
 class GenJetsInfo: public edm::EDAnalyzer
 {
@@ -41,10 +42,10 @@ public:
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
     /// Creates the output tree and assigns it branches
-    void beginJob();
+    void beginJob() override;
     
     /// Fills the output tree with generator-level jets
-    void analyze(edm::Event const &event, edm::EventSetup const &setup);
+    void analyze(edm::Event const &event, edm::EventSetup const &setup) override;
     
 private:
     /// Collection of generator-level jets
@@ -59,6 +60,13 @@ private:
     
     /// Indicates whether the plugin should store information on flavours of jet constituents
     bool const saveFlavourCounters;
+    
+    /**
+     * \brief Indicates if same hadron can be counted in more than one jet
+     * 
+     * The flag is ignored if saveFlavourCounters is false.
+     */
+    bool const noDoubleCounting;
     
     /// A service to write to ROOT files
     edm::Service<TFileService> fs;

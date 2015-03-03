@@ -16,7 +16,8 @@ using namespace edm;
 
 GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
     jetSelector(cfg.getParameter<string>("cut")),
-    saveFlavourCounters(cfg.getParameter<bool>("saveFlavourCounters"))
+    saveFlavourCounters(cfg.getParameter<bool>("saveFlavourCounters")),
+    noDoubleCounting(cfg.getParameter<bool>("noDoubleCounting"))
 {
     jetToken = consumes<View<reco::GenJet>>(cfg.getParameter<InputTag>("jets"));
 }
@@ -34,6 +35,8 @@ void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
      setComment("Selection to choose which jets should be stored.");
     desc.add<bool>("saveFlavourCounters", false)->
      setComment("Indicates if information on flavours of nearby partons should be stored.");
+    desc.add<bool>("noDoubleCounting", true)->
+     setComment("Indicates if same heavy-flavour hadron can be counted in several jets.");
     
     descriptions.add("genJets", desc);
 }
@@ -58,9 +61,10 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     
     // Collections of already encountered hadrons with b and c quarks. They are needed to prevent
     //double counting of same hadrons. The collections are global for all jets in the event;
-    //therefore if a parton has been counted in a jet, it cannot be counted again even in a
+    //therefore if a parton has been counted in a jet, it normally cannot be counted again even in a
     //different jet. Since jets are ordered in pt, harder jets have priority in getting the hadrons
-    //assigned
+    //assigned. However, if the noDoubleCounting flag is set to false, the collections are reset for
+    //every jet, which turns the cleaning local, per-jet only
     vector<reco::Candidate const *> bHadFound, cHadFound;
     
     
@@ -87,6 +91,15 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
             {
                 // Counters for hadrons with b and c quarks in the current jet
                 unsigned bMult = 0, cMult = 0;
+                
+                
+                // If there is no need to check for double counting with other jets, reset the
+                //collections of encountered heavy-flavour hadrons
+                if (not noDoubleCounting)
+                {
+                    bHadFound.clear();
+                    cHadFound.clear();
+                }
                 
                 
                 // Loop over constituents of the jet
