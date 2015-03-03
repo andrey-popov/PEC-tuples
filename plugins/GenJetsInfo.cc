@@ -2,6 +2,7 @@
 
 #include <DataFormats/Candidate/interface/Candidate.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
+#include <DataFormats/PatCandidates/interface/PackedGenParticle.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
 #include <FWCore/Framework/interface/MakerMacros.h>
@@ -85,28 +86,48 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                 cHadFound.clear();
                 
                 
-                // Loop over the constituents
-                for (unsigned iConst = 0; iConst < j.getGenConstituents().size(); ++iConst)
+                // Loop over constituents of the jet
+                for (unsigned iConst = 0; iConst < j.numberOfSourceCandidatePtrs(); ++iConst)
                 {
-                    // Jets are clustered from stable particles. Find the first hadron ancestor,
-                    //which was created in the hadronisation
-                    reco::Candidate const *p = j.getGenConstituent(iConst);
+                    edm::Ptr<reco::Candidate> const &constituent = j.sourceCandidatePtr(iConst);
                     
-                    while ((p->mother(0)->pdgId() > 100 or p->mother(0)->pdgId() < 81) and
-                     p->mother(0)->status() <= 2)
-                    //^ PDG ID 81-100 are reserved for MC internals. E.g. 92 is a string in Pythia
+                    // Not every status-1 GEN particle is saved in miniAOD and thus some of
+                    //constituents can be missing. Skip such particles
+                    if (constituent.isNull() or not constituent.isAvailable())
+                        continue;
+                    
+                    
+                    // The jet constituent is a stable particle. Check its parents among pruned GEN
+                    //particles
+                    
+                    // Get the first mother
+                    reco::Candidate const *p = dynamic_cast<reco::Candidate const *>(
+                     dynamic_cast<pat::PackedGenParticle const *>(constituent.get())->mother(0));
+                    
+                    if (not p)
+                        continue;
+                    
+                    
+                    // Follow the ancestors until the oldest hadron is reached. If it is an actual
+                    //b- or c-hadron, its mother is a string; otherwise it might be a parton or an
+                    //initial proton
+                    while (p->mother(0) and abs(p->mother(0)->pdgId()) > 100)
+                    //^ PDG ID 81-100 are reserved for MC internals. E.g. 92 is a string in Pythia.
+                    //Hadrons have PDG ID larger than 100
                         p = p->mother(0);
                     
                     
                     // Check the type of the particle as in AN-2012/251
-                    if ((abs(p->pdgId()) / 100) % 10 == 5 or (abs(p->pdgId()) / 1000) % 10 == 5)
+                    int const absPdgId = abs(p->pdgId());
+                    
+                    if ((absPdgId / 100) % 10 == 5 or (absPdgId / 1000) % 10 == 5)
                     {
                         // It is a hadron with b quark. Make sure it is a new one
                         if (find(bHadFound.begin(), bHadFound.end(), p) == bHadFound.end())
                             bHadFound.push_back(p);
                     }
                     
-                    if ((abs(p->pdgId()) / 100) % 10 == 4 or (abs(p->pdgId()) / 1000) % 10 == 4)
+                    if ((absPdgId / 100) % 10 == 4 or (absPdgId / 1000) % 10 == 4)
                         if (find(cHadFound.begin(), cHadFound.end(), p) == cHadFound.end())
                             cHadFound.push_back(p);
                 }

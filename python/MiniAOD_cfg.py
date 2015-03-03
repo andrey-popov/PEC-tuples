@@ -125,7 +125,7 @@ if len(options.sourceFile) > 0:
     process.source.fileNames = cms.untracked.vstring(options.sourceFile)
 
 # Set a specific event range here (useful for debuggin)
-#process.source.eventsToProcess = cms.untracked.VEventRange('1:2807803')
+# process.source.eventsToProcess = cms.untracked.VEventRange('1:5')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
@@ -274,9 +274,7 @@ if options.saveGenJets:
     process.genJets = cms.EDAnalyzer('GenJetsInfo',
         jets = cms.InputTag('slimmedGenJets'),
         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
-        saveFlavourCounters = cms.bool(False))
-        #^ Do not attempt to access jet flavours for the time being. Will need to adapt to pruned
-        #generator particles
+        saveFlavourCounters = cms.bool(True))
     paths.append(process.genJets)
 
 
