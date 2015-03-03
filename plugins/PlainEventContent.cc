@@ -299,15 +299,18 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
             
             
-            #if 0
             // Calculate the jet pull angle
             double const y = rawP4.Rapidity();
             double const phi = rawP4.phi();
             double pullY = 0., pullPhi = 0.;  // projections of the pull vector (unnormalised)
             
             // Loop over constituents of the jet
-            for (reco::PFCandidatePtr const &p: j.getPFConstituents())
+            for (unsigned iDaughter = 0; iDaughter < j.numberOfDaughters(); ++iDaughter)
             {
+                reco::Candidate const *p = j.daughter(iDaughter);
+                //^ Actually jet constituents are of type pat::PackedCandidate, but here only their
+                //four-momenta are needed, so I do not upcast them
+                
                 double dPhi = p->phi() - phi;
                 
                 if (dPhi < -TMath::Pi())
@@ -323,7 +326,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //the polar angle only, it is not necessary
             
             storeJet.SetPullAngle(atan2(pullPhi, pullY));
-            #endif
             
             
 
