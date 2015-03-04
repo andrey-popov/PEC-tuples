@@ -60,7 +60,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     
     
     // Collections of already encountered hadrons with b and c quarks. They are needed to prevent
-    //double counting of same hadrons. The collections are global for all jets in the event;
+    //accounting for same hadrons twice. The collections are global for all jets in the event;
     //therefore if a parton has been counted in a jet, it normally cannot be counted again even in a
     //different jet. Since jets are ordered in pt, harder jets have priority in getting the hadrons
     //assigned. However, if the noDoubleCounting flag is set to false, the collections are reset for
@@ -94,7 +94,8 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                 
                 
                 // If there is no need to check for double counting with other jets, reset the
-                //collections of encountered heavy-flavour hadrons
+                //collections of encountered heavy-flavour hadrons. The cleaning will then be
+                //restricted to the current jet only
                 if (not noDoubleCounting)
                 {
                     bHadFound.clear();
@@ -108,7 +109,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                     edm::Ptr<reco::Candidate> const &constituent = j.sourceCandidatePtr(iConst);
                     
                     // Not every status-1 GEN particle is saved in miniAOD and thus some of
-                    //constituents can be missing. Skip such particles
+                    //constituents might be missing. Skip such particles
                     if (constituent.isNull() or not constituent.isAvailable())
                         continue;
                     
@@ -116,7 +117,9 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                     // The jet constituent is a stable particle. Check its parents among pruned GEN
                     //particles
                     
-                    // Get the first mother
+                    // Get the first mother. It is treated specially because it is of a different
+                    //type (reco::GenParticle) than the constituent. Though it is downcasted to
+                    //reco::Candidate for simplicity
                     reco::Candidate const *p =
                      dynamic_cast<pat::PackedGenParticle const *>(constituent.get())->mother(0);
                     
@@ -124,12 +127,19 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                         continue;
                     
                     
-                    // Follow the ancestors until the oldest hadron is reached. If it is an actual
-                    //b- or c-hadron, its mother is a string; otherwise it might be a parton or an
+                    // To calculate the b/c-hadron multiplicities, we are only interested in
+                    //hadron ancestors. They have status 2 and abs(pdgId) > 100. If this condition
+                    //is not met, skip to the next jet constituent. A typical situation with miniAOD
+                    //when it happens, is when a consituent is declared an immediate daughter of an
                     //initial proton
-                    while (p->mother(0) and abs(p->mother(0)->pdgId()) > 100)
-                    //^ PDG ID 81-100 are reserved for MC internals. E.g. 92 is a string in Pythia.
-                    //Hadrons have PDG ID larger than 100
+                    if (p->status() > 2 or abs(p->pdgId()) <= 100)
+                        continue;
+                    
+                    
+                    // Follow the ancestors until the oldest hadron is reached. On the stopping
+                    //condition see the comment above
+                    while (p->mother(0) and abs(p->mother(0)->pdgId()) > 100 and
+                     p->mother(0)->status() <= 2)
                         p = p->mother(0);
                     
                     
