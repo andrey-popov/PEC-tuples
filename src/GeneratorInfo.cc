@@ -10,7 +10,6 @@ using namespace pec;
 
 GeneratorInfo::GeneratorInfo():
     processId(0),
-    weight(0),
     pdfX(),  // the array is zeroed according to the C++03 standard
     pdfId(0),
     pdfQScale(0)
@@ -19,7 +18,7 @@ GeneratorInfo::GeneratorInfo():
 
 GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
     processId(src.processId),
-    weight(src.weight),
+    weights(src.weights),
     pdfId(src.pdfId),
     pdfQScale(src.pdfQScale)
 {
@@ -30,7 +29,7 @@ GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
 GeneratorInfo &GeneratorInfo::operator=(GeneratorInfo const &src)
 {
     processId = src.processId;
-    weight = src.weight;
+    weights = src.weights;
     std::copy(src.pdfX, src.pdfX + 2, pdfX);
     pdfId = src.pdfId;
     pdfQScale = src.pdfQScale;
@@ -42,7 +41,7 @@ GeneratorInfo &GeneratorInfo::operator=(GeneratorInfo const &src)
 void GeneratorInfo::Reset()
 {
     processId = 0;
-    weight = 0;
+    weights.clear();
     pdfId = 0;
     pdfX[0] = pdfX[1] = 0;
     pdfQScale = 0;
@@ -55,9 +54,9 @@ void GeneratorInfo::SetProcessId(int processId_)
 }
 
 
-void GeneratorInfo::SetWeight(double weight_)
+void GeneratorInfo::AddWeight(double weight_)
 {
-    weight = minifloat::encodeGeneric<true, 10, 14>(weight_);
+    weights.emplace_back(minifloat::encodeGeneric<true, 10, 14>(weight_));
 }
 
 
@@ -131,9 +130,18 @@ int GeneratorInfo::ProcessId() const
 }
 
 
-double GeneratorInfo::Weight() const
+unsigned GeneratorInfo::NumWeights() const
 {
-    return minifloat::decodeGeneric<true, 10, 14>(weight);
+    return weights.size();
+}
+
+
+double GeneratorInfo::Weight(unsigned index) const
+{
+    if (index >= weights.size())
+        throw std::range_error("GeneratorInfo::Weight: Index given is out of range.");
+    
+    return minifloat::decodeGeneric<true, 10, 14>(weights.front());
 }
 
 

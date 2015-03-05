@@ -4,6 +4,8 @@
 
 #include <Rtypes.h>
 
+#include <vector>
+
 
 namespace pec
 {
@@ -35,8 +37,8 @@ namespace pec
          */
         void SetProcessId(int processID);
         
-        /// Sets generator-level event weight
-        void SetWeight(double weight);
+        /// Adds generator-level event weight
+        void AddWeight(double weight);
         
         /**
          * \brief Sets momentum fraction carried by an initial parton
@@ -78,12 +80,16 @@ namespace pec
          */
         int ProcessId() const;
         
+        /// Returns the number of generator-level weights stored
+        unsigned NumWeights() const;
+        
         /**
-         * \brief Returns generator-level event weight
+         * \brief Returns generator-level event weight with the given index
          * 
-         * Note that the weight might be negative for some generators, e.g. in aMC@NLO.
+         * Throws an exception if the index is out of range. Note that the weight might be negative
+         * for some generators, e.g. in aMC@NLO.
          */
-        double Weight() const;
+        double Weight(unsigned index) const;
         
         /**
          * \brief Returns momentum fraction carried by an initial parton
@@ -108,12 +114,12 @@ namespace pec
         Short_t processId;
         
         /**
-         * \brief Generator-level weight
+         * \brief Generator-level weights
          * 
          * Encoded as a generic minifloat with parameters (true, 10, 14), the range representable
-         * with normal numbers is [6.1e-5, 1.3e5s).
+         * with normal numbers is [6.1e-5, 1.3e5).
          */
-        minifloat::Repr_t weight;
+        std::vector<minifloat::Repr_t> weights;
         
         /**
          * \brief Momenta fractions carried by initial-state partons

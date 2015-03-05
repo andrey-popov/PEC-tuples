@@ -412,7 +412,9 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         //^ Same object is used for all events, hence need to reset it
         
         generatorInfo.SetProcessId(generator->signalProcessID());
-        generatorInfo.SetWeight(generator->weight());
+        
+        for (double const &weight: generator->weights())
+            generatorInfo.AddWeight(weight);
         
         
         GenEventInfoProduct::PDF const *pdf = generator->pdf();
