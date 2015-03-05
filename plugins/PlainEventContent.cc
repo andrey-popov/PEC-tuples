@@ -375,6 +375,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Save MET with systematical variations
+    if (not runOnData)
     {
         using Var = pat::MET::METUncertainty;
         
