@@ -93,7 +93,12 @@ void GeneratorInfo::SetPdfId(unsigned index, int id)
         throw std::logic_error("GeneratorInfo::SetPdfId: Illegal parton index.");
     
     
-    // Check the desired fraction
+    // If gluons are encoded with their PDG ID code (as in Pythia 8), change it to zero
+    if (id == 21)
+        id = 0;
+    
+    
+    // Check the parton ID code
     if (abs(id) > 5)
         throw std::logic_error("GeneratorInfo::SetPdfId: Illegal parton ID.");
     
@@ -146,11 +151,22 @@ int GeneratorInfo::PdfId(unsigned index) const
     if (index > 1)
         throw std::logic_error("GeneratorInfo::PdfId: Illegal parton index.");
     
+    
+    // Decode the parton ID
+    int id;
+    
     if (index == 0)
-        return int(pdfId) % 16 - 5;
+        id = int(pdfId) % 16 - 5;
         //^ Note the type conversion which is needed as otherwise the final result would be unsigned
     else
-        return int(pdfId) / 16 - 5;
+        id = int(pdfId) / 16 - 5;
+    
+    
+    // Internally, gluons are encoded with code 0; return the PDG ID code for them instead
+    if (id == 0)
+        return 21;
+    else
+        return id;
 }
 
 

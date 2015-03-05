@@ -55,8 +55,8 @@ namespace pec
         /**
          * \brief Sets ID of an initial parton
          * 
-         * Gluons must be encoded with zeros instead of code 21. If the index is larger than 1, an
-         * exception is thrown.
+         * Gluons must be encoded with codes 0 or 21 (both are accepted). If the index is larger
+         * than 1, an exception is thrown.
          */
         void SetPdfId(unsigned index, int id);
         
@@ -95,7 +95,8 @@ namespace pec
         /**
          * \brief Returns ID of an initial parton
          * 
-         * Gluons are encoded by zeros. If the index is larger than 1, an exception is thrown.
+         * Gluons are encoded with their PDG ID code (21). If the index is larger than 1, an
+         * exception is thrown.
          */
         int PdfId(unsigned index) const;
         
