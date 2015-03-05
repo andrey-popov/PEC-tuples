@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Rtypes.h>
+#include <UserCode/SingleTop/interface/minifloats.h>
 
 
 namespace pec
@@ -74,7 +74,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 12, 1), the range representable
          * with normal numbers is [0.5, 16k).
          */
-        UShort_t pt;
+        minifloat::Repr_t pt;
         
         /**
          * \brief Pseudorapidity
@@ -82,14 +82,14 @@ namespace pec
          * Encoded as a generic minifloat with parameters (true, 13, -1), the range representable
          * with normal numbers is [2, 16).
          */
-        UShort_t eta;
+        minifloat::Repr_t eta;
         
         /**
          * \brief Azimuthal angle, [-pi, pi)
          * 
          * Encoded with a uniform minifloat at a range (-pi, pi).
          */
-        UShort_t phi;
+        minifloat::Repr_t phi;
         
         /**
          * \brief Mass, GeV/c^2
@@ -97,6 +97,6 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 12, 2), the range representable
          * with normal numbers is [0.25, 8k).
          */
-        UShort_t mass;
+        minifloat::Repr_t mass;
     };
 }

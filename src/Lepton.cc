@@ -1,5 +1,4 @@
 #include <UserCode/SingleTop/interface/Lepton.h>
-#include <UserCode/SingleTop/interface/minifloats.h>
 
 #include <stdexcept>
 

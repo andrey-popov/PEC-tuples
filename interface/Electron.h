@@ -1,5 +1,6 @@
 #pragma once
 
+#include <UserCode/SingleTop/interface/minifloats.h>
 #include <UserCode/SingleTop/interface/Lepton.h>
 
 
@@ -70,6 +71,6 @@ namespace pec
          * 
          * See documentation for the SetMvaID method. Encoded with a minifloat on a range [-1, 1].
          */
-        UShort_t mvaID;
+        minifloat::Repr_t mvaID;
     };
 }

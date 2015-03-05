@@ -1,5 +1,6 @@
 #pragma once
 
+#include <UserCode/SingleTop/interface/minifloats.h>
 #include <UserCode/SingleTop/interface/CandidateWithID.h>
 
 
@@ -73,7 +74,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
          * with normal numbers is [0.5, 64).
          */
-        UShort_t relIso;
+        minifloat::Repr_t relIso;
         
         /**
          * \brief Transverse impact parameter
@@ -81,6 +82,6 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
          * with normal numbers is [0.5, 64).
          */
-        UShort_t dB;
+        minifloat::Repr_t dB;
     };
 }

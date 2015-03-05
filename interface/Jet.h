@@ -1,5 +1,6 @@
 #pragma once
 
+#include <UserCode/SingleTop/interface/minifloats.h>
 #include <UserCode/SingleTop/interface/CandidateWithID.h>
 
 
@@ -151,7 +152,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (true, 12, 1), the range representable
          * with normal numbers is [0.5, 64).
          */
-        UShort_t bTagCSV, bTagTCHP;
+        minifloat::Repr_t bTagCSV, bTagTCHP;
         
         /**
          * \brief Mass of the secondary vertex associated to the jet (if any)
@@ -159,7 +160,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 12, 2), the range representable
          * with normal numbers is [0.25, 8k).
          */
-        UShort_t secVertexMass;
+        minifloat::Repr_t secVertexMass;
         
         /**
          * \brief Jet area
@@ -167,7 +168,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 14, 0), the range representable
          * with normal numbers is [1, 8).
          */
-        UShort_t area;
+        minifloat::Repr_t area;
         
         /**
          * \brief Electric charge of the jet
@@ -175,7 +176,7 @@ namespace pec
          * See documentation for the method Charge. Encoded with a uniform minifloat at a
          * range [-1, 1].
          */
-        UShort_t charge;
+        minifloat::Repr_t charge;
         
         /**
          * \brief Jet pull angle
@@ -183,7 +184,7 @@ namespace pec
          * See documentation for the method PullAngle. Encoded with a uniform minifloat at a
          * range (-pi, pi).
          */
-        UShort_t pullAngle;
+        minifloat::Repr_t pullAngle;
         
         /**
          * \brief Encodes jet pile-up ID

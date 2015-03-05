@@ -1,5 +1,4 @@
 #include <UserCode/SingleTop/interface/Jet.h>
-#include <UserCode/SingleTop/interface/minifloats.h>
 
 #include <stdexcept>
 

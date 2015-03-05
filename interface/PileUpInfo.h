@@ -1,5 +1,7 @@
 #pragma once
 
+#include <UserCode/SingleTop/interface/minifloats.h>
+
 #include <Rtypes.h>
 
 
@@ -78,7 +80,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
          * with normal numbers is [0.5, 64).
          */
-        UShort_t rho;
+        minifloat::Repr_t rho;
         
         /**
          * \brief "True" number of pile-up interactions
@@ -86,7 +88,7 @@ namespace pec
          * Zero in case of real data. Encoded as a generic minifloat with parameters
          * (false, 13, -1), the range representable with normal numbers is [2, 256).
          */
-        UShort_t trueNumPU;
+        minifloat::Repr_t trueNumPU;
         
         /**
          * \brief Number of pile-up interactions in the in-time bunch crossing

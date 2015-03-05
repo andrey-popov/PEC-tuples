@@ -1,5 +1,4 @@
 #include <UserCode/SingleTop/interface/Candidate.h>
-#include <UserCode/SingleTop/interface/minifloats.h>
 
 using namespace pec;
 

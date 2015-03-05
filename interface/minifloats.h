@@ -19,9 +19,24 @@
  * 
  * In addition to generic conversion functions that depend on parameters, their specialisations are
  * provided to be used as short-cuts in some cases.
+ * 
+ * For debug purposes, the conversion to 16-bit numbers can be disabled by defining the identifier
+ * MINIFLOATS_DISABLED. In this case all functions perform only a trivial conversion to/from
+ * Float_t.
  */
 namespace minifloat
 {
+    /**
+     * \brief Integral type to represent 16-bit floating-point numbers
+     * 
+     * If minifloats are disabled, it is just a Float_t.
+     */
+    #ifndef MINIFLOATS_DISABLED
+    typedef UShort_t Repr_t;
+    #else
+    typedef Float_t Repr_t;
+    #endif
+    
     /**
      * \brief Encodes a generic floating-point number
      * 
@@ -45,7 +60,7 @@ namespace minifloat
      * infinities, or negative zero.
      */
     template<bool isSigned, unsigned nBitFrac, int expBias>
-    UShort_t encodeGeneric(double value);
+    Repr_t encodeGeneric(double value);
     
     /**
      * \brief Decodes a generic floating-point number
@@ -54,7 +69,7 @@ namespace minifloat
      * documentation for details.
      */
     template<bool isSigned, unsigned nBitFrac, int expBias>
-    double decodeGeneric(UShort_t representation);
+    double decodeGeneric(Repr_t representation);
     
     /**
      * \brief Encodes a floating-point value defined over a finite range
@@ -63,7 +78,7 @@ namespace minifloat
      * included. The value must not be a NaN or infinity, otherwise the behaviour is undefined. If
      * the value falls outside the range, it is silently rounded to the nearest edge.
      */
-    UShort_t encodeRange(double min, double max, double value);
+    Repr_t encodeRange(double min, double max, double value);
     
     /**
      * \brief Decodes a floating-point value defined over a finite range
@@ -71,7 +86,7 @@ namespace minifloat
      * Performs an inverse operation w.r.t. function encodeRange. Consult its documentation for
      * details.
      */
-    double decodeRange(double min, double max, UShort_t representation);
+    double decodeRange(double min, double max, Repr_t representation);
     
     /**
      * \brief Encodes a floating-point value defined over a finite circular range
@@ -82,7 +97,7 @@ namespace minifloat
      * the value falls outside the range, an appropriate number of whole periods is subtracted from
      * it in order to get a representable number.
      */
-    UShort_t encodeCircular(double min, double max, double value);
+    Repr_t encodeCircular(double min, double max, double value);
     
     /**
      * \brief Decodes a floating-point value defined over a finite range
@@ -90,28 +105,32 @@ namespace minifloat
      * Performs an inverse operation w.r.t. function encodeCircular. Consult its documentation
      * for details.
      */
-    double decodeCircular(double min, double max, UShort_t representation);
+    double decodeCircular(double min, double max, Repr_t representation);
     
     /**
      * \brief Encodes a floating-point angle defined over a range [-pi, pi)
      * 
      * This is a specialisation of the funtion encodeCircular.
      */
-    UShort_t encodeAngle(double value);
+    Repr_t encodeAngle(double value);
     
     /**
      * \brief Decodes a floating-point angle defined over a range [-pi, pi)
      * 
      * This is a specialisation of the function decodeCircular.
      */
-    double decodeAngle(UShort_t representation);
+    double decodeAngle(Repr_t representation);
 }
 
 
 // Implementations of templated functions
 template<bool isSigned, unsigned nBitFrac, int expBias>
-UShort_t minifloat::encodeGeneric(double value)
+minifloat::Repr_t minifloat::encodeGeneric(double value)
 {
+    #ifdef MINIFLOATS_DISABLED
+    return value;
+    #else
+    
     // A short-cut for the zero as it is a popular value
     if (value == 0.)  // true for both positive and negative zeros
         return 0;
@@ -210,12 +229,18 @@ UShort_t minifloat::encodeGeneric(double value)
     
     // Everything is done
     return repr;
+    
+    #endif
 }
 
 
 template<bool isSigned, unsigned nBitFrac, int expBias>
-double minifloat::decodeGeneric(UShort_t representation)
+double minifloat::decodeGeneric(Repr_t representation)
 {
+    #ifdef MINIFLOATS_DISABLED
+    return representation;
+    #else
+    
     // A short-cut for the zero as it is a popular value
     if (representation == 0)
         return 0.;
@@ -246,4 +271,6 @@ double minifloat::decodeGeneric(UShort_t representation)
     else
         // This is a normal floating-point number
         return sign * std::ldexp(1. + frac, e - expBias - 1);
+    
+    #endif
 }
