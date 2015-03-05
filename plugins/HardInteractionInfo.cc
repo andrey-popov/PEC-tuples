@@ -85,8 +85,8 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         storeParticle.SetM(p.mass());
         
         
-        visitedParticles.push_back(&genParticles->at(i));
-        storeParticles.push_back(storeParticle);
+        visitedParticles.emplace_back(&genParticles->at(i));
+        storeParticles.emplace_back(storeParticle);
     }
     
     

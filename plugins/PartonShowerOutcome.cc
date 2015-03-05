@@ -96,7 +96,7 @@ void PartonShowerOutcome::analyze(edm::Event const &event, edm::EventSetup const
         
         
         // The particle has been set up. Push it into the vector
-        storePartons.push_back(storeParton);
+        storePartons.emplace_back(storeParton);
     }
     
     

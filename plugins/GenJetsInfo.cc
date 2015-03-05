@@ -152,7 +152,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                         if (find(bHadFound.begin(), bHadFound.end(), p) == bHadFound.end())
                         {
                             ++bMult;
-                            bHadFound.push_back(p);
+                            bHadFound.emplace_back(p);
                         }
                     }
                     
@@ -160,7 +160,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
                         if (find(cHadFound.begin(), cHadFound.end(), p) == cHadFound.end())
                         {
                             ++cMult;
-                            cHadFound.push_back(p);
+                            cHadFound.emplace_back(p);
                         }
                 }
                 
@@ -171,7 +171,7 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
             
             
             // Add the jet to the vector
-            storeJets.push_back(storeJet);
+            storeJets.emplace_back(storeJet);
         }
     }
     

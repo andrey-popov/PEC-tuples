@@ -118,7 +118,7 @@ void PlainEventContent::beginJob()
     
     
     // A branch with most basic generator-level information
-    if (!runOnData)
+    if (not runOnData)
     {
         generatorInfoPointer = &generatorInfo;
         outTree->Branch("genInfo", &generatorInfoPointer);
@@ -215,7 +215,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         
         // The electron is set up. Add it to the vector
-        storeElectrons.push_back(storeElectron);
+        storeElectrons.emplace_back(storeElectron);
     }
     
     
@@ -258,7 +258,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         
         // The muon is set up. Add it to the vector
-        storeMuons.push_back(storeMuon);
+        storeMuons.emplace_back(storeMuon);
     }
     
     
@@ -325,7 +325,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             
 
-            if (!runOnData)
+            if (not runOnData)
             // These are variables is from the generator tree, but it's more convenient to
             //calculate it here
             {
@@ -347,7 +347,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             
             // The jet is set up. Add it to the vector
-            storeJets.push_back(storeJet);
+            storeJets.emplace_back(storeJet);
         }
     }
     
@@ -365,13 +365,13 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     storeMET.Reset();
     storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Type1));
     storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Type1));
-    storeMETs.push_back(storeMET);
+    storeMETs.emplace_back(storeMET);
     
     // Raw MET
     storeMET.Reset();
     storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Raw));
     storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Raw));
-    storeMETs.push_back(storeMET);
+    storeMETs.emplace_back(storeMET);
     
     
     // Save MET with systematical variations
@@ -386,7 +386,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             storeMET.Reset();
             storeMET.SetPt(met.shiftedPt(var, pat::MET::Type1));
             storeMET.SetPhi(met.shiftedPhi(var, pat::MET::Type1));
-            storeMETs.push_back(storeMET);
+            storeMETs.emplace_back(storeMET);
         }
     }
     
@@ -397,13 +397,13 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         storeMET.Reset();
         storeMET.SetPt(met.genMET()->pt());
         storeMET.SetPhi(met.genMET()->phi());
-        storeMETs.push_back(storeMET);
+        storeMETs.emplace_back(storeMET);
     }
     
     
-    // Save the generator information (however the jet generator info is already saved)
+    // Save the generator information (however the jet and MET generator info is already saved)
     // Save the PDF and other generator information
-    if (!runOnData)
+    if (not runOnData)
     {
         Handle<GenEventInfoProduct> generator;
         event.getByToken(generatorToken, generator);
@@ -438,7 +438,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     puInfo.SetRho(*rho);
     
     
-    if (!runOnData)
+    if (not runOnData)
     {
         Handle<View<PileupSummaryInfo>> puSummary;
         event.getByToken(puSummaryToken, puSummary);
