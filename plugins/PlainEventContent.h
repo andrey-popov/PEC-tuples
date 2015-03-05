@@ -84,13 +84,8 @@ private:
     /// Collection of jets
     edm::EDGetTokenT<edm::View<pat::Jet>> jetToken;
     
-    /**
-     * \brief MET collections
-     * 
-     * The plugin reads not a single MET but a vector of them. It allows to store MET with various
-     * corrections as well as its systematical variations.
-     */
-    std::vector<edm::EDGetTokenT<edm::View<pat::MET>>> metTokens;
+    /// MET
+    edm::EDGetTokenT<edm::View<pat::MET>> metToken;
     
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;

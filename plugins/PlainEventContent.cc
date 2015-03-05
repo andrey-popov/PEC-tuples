@@ -27,11 +27,7 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     electronToken = consumes<edm::View<pat::Electron>>(cfg.getParameter<InputTag>("electrons"));
     muonToken = consumes<edm::View<pat::Muon>>(cfg.getParameter<InputTag>("muons"));
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
-    
-    #if 0
-    for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("METs"))
-        metTokens.emplace_back(consumes<edm::View<pat::MET>>(tag));
-    #endif
+    metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
     
     for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("eleIDMaps"))
         eleIDMapTokens.emplace_back(consumes<edm::ValueMap<bool>>(tag));
@@ -83,7 +79,7 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
     desc.add<double>("jetMinRawPt", 10.)->
      setComment("Jets with raw pt above this threshold will be stored in the output tree.");
-    desc.add<vector<InputTag>>("METs")->setComment("MET. Several versions of it can be stored.");
+    desc.add<InputTag>("met")->setComment("MET.");
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Tag to access information about generator. If runOnData is true, this parameter "
      "is ignored.");
@@ -356,24 +352,26 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     }
     
     
-    #if 0
-    // Read METs
-    storeMETs.clear();
-    pec::Candidate storeMET;  // will reuse this object to fill the vector
+    // Read MET
+    Handle<View<pat::MET>> metHandle;
+    event.getByToken(metToken, metHandle);
+    pat::MET const &met = metHandle->front();
     
-    for (auto const &metToken: metTokens)
-    {
-        Handle<View<pat::MET>> met;
-        event.getByToken(metToken, met);
-        
-        storeMET.Reset();
-        
-        storeMET.SetPt(met->front().pt());
-        storeMET.SetPhi(met->front().phi());
-        
-        storeMETs.push_back(storeMET);
-    }
-    #endif
+    storeMETs.clear();
+    pec::Candidate storeMET;
+    //^ Will reuse this object to fill the vector of METs
+    
+    // Nominal MET (type-I corrected)
+    storeMET.Reset();
+    storeMET.SetPt(met.pt());
+    storeMET.SetPhi(met.phi());
+    storeMETs.push_back(storeMET);
+    
+    // Raw MET
+    storeMET.Reset();
+    storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Raw));
+    storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Raw));
+    storeMETs.push_back(storeMET);
     
     
     // Save the generator information (however the jet generator info is already saved)

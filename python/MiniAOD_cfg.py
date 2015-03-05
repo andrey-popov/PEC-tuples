@@ -175,10 +175,6 @@ muQualityCuts = DefineMuons(process, paths)
 # paths.append(process.eventFiltersSequence)
 
 
-# Define the MET
-# metCollections = DefineMETs(process, paths, runOnData, inputJetCorrLabel[1][-1])
-
-
 # Define the jets
 DefineJets(process, paths)
 
@@ -241,8 +237,7 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     jets = cms.InputTag('analysisPatJets'),
     jetMinPt = cms.double(20.),
     jetMinRawPt = cms.double(10.),
-    # METs = cms.VInputTag(*metCollections),
-    METs = cms.VInputTag(cms.InputTag('')),
+    met = cms.InputTag('slimmedMETs'),
     generator = cms.InputTag('generator'),
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
     puInfo = cms.InputTag('addPileupInfo'),
