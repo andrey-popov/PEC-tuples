@@ -1,5 +1,7 @@
 #pragma once
 
+#include <UserCode/SingleTop/interface/minifloats.h>
+
 #include <Rtypes.h>
 
 
@@ -110,7 +112,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (true, 10, 14), the range representable
          * with normal numbers is [6.1e-5, 1.3e5s).
          */
-        UShort_t weight;
+        minifloat::Repr_t weight;
         
         /**
          * \brief Momenta fractions carried by initial-state partons
@@ -118,7 +120,7 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 13, 7), the range representable
          * with normal numbers is [7.8e-3, 1).
          */
-        UShort_t pdfX[2];
+        minifloat::Repr_t pdfX[2];
         
         /**
          * \brief ID of initial-state partons
@@ -134,6 +136,6 @@ namespace pec
          * Encoded as a generic minifloat with parameters (false, 12, 0), the range representable
          * with normal numbers is [1, 32k).
          */
-        UShort_t pdfQScale;
+        minifloat::Repr_t pdfQScale;
     };
 }

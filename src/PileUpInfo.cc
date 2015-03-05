@@ -1,5 +1,4 @@
 #include <UserCode/SingleTop/interface/PileUpInfo.h>
-#include <UserCode/SingleTop/interface/minifloats.h>
 
 
 using namespace pec;
