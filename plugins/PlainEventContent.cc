@@ -390,6 +390,16 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     }
     
     
+    // Save GEN-level MET
+    if (not runOnData)
+    {
+        storeMET.Reset();
+        storeMET.SetPt(met.genMET()->pt());
+        storeMET.SetPhi(met.genMET()->phi());
+        storeMETs.push_back(storeMET);
+    }
+    
+    
     // Save the generator information (however the jet generator info is already saved)
     // Save the PDF and other generator information
     if (!runOnData)
