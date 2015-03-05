@@ -363,8 +363,8 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     // Nominal MET (type-I corrected)
     storeMET.Reset();
-    storeMET.SetPt(met.pt());
-    storeMET.SetPhi(met.phi());
+    storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Type1));
+    storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Type1));
     storeMETs.push_back(storeMET);
     
     // Raw MET
@@ -372,6 +372,22 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Raw));
     storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Raw));
     storeMETs.push_back(storeMET);
+    
+    
+    // Save MET with systematical variations
+    {
+        using Var = pat::MET::METUncertainty;
+        
+        for (Var const &var: {Var::JetEnUp, Var::JetEnDown, Var::JetResUp, Var::JetResDown,
+         Var::MuonEnUp, Var::MuonEnDown, Var::ElectronEnUp, Var::ElectronEnDown,
+         Var::TauEnUp, Var::TauEnDown, Var::UnclusteredEnUp, Var::UnclusteredEnDown})
+        {
+            storeMET.Reset();
+            storeMET.SetPt(met.shiftedPt(var, pat::MET::Type1));
+            storeMET.SetPhi(met.shiftedPhi(var, pat::MET::Type1));
+            storeMETs.push_back(storeMET);
+        }
+    }
     
     
     // Save the generator information (however the jet generator info is already saved)
