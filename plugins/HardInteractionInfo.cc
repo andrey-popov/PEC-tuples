@@ -14,6 +14,78 @@ using namespace std;
 using namespace edm;
 
 
+HardInteractionInfo::ParticleWithMother::ParticleWithMother():
+    particle(nullptr),
+    mother(nullptr)
+{}
+
+
+HardInteractionInfo::ParticleWithMother::ParticleWithMother(reco::Candidate const *particle_,
+ reco::Candidate const *mother_ /*= nullptr*/):
+    particle(particle_),
+    mother(mother_)
+{}
+
+
+reco::Candidate const *HardInteractionInfo::ParticleWithMother::operator->() const
+{
+    return particle;
+}
+
+
+bool HardInteractionInfo::ParticleWithMother::operator==(reco::Candidate const *rhs) const
+{
+    return (particle == rhs);
+}
+
+
+reco::Candidate const *HardInteractionInfo::ParticleWithMother::Get() const
+{
+    return particle;
+}
+
+
+void HardInteractionInfo::ParticleWithMother::ResetMother(reco::Candidate const *mother_)
+{
+    mother = mother_;
+}
+
+
+unsigned HardInteractionInfo::ParticleWithMother::NumberOfMothers() const
+{
+    if (mother)
+        return 1;
+    else
+        return particle->numberOfMothers();
+}
+
+
+reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index) const
+{
+    if (mother)
+    {
+        // Return 
+        return (index == 0 or index == -1) ? mother : nullptr;
+    }
+    else
+    {
+        int const nMothers = particle->numberOfMothers();
+        
+        
+        // Check the range of the index
+        if (index >= nMothers or index < -nMothers)
+            return nullptr;
+        
+        
+        // Reinterpret negative index
+        if (index < 0)
+            index += nMothers;
+        
+        return particle->mother(index);
+    }
+}
+
+
 HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg):
     generator(Generator::Pythia8),  // hard-coded for the time being
     addPartToSave({6, 23, 24, 25})  // hard-coded for the time being
@@ -47,7 +119,6 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
 {
     // Clear vectors of particles to be stored
     bookedParticles.clear();
-    bookedParticlesOverwrittenMothers.clear();
     storeParticles.clear();
     
     
@@ -185,27 +256,24 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     map<reco::Candidate const *, unsigned> particleToIndex;
     
     for (unsigned iPart = 0; iPart < bookedParticles.size(); ++iPart)
-        particleToIndex[bookedParticles.at(iPart)] = iPart;
+        particleToIndex[bookedParticles.at(iPart).Get()] = iPart;
+    
     
     for (unsigned iPart = 0; iPart < bookedParticles.size(); ++iPart)
     {
-        auto mother = bookedParticlesOverwrittenMothers.at(iPart);
+        auto const &p = bookedParticles.at(iPart);
         
-        if (not mother and bookedParticles.at(iPart)->numberOfMothers() > 0)
-            mother = bookedParticles.at(iPart)->mother(0);
-        
-        
-        auto res = particleToIndex.find(mother);
-        
-        if (res != particleToIndex.end())
-            storeParticles.at(iPart).SetFirstMotherIndex(res->second);
-        
-        
-        if (not bookedParticlesOverwrittenMothers.at(iPart) and
-         bookedParticles.at(iPart)->numberOfMothers() > 1)
+        if (p.NumberOfMothers() > 0)
         {
-            res = particleToIndex.find(
-             bookedParticles.at(iPart)->mother(bookedParticles.at(iPart)->numberOfMothers() - 1));
+            auto res = particleToIndex.find(p.Mother(0));
+            
+            if (res != particleToIndex.end())
+                storeParticles.at(iPart).SetFirstMotherIndex(res->second);
+        }
+        
+        if (p.NumberOfMothers() > 1)
+        {
+            auto res = particleToIndex.find(p.Mother(-1));
             
             if (res != particleToIndex.end())
                 storeParticles.at(iPart).SetLastMotherIndex(res->second);
@@ -234,25 +302,38 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
 
 
 bool HardInteractionInfo::BookParticle(reco::Candidate const *p,
- reco::Candidate const *overwriteMother /*= nullptr*/)
+ reco::Candidate const *mother /*= nullptr*/)
 {
     // Check if the given particle has already been booked for storing
-    if (find(bookedParticles.begin(), bookedParticles.end(), p) != bookedParticles.end())
+    auto res = find(bookedParticles.begin(), bookedParticles.end(), p);
+    
+    if (res != bookedParticles.end())
+    //^ The particle is already known
+    {
+        // Update the mother. It is needed because same particle could be booked twice: as a root
+        //and as a decay product (consider a W from decay of a top quark, when the user requests to
+        //store both t and W). In this case the particle should be stored with the mother specified
+        //when the particle was booked as a decay product, not the real mother
+        if (mother)
+            res->ResetMother(mother);
+        
         return false;
+    }
     
-    bookedParticles.emplace_back(p);
-    bookedParticlesOverwrittenMothers.emplace_back(overwriteMother);
     
-    pec::GenParticle BookParticle;
-    BookParticle.SetPdgId(p->pdgId());
-    BookParticle.SetPt(p->pt());
-    BookParticle.SetEta(p->eta());
-    BookParticle.SetPhi(p->phi());
-    BookParticle.SetM(p->mass());
+    // If the workflow reaches this point, the given particle is encountered for the first time
+    bookedParticles.emplace_back(p, mother);
+    
+    pec::GenParticle storeParticle;
+    storeParticle.SetPdgId(p->pdgId());
+    storeParticle.SetPt(p->pt());
+    storeParticle.SetEta(p->eta());
+    storeParticle.SetPhi(p->phi());
+    storeParticle.SetM(p->mass());
     
     // Mothers are filled later
     
-    storeParticles.emplace_back(BookParticle);
+    storeParticles.emplace_back(storeParticle);
     
     return true;
 }

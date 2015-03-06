@@ -37,6 +37,61 @@ private:
         Pythia8
     };
     
+    /**
+     * \class ParticleMother
+     * \brief Keeps a pointer to reco::Candidate and overrides its mother
+     * 
+     * If the user constructs an object of this class providing a mother, the given one overrides
+     * real mothers of the particle. If the mother is not specified, the class serves as a proxy
+     * providing access to the real mothers.
+     */
+    class ParticleWithMother
+    {
+    public:
+        /// Constructor with no parameters
+        ParticleWithMother();
+        
+        /// Constructor with complete initialisation
+        ParticleWithMother(reco::Candidate const *particle,
+         reco::Candidate const *mother = nullptr);
+        
+    public:
+        /// Forwards the call to the wrapped particle
+        reco::Candidate const *operator->() const;
+        
+        /// Compares wrapped particle to the given pointer
+        bool operator==(reco::Candidate const *rhs) const;
+        
+        /// Returns the referenced particle
+        reco::Candidate const *Get() const;
+        
+        /// Resets the mother
+        void ResetMother(reco::Candidate const *mother);
+        
+        /// Returns number of mothers of the referenced particle
+        unsigned NumberOfMothers() const;
+        
+        /**
+         * \brief Returns mother with the given index
+         * 
+         * Negative indices are allowed and interpreted as starting from the last mother (for
+         * instance, (-1) means the last mother). If the index is out of the allowed range, returns
+         * a null pointer.
+         */
+        reco::Candidate const *Mother(int index) const;
+        
+    private:
+        /// Particle referenced by the object
+        reco::Candidate const *particle;
+        
+        /**
+         * \brief Overriding mother
+         * 
+         * The overriding mother is considered defined if this pointer is non-zero.
+         */
+        reco::Candidate const *mother;
+    };
+    
 public:
     /// Constructor
     HardInteractionInfo(edm::ParameterSet const &cfg);
@@ -80,11 +135,7 @@ private:
      * helps to avoid duplicates. The pointers refer to elements of the collection read by
      * genParticlesToken. This vector and storeParticles are synchronised.
      */
-    std::vector<reco::Candidate const *> bookedParticles;
-    
-    /**
-     */
-    std::vector<reco::Candidate const *> bookedParticlesOverwrittenMothers;
+    std::vector<ParticleWithMother> bookedParticles;
     
     /// Tree to be written in the output ROOT file
     TTree *outTree;
