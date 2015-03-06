@@ -58,7 +58,7 @@ private:
      * A particle is added if only it has not been added before, i.e. duplicates are not avoided.
      * The return value indicates if it has been added.
      */
-    bool BookParticle(reco::Candidate const *p);
+    bool BookParticle(reco::Candidate const *p, reco::Candidate const *overwriteMother = nullptr);
     
 private:
     /// Collection of generator-level particles
@@ -81,6 +81,10 @@ private:
      * genParticlesToken. This vector and storeParticles are synchronised.
      */
     std::vector<reco::Candidate const *> bookedParticles;
+    
+    /**
+     */
+    std::vector<reco::Candidate const *> bookedParticlesOverwrittenMothers;
     
     /// Tree to be written in the output ROOT file
     TTree *outTree;

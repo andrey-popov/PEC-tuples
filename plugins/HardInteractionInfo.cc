@@ -5,6 +5,10 @@
 
 #include <FWCore/Framework/interface/MakerMacros.h>
 
+#include <map>
+
+#define DEBUG
+
 
 using namespace std;
 using namespace edm;
@@ -43,6 +47,7 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
 {
     // Clear vectors of particles to be stored
     bookedParticles.clear();
+    bookedParticlesOverwrittenMothers.clear();
     storeParticles.clear();
     
     
@@ -50,6 +55,11 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     Handle<View<reco::GenParticle>> genParticles;
     event.getByToken(genParticlesToken, genParticles);
     
+    
+    #ifdef DEBUG
+    cout << "\033[1;34mEvent: " << event.id().run() << ":" << event.id().event() << "\033[0m\n\n";
+    #endif
+        
     
     // Final state of the matrix element. These are particles that have two mothers and are not
     //hadrons
@@ -94,7 +104,24 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
             addPartToSaveRoots.emplace(root);
         }
     }
-        
+    
+    
+    #ifdef DEBUG
+    cout << "Final state:\n";
+    
+    for (auto const &p: meFinalState)
+        cout << " PDG ID: " << p->pdgId() << ", status: " << p->status() << '\n';
+    
+    cout << "\nRoots of interesting particles:\n";
+    
+    for (auto const &p: addPartToSaveRoots)
+        cout << " PDG ID: " << p->pdgId() << ", status: " << p->status() << '\n';
+    
+    cout << endl;
+    #endif
+    
+    
+    
     
     // Fill the initial state
     for (auto const &pMEFinal: meFinalState)
@@ -110,6 +137,16 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
             BookParticle(mother);
         }
     }
+    
+    
+    #ifdef DEBUG
+    cout << "Initial state:\n";
+    
+    for (auto const &p: bookedParticles)
+        cout << " PDG ID: " << p->pdgId() << ", status: " << p->status() << '\n';
+    
+    cout << endl;
+    #endif
     
     
     for (auto const &p: meFinalState)
@@ -140,16 +177,55 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         }
         
         for (unsigned iDaughter = 0; iDaughter < decay->numberOfDaughters(); ++iDaughter)
+            BookParticle(decay->daughter(iDaughter), root);
+    }
+    
+    
+    // Set indices of mothers of booked particles
+    map<reco::Candidate const *, unsigned> particleToIndex;
+    
+    for (unsigned iPart = 0; iPart < bookedParticles.size(); ++iPart)
+        particleToIndex[bookedParticles.at(iPart)] = iPart;
+    
+    for (unsigned iPart = 0; iPart < bookedParticles.size(); ++iPart)
+    {
+        auto mother = bookedParticlesOverwrittenMothers.at(iPart);
+        
+        if (not mother and bookedParticles.at(iPart)->numberOfMothers() > 0)
+            mother = bookedParticles.at(iPart)->mother(0);
+        
+        
+        auto res = particleToIndex.find(mother);
+        
+        if (res != particleToIndex.end())
+            storeParticles.at(iPart).SetFirstMotherIndex(res->second);
+        
+        
+        if (not bookedParticlesOverwrittenMothers.at(iPart) and
+         bookedParticles.at(iPart)->numberOfMothers() > 1)
         {
-            auto const *d = decay->daughter(iDaughter);
-            BookParticle(d);
+            res = particleToIndex.find(
+             bookedParticles.at(iPart)->mother(bookedParticles.at(iPart)->numberOfMothers() - 1));
             
-            //TODO: Need to specify root as mother here
+            if (res != particleToIndex.end())
+                storeParticles.at(iPart).SetLastMotherIndex(res->second);
         }
     }
     
     
-    //TODO: Fill mothers
+    #ifdef DEBUG
+    cout << "All particles that will be stored:\n";
+    
+    for (unsigned iPart = 0; iPart < storeParticles.size(); ++iPart)
+    {
+        auto const &p = storeParticles.at(iPart);
+        
+        cout << " #" << iPart << ": PDG ID: " << p.PdgId() << ", mothers: " <<
+         p.FirstMotherIndex() << ", " << p.LastMotherIndex() << endl;
+    }
+    
+    cout << "\n\n";
+    #endif
     
     
     // Save the event in the output tree
@@ -157,13 +233,15 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
 }
 
 
-bool HardInteractionInfo::BookParticle(reco::Candidate const *p)
+bool HardInteractionInfo::BookParticle(reco::Candidate const *p,
+ reco::Candidate const *overwriteMother /*= nullptr*/)
 {
     // Check if the given particle has already been booked for storing
     if (find(bookedParticles.begin(), bookedParticles.end(), p) != bookedParticles.end())
         return false;
     
     bookedParticles.emplace_back(p);
+    bookedParticlesOverwrittenMothers.emplace_back(overwriteMother);
     
     pec::GenParticle BookParticle;
     BookParticle.SetPdgId(p->pdgId());
@@ -172,7 +250,7 @@ bool HardInteractionInfo::BookParticle(reco::Candidate const *p)
     BookParticle.SetPhi(p->phi());
     BookParticle.SetM(p->mass());
     
-    //TODO: Mothers?
+    // Mothers are filled later
     
     storeParticles.emplace_back(BookParticle);
     
