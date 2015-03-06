@@ -39,7 +39,7 @@ private:
     
     /**
      * \class ParticleMother
-     * \brief Keeps a pointer to reco::Candidate and overrides its mother
+     * \brief Wraps a pointer to reco::Candidate and overrides its mother
      * 
      * If the user constructs an object of this class providing a mother, the given one overrides
      * real mothers of the particle. If the mother is not specified, the class serves as a proxy
@@ -51,24 +51,31 @@ private:
         /// Constructor with no parameters
         ParticleWithMother();
         
-        /// Constructor with complete initialisation
+        /**
+         * \brief Constructor with complete initialisation
+         * 
+         * If a null pointer is given as the second argument, the real mothers are not overridden.
+         */
         ParticleWithMother(reco::Candidate const *particle,
          reco::Candidate const *mother = nullptr);
+        
+        /// Default move constructor
+        ParticleWithMother(ParticleWithMother &&) = default;
         
     public:
         /// Forwards the call to the wrapped particle
         reco::Candidate const *operator->() const;
         
-        /// Compares wrapped particle to the given pointer
+        /// Compares the wrapped pointer to a particle to the argument
         bool operator==(reco::Candidate const *rhs) const;
         
-        /// Returns the referenced particle
+        /// Returns the wrapped pointer to a particle
         reco::Candidate const *Get() const;
         
         /// Resets the mother
         void ResetMother(reco::Candidate const *mother);
         
-        /// Returns number of mothers of the referenced particle
+        /// Returns the number of mothers of the referenced particle
         unsigned NumberOfMothers() const;
         
         /**
@@ -81,13 +88,13 @@ private:
         reco::Candidate const *Mother(int index) const;
         
     private:
-        /// Particle referenced by the object
+        /// Wrapped pointer to a particle
         reco::Candidate const *particle;
         
         /**
          * \brief Overriding mother
          * 
-         * The overriding mother is considered defined if this pointer is non-zero.
+         * The overriding mother is considered defined if this pointer is not null.
          */
         reco::Candidate const *mother;
     };
@@ -101,19 +108,21 @@ public:
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
     /// Creates the output tree
-    virtual void beginJob();
+    virtual void beginJob() override;
     
     /// Reads the event and stores the relevant information in the output tree
-    virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
+    virtual void analyze(edm::Event const &event, edm::EventSetup const &setup) override;
     
 private:
     /**
-     * \brief Adds given particle to the list of particles that will be stored
+     * \brief Adds the given particle to the collection of particles that are going to be stored
      * 
-     * A particle is added if only it has not been added before, i.e. duplicates are not avoided.
-     * The return value indicates if it has been added.
+     * The particle is added if only is has not been added before, i.e. duplicates are avoided. The
+     * return value indicates if the particle has been added (if not, it was a duplicate).
+     * Regardless of whether the given particle is new or already present in the collection, its
+     * mother is updated if the second argument is not null.
      */
-    bool BookParticle(reco::Candidate const *p, reco::Candidate const *overwriteMother = nullptr);
+    bool BookParticle(reco::Candidate const *p, reco::Candidate const *mother = nullptr);
     
 private:
     /// Collection of generator-level particles
@@ -123,28 +132,25 @@ private:
     Generator generator;
     
     /// (Absolute) PDG IDs of additional particles to be saved
-    std::set<int> addPartToSave;
+    std::set<int> desiredExtraPartIds;
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
     
     /**
-     * \brief Pointers to particles that are going to be stored
+     * \brief Particles that are going to be stored
      * 
-     * The vector is utilised to keep track of particles that have been accepted to be stored and
-     * helps to avoid duplicates. The pointers refer to elements of the collection read by
-     * genParticlesToken. This vector and storeParticles are synchronised.
+     * The container is utilised to keep track of paricles that have been accepted to be stored in
+     * the output file and helps to avoid duplicates. Pointers in elements of the container refer to
+     * particles in the collection read via genPartilcesToken. Original mothers of some of the
+     * particles are overridden.
      */
     std::vector<ParticleWithMother> bookedParticles;
     
     /// Tree to be written in the output ROOT file
     TTree *outTree;
     
-    /**
-     * \brief Trimmed generator-level particles to be stored in the output file
-     * 
-     * This vector and bookedParticles are synchronised.
-     */
+    /// Trimmed generator-level particles to be stored in the output file
     std::vector<pec::GenParticle> storeParticles;
     
     /**

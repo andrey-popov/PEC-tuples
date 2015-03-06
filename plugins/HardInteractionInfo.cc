@@ -64,7 +64,7 @@ reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index
 {
     if (mother)
     {
-        // Return 
+        // Return the overriding mother
         return (index == 0 or index == -1) ? mother : nullptr;
     }
     else
@@ -77,7 +77,7 @@ reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index
             return nullptr;
         
         
-        // Reinterpret negative index
+        // Reinterpret a negative index
         if (index < 0)
             index += nMothers;
         
@@ -88,7 +88,7 @@ reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index
 
 HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg):
     generator(Generator::Pythia8),  // hard-coded for the time being
-    addPartToSave({6, 23, 24, 25})  // hard-coded for the time being
+    desiredExtraPartIds({6, 23, 24, 25})  // hard-coded for the time being
 {
     genParticlesToken =
      consumes<View<reco::GenParticle>>(cfg.getParameter<InputTag>("genParticles"));
@@ -117,6 +117,11 @@ void HardInteractionInfo::beginJob()
 
 void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
+    #ifdef DEBUG
+    cout << "\033[1;34mEvent: " << event.id().run() << ":" << event.id().event() << "\033[0m\n\n";
+    #endif
+        
+    
     // Clear vectors of particles to be stored
     bookedParticles.clear();
     storeParticles.clear();
@@ -127,24 +132,17 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     event.getByToken(genParticlesToken, genParticles);
     
     
-    #ifdef DEBUG
-    cout << "\033[1;34mEvent: " << event.id().run() << ":" << event.id().event() << "\033[0m\n\n";
-    #endif
-        
-    
-    // Final state of the matrix element. These are particles that have two mothers and are not
-    //hadrons
-    set<reco::Candidate const *> meFinalState;
-    
-    set<reco::Candidate const *> addPartToSaveRoots;
-    
+    // Loop over the source collection of GEN-level particles and identify particles from the final
+    //state of the hard(est) interaction and oldest versions of desired additional particles. Both
+    //groups of pointers are stored in sets, so there is no need to care about double counting
+    set<reco::Candidate const *> meFinalState, extraPartRoots;
     
     for (reco::GenParticle const &p: *genParticles)
     {
         int const absPdgId = abs(p.pdgId());
         
         
-        // Skip hadrons and PDG ID reserved for MC internals (like strings)
+        // Skip hadrons and fake objects like string or clusters
         if (absPdgId > 80)
             continue;
         //^ This also rejects exotics like SUSY, technicolour, etc., but they are not used in the
@@ -152,7 +150,7 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         
         
         // Check if the particle is from the final state of the hard(est) interaction. It is
-        //necessary that such particle has two mothers (the initial state)
+        //necessary that such particle has exactly two mothers (the initial state)
         if (p.numberOfMothers() == 2)
         {
             // In case of Pythia 8, need to check also that the status indicates that the particle
@@ -165,14 +163,18 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         }
         
         
-        if (addPartToSave.count(absPdgId) > 0)
+        // Check if the current particle is of type the user wants to store
+        if (desiredExtraPartIds.count(absPdgId) > 0)
         {
+            // Find the oldest ancestor of the same type (in Pythia 8 same particle might enter the
+            //history many times)
             reco::Candidate const *root = &p;
             
             while (root->numberOfMothers() > 0 and root->mother(0)->pdgId() == root->pdgId())
                 root = root->mother(0);
             
-            addPartToSaveRoots.emplace(root);
+            
+            extraPartRoots.emplace(root);
         }
     }
     
@@ -185,25 +187,26 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     
     cout << "\nRoots of interesting particles:\n";
     
-    for (auto const &p: addPartToSaveRoots)
+    for (auto const &p: extraPartRoots)
         cout << " PDG ID: " << p->pdgId() << ", status: " << p->status() << '\n';
     
     cout << endl;
     #endif
     
     
-    
-    
-    // Fill the initial state
+    // Identify particles from the initial state. They are mothers of the final state
     for (auto const &pMEFinal: meFinalState)
     {
         for (unsigned iMother = 0; iMother < pMEFinal->numberOfMothers(); ++iMother)
         {
             auto const *mother = pMEFinal->mother(iMother);
             
-            // Do not save the initial protons
+            // In miniAOD with Pythia 8 gluons from the initial state are not stored. As a result,
+            //one or both of the incoming protons are set as mothers of the final state. Do not
+            //store them
             if (abs(mother->pdgId()) == 2212)
                 continue;
+            
             
             BookParticle(mother);
         }
@@ -220,14 +223,20 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     #endif
     
     
+    // Book particles from the final state
     for (auto const &p: meFinalState)
         BookParticle(p);
     
     
-    for (auto const &root: addPartToSaveRoots)
+    // Book additional particles requested by the user
+    for (auto const &root: extraPartRoots)
     {
+        // The oldest ancestor (the "root") found before
         BookParticle(root);
         
+        
+        // Move along descendants of the root until the youngest descendant of the same type is
+        //found. It then decays to other particles
         reco::Candidate const *decay = root;
         
         while (true)
@@ -247,22 +256,48 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
                 decay = daughterSamePdgId;
         }
         
+        
+        // Book decay products of the youngest descendant
         for (unsigned iDaughter = 0; iDaughter < decay->numberOfDaughters(); ++iDaughter)
             BookParticle(decay->daughter(iDaughter), root);
     }
     
     
-    // Set indices of mothers of booked particles
+    // Put all booked particles into the storage vector
+    for (auto const &p: bookedParticles)
+    {
+        pec::GenParticle storeParticle;
+        
+        
+        // Fill PDG ID and four-momentum. Indices of mothers will be set later
+        storeParticle.SetPdgId(p->pdgId());
+        storeParticle.SetPt(p->pt());
+        storeParticle.SetEta(p->eta());
+        storeParticle.SetPhi(p->phi());
+        storeParticle.SetM(p->mass());
+        
+        
+        // Add the new particle to the storage vector
+        storeParticles.emplace_back(storeParticle);
+    }
+    
+    
+    // Set mothers of particles in the storage vector. The mothers are identified with their indices
+    //in the vector. In order to be able to find these indices efficiently, build a mapping from
+    //particle pointers in bookedParticles to their indices in the same vector
     map<reco::Candidate const *, unsigned> particleToIndex;
     
     for (unsigned iPart = 0; iPart < bookedParticles.size(); ++iPart)
         particleToIndex[bookedParticles.at(iPart).Get()] = iPart;
     
     
+    // Use the map to set up indices of mothers. Note that particles in vectors bookedParticles and
+    //storeParticles are ordered identically
     for (unsigned iPart = 0; iPart < bookedParticles.size(); ++iPart)
     {
         auto const &p = bookedParticles.at(iPart);
         
+        // Set first mother (if any)
         if (p.NumberOfMothers() > 0)
         {
             auto res = particleToIndex.find(p.Mother(0));
@@ -271,6 +306,7 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
                 storeParticles.at(iPart).SetFirstMotherIndex(res->second);
         }
         
+        // Set last mother (if more than one)
         if (p.NumberOfMothers() > 1)
         {
             auto res = particleToIndex.find(p.Mother(-1));
@@ -296,7 +332,7 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     #endif
     
     
-    // Save the event in the output tree
+    // Everything is done. Save the event in the output tree
     outTree->Fill();
 }
 
@@ -319,23 +355,11 @@ bool HardInteractionInfo::BookParticle(reco::Candidate const *p,
         
         return false;
     }
-    
-    
-    // If the workflow reaches this point, the given particle is encountered for the first time
-    bookedParticles.emplace_back(p, mother);
-    
-    pec::GenParticle storeParticle;
-    storeParticle.SetPdgId(p->pdgId());
-    storeParticle.SetPt(p->pt());
-    storeParticle.SetEta(p->eta());
-    storeParticle.SetPhi(p->phi());
-    storeParticle.SetM(p->mass());
-    
-    // Mothers are filled later
-    
-    storeParticles.emplace_back(storeParticle);
-    
-    return true;
+    else
+    {
+        bookedParticles.emplace_back(p, mother);
+        return true;
+    }
 }
 
 
