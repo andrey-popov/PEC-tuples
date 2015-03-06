@@ -24,8 +24,16 @@
  * \author Andrey Popov
  * \brief Stores particles from the hard interaction in a ROOT file
  * 
- * Particles from the hard interaction are identified with their status, which is hard-coded to the
- * value used in Pythia 6.
+ * Stores particles from the final and initial states of the hard(est) interaction. However, in
+ * Pythia 8 gluons in the initial state are not kept in miniAOD and therefore are not available.
+ * 
+ * In addition, can store extra particles according to a list of PDG ID codes provided by the user
+ * (only those with abs(PDG ID) < 80 and status > 2 are considered). In Pythia 8 same particle can
+ * be written many times in the event record, as it proceeds through various steps of simulation and
+ * undergoes radiation. The plugin stores only the oldest ancestor (of the same PDG ID). It also
+ * saves daughers of the youngest descendant.
+ * 
+ * The plugin can handle samples produced with Pythia 6 or 8.
  */
 class HardInteractionInfo: public edm::EDAnalyzer
 {

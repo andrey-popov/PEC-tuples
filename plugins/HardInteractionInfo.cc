@@ -7,8 +7,6 @@
 
 #include <map>
 
-#define DEBUG
-
 
 using namespace std;
 using namespace edm;
@@ -86,11 +84,13 @@ reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index
 }
 
 
-HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg):
-    desiredExtraPartIds({6, 23, 24, 25})  // hard-coded for the time being
+HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg)
 {
     genParticlesToken =
      consumes<View<reco::GenParticle>>(cfg.getParameter<InputTag>("genParticles"));
+    
+    for (auto const &absPdgId: cfg.getParameter<vector<unsigned>>("saveExtraParticles"))
+        desiredExtraPartIds.emplace(absPdgId);
 }
 
 
@@ -99,6 +99,8 @@ void HardInteractionInfo::fillDescriptions(ConfigurationDescriptions &descriptio
     ParameterSetDescription desc;
     desc.add<InputTag>("genParticles", InputTag("genParticles"))->
      setComment("Tag to access generator particles.");
+    desc.add<vector<unsigned>>("saveExtraParticles", {6, 23, 24, 25})->
+     setComment("(Absolute) PDG IDs of additional particles to be stored.");
     
     descriptions.add("hardInteraction", desc);
 }
