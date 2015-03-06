@@ -87,7 +87,6 @@ reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index
 
 
 HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg):
-    generator(Generator::Pythia8),  // hard-coded for the time being
     desiredExtraPartIds({6, 23, 24, 25})  // hard-coded for the time being
 {
     genParticlesToken =
@@ -142,11 +141,17 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         int const absPdgId = abs(p.pdgId());
         
         
-        // Skip hadrons and fake objects like string or clusters
+        // Skip hadrons and artificial objects like string or clusters
         if (absPdgId > 80)
             continue;
         //^ This also rejects exotics like SUSY, technicolour, etc., but they are not used in the
         //analysis
+        
+        
+        // Skip particles after hadronisation. The protection is mostly needed to exclude W from
+        //tau decays in Pythia 6
+        if (p.status() <= 2)
+            continue;
         
         
         // Check if the particle is from the final state of the hard(est) interaction. It is
@@ -155,10 +160,10 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         {
             // In case of Pythia 8, need to check also that the status indicates that the particle
             //stems from the hardest subprocess (because particles with code 71 also might have two
-            //mothers). See [1] about the status codes
+            //mothers) [1]. For Pythia 6 the status should be 3. Both conditions can be combined as
+            //done below
             //[1] http://home.thep.lu.se/~torbjorn/pythia81html/ParticleProperties.html
-            if (generator == Generator::Pythia6 /* (no additional requirements for Pythia 6) */ or
-             (generator == Generator::Pythia8 and p.status() >= 21 and p.status() <= 29))
+            if (p.status() == 3 or (p.status() > 20 and p.status() < 30))
                 meFinalState.emplace(&p);
         }
         
@@ -244,7 +249,11 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
             reco::Candidate const *daughterSamePdgId = nullptr;
             
             for (unsigned iDaughter = 0; iDaughter < decay->numberOfDaughters(); ++iDaughter)
-                if (decay->daughter(iDaughter)->pdgId() == decay->pdgId())
+                if (decay->daughter(iDaughter)->pdgId() == decay->pdgId() and
+                 decay->daughter(iDaughter)->status() > 2)
+                //^ The second part of the condition is needed for Pythia 6. It has decays like
+                //W[3] -> e[3] v[3] W[2], W[2] -> W[2], W[2] -> nothing, where the number in
+                //brackets is the status
                 {
                     daughterSamePdgId = decay->daughter(iDaughter);
                     break;
@@ -259,7 +268,17 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
         
         // Book decay products of the youngest descendant
         for (unsigned iDaughter = 0; iDaughter < decay->numberOfDaughters(); ++iDaughter)
-            BookParticle(decay->daughter(iDaughter), root);
+        {
+            reco::Candidate const *d = decay->daughter(iDaughter);
+            
+            
+            // Skip hadrons (seen this happening in Pythia 6) and artificial objects
+            if (abs(d->pdgId()) > 80)
+                continue;
+            
+            
+            BookParticle(d, root);
+        }
     }
     
     
@@ -267,7 +286,6 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
     for (auto const &p: bookedParticles)
     {
         pec::GenParticle storeParticle;
-        
         
         // Fill PDG ID and four-momentum. Indices of mothers will be set later
         storeParticle.SetPdgId(p->pdgId());

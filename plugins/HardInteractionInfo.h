@@ -30,13 +30,6 @@
 class HardInteractionInfo: public edm::EDAnalyzer
 {
 private:
-    /// Supported generators
-    enum class Generator
-    {
-        Pythia6,
-        Pythia8
-    };
-    
     /**
      * \class ParticleMother
      * \brief Wraps a pointer to reco::Candidate and overrides its mother
@@ -127,9 +120,6 @@ private:
 private:
     /// Collection of generator-level particles
     edm::EDGetTokenT<edm::View<reco::GenParticle>> genParticlesToken;
-    
-    /// Generator used
-    Generator generator;
     
     /// (Absolute) PDG IDs of additional particles to be saved
     std::set<int> desiredExtraPartIds;
