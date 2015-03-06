@@ -15,6 +15,7 @@
 
 #include <TTree.h>
 
+#include <set>
 #include <vector>
 
 
@@ -28,6 +29,14 @@
  */
 class HardInteractionInfo: public edm::EDAnalyzer
 {
+private:
+    /// Supported generators
+    enum class Generator
+    {
+        Pythia6,
+        Pythia8
+    };
+    
 public:
     /// Constructor
     HardInteractionInfo(edm::ParameterSet const &cfg);
@@ -43,16 +52,44 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
 private:
+    /**
+     * \brief Adds given particle to the list of particles that will be stored
+     * 
+     * A particle is added if only it has not been added before, i.e. duplicates are not avoided.
+     * The return value indicates if it has been added.
+     */
+    bool BookParticle(reco::Candidate const *p);
+    
+private:
     /// Collection of generator-level particles
     edm::EDGetTokenT<edm::View<reco::GenParticle>> genParticlesToken;
+    
+    /// Generator used
+    Generator generator;
+    
+    /// (Absolute) PDG IDs of additional particles to be saved
+    std::set<int> addPartToSave;
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
     
+    /**
+     * \brief Pointers to particles that are going to be stored
+     * 
+     * The vector is utilised to keep track of particles that have been accepted to be stored and
+     * helps to avoid duplicates. The pointers refer to elements of the collection read by
+     * genParticlesToken. This vector and storeParticles are synchronised.
+     */
+    std::vector<reco::Candidate const *> bookedParticles;
+    
     /// Tree to be written in the output ROOT file
     TTree *outTree;
     
-    /// Trimmed generator-level particles to be stored in the output file
+    /**
+     * \brief Trimmed generator-level particles to be stored in the output file
+     * 
+     * This vector and bookedParticles are synchronised.
+     */
     std::vector<pec::GenParticle> storeParticles;
     
     /**

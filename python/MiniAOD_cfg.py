@@ -128,7 +128,7 @@ if len(options.sourceFile) > 0:
 # process.source.eventsToProcess = cms.untracked.VEventRange('1:5')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(10))
 
 
 # Define the paths. There is one path per each channel (electron or muon).
@@ -250,10 +250,10 @@ paths.append(process.trigger, process.eventContent)
 
 
 # Save information about the hard interaction
-# if options.saveHardInteraction:
-#     process.hardInteraction = cms.EDAnalyzer('HardInteractionInfo',
-#         genParticles = cms.InputTag('genParticles'))
-#     paths.append(process.hardInteraction)
+if options.saveHardInteraction:
+    process.hardInteraction = cms.EDAnalyzer('HardInteractionInfo',
+        genParticles = cms.InputTag('prunedGenParticles'))
+    paths.append(process.hardInteraction)
 
 
 # Save information on heavy-flavour quarks
