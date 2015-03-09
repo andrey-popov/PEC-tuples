@@ -54,7 +54,7 @@ void PileUpInfo::SetRho(double rho_)
 
 void PileUpInfo::SetTrueNumPU(double lambda)
 {
-    trueNumPU = minifloat::decodeGeneric<false, 13, -1>(lambda);
+    trueNumPU = minifloat::encodeGeneric<false, 13, -1>(lambda);
 }
 
 
