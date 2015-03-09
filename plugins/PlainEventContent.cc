@@ -20,7 +20,8 @@ using namespace std;
 
 PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
-    jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),    
+    jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
+    saveCorrectedJetMomenta(cfg.getParameter<bool>("saveCorrectedJetMomenta")),
     runOnData(cfg.getParameter<bool>("runOnData"))
 {
     // Register required input data
@@ -79,6 +80,8 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
     desc.add<double>("jetMinRawPt", 10.)->
      setComment("Jets with raw pt above this threshold will be stored in the output tree.");
+    desc.add<bool>("saveCorrectedJetMomenta", false)->
+     setComment("Indicates whether correctd or raw jet four-momenta should be stored.");
     desc.add<InputTag>("met")->setComment("MET.");
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Tag to access information about generator. If runOnData is true, this parameter "
@@ -280,10 +283,20 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         if (j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt)
         {
             // Set four-momentum
-            storeJet.SetPt(rawP4.pt());
-            storeJet.SetEta(rawP4.eta());
-            storeJet.SetPhi(rawP4.phi());
-            storeJet.SetM(rawP4.mass());
+            if (saveCorrectedJetMomenta)
+            {
+                storeJet.SetPt(j.pt());
+                storeJet.SetEta(j.eta());
+                storeJet.SetPhi(j.phi());
+                storeJet.SetM(j.mass());
+            }
+            else
+            {
+                storeJet.SetPt(rawP4.pt());
+                storeJet.SetEta(rawP4.eta());
+                storeJet.SetPhi(rawP4.phi());
+                storeJet.SetM(rawP4.mass());
+            }
             
             
             storeJet.SetArea(j.jetArea());

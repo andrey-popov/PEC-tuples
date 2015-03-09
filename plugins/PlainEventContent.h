@@ -93,6 +93,9 @@ private:
     /// Minimal raw transverse momentum to determine which jets are stored
     double const jetMinRawPt;
     
+    /// A flag that indicates if corrected or raw momenta should be stored for jets
+    bool const saveCorrectedJetMomenta;
+    
     /// Maps with results of cut-based electron IDs
     std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> eleIDMapTokens;
     
