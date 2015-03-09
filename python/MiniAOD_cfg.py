@@ -63,10 +63,6 @@ options.register('sourceFile', '', VarParsing.multiplicity.singleton, VarParsing
     'The name of the source file')
 options.register('runOnFastSim', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether FastSim is processed')
-options.register('run53XSpecific', True, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Indicates whether the input dataset was reconstructed in 53X')
-options.register('noCHS', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Disable CHS when jets are built.')
 options.register('jetSel', '2j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'Selection on jets. E.g. 2j30 means that an event must contain at least 2 jets with '
     'pt > 30 GeV/c')
