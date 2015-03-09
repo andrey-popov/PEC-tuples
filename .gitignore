@@ -23,4 +23,4 @@ __init__.py
 
 # Files with notes
 *.txt
-
+*.tar.gz
