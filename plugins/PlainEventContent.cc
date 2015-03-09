@@ -199,22 +199,17 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         Ptr<pat::Electron> const elPtr(srcElectrons, i);
         
         for (unsigned i = 0; i < eleIDMaps.size(); ++i)
-            storeElectron.SetBit(i, (*eleIDMaps.at(i))[elPtr]);
+            storeElectron.SetCutBasedIdBit(i, (*eleIDMaps.at(i))[elPtr]);
         
         
-        // Conversion rejection. True for a "good" electron
-        storeElectron.SetBit(eleIDMaps.size(), el.passConversionVeto());
-        //^ See [1]. The decision is stored by PATElectronProducer based on the collection
-        //"allConversions" (the name is hard-coded). In the past, there used to be an additional
-        //requirement to reject electrons from the photon conversion is set according to [2]; but
-        //it caused a compile error in 72X and has been dropped
+        // Conversion rejection [1]. True for a "good" electron
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
-        //[2] https://twiki.cern.ch/twiki/bin/view/CMS/TWikiTopRefEventSel#Electrons
+        storeElectron.SetBit(0, el.passConversionVeto());
         
         
         // Evaluate user-defined selectors if any
         for (unsigned i = 0; i < eleSelectors.size(); ++i)
-            storeElectron.SetBit(eleIDMaps.size() + 1 + i, eleSelectors[i](el));
+            storeElectron.SetBit(1 + i, eleSelectors[i](el));
         
         
         // The electron is set up. Add it to the vector
@@ -246,7 +241,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         storeMuon.SetDB(mu.dB());
         
         // Relative isolation with delta-beta correction. Definition from 2012 is used, and it is
-        //likely to change for 2015
+        //likely to change in 2015
         storeMuon.SetRelIso((mu.chargedHadronIso() + max(mu.neutralHadronIso() + mu.photonIso() -
          0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt());
         
@@ -257,7 +252,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         
         // Evaluate user-defined selectors if any
         for (unsigned i = 0; i < muSelectors.size(); ++i)
-            storeMuon.SetBit(2 + i, muSelectors[i](mu));
+            storeMuon.SetBit(1 + i, muSelectors[i](mu));
         
         
         // The muon is set up. Add it to the vector
@@ -336,7 +331,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             //the polar angle only, it is not necessary
             
             storeJet.SetPullAngle(atan2(pullPhi, pullY));
-            
             
 
             if (not runOnData)

@@ -28,13 +28,12 @@ namespace pec
         virtual void Reset();
         
         /**
-         * \brief Sets the bit mask for a cut-based ID
+         * \brief Sets a decision of a cut-based ID
          * 
-         * Expected to be used with legacy "simple cut-based" ID [1], 70% w. p. with combined
-         * isolation. The value is a mask that encodes results of several components of the ID.
-         * [1] https://twiki.cern.ch/twiki/bin/view/CMS/SimpleCutBasedEleID
+         * The decision is encoded in a bit field. Decision for several working points can be
+         * written using several bits.
          */
-        void SetCutBasedID(unsigned mask);
+        void SetCutBasedIdBit(unsigned bitIndex, bool value = true);
         
         /**
          * \brief Sets the value of MVA-based ID
@@ -42,35 +41,35 @@ namespace pec
          * Expected to be used with the triggering MVA ID documented in [1].
          * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentification
          */
-        void SetMvaID(double mva);
+        void SetMvaId(double mva);
         
         /**
-         * \brief Returns the bit mask with results of the cut-based ID
+         * \brief Returns decision of selected version of the cut-based ID
          * 
-         * See documentation for the SetCutBasedID method.
+         * See documentation for the SetCutBasedId method.
          */
-        UChar_t CutBasedID() const;
+        bool CutBasedId(unsigned bitIndex) const;
         
         /**
          * \brief Returns the value of MVA-based ID
          * 
          * See documentation for the SetMvaID method.
          */
-        double MvaID() const;
+        double MvaId() const;
         
     private:
         /**
-         * \brief Legacy cut-based ID
+         * \brief Encodes flags for cut-based ID
          * 
-         * Set documentation for the SetCutBasedID method.
+         * Decisions for various working points are incorporated into this variable.
          */
-        UChar_t cutBasedID;
+        UChar_t cutBasedId;
         
         /**
          * \brief MVA-based ID
          * 
-         * See documentation for the SetMvaID method. Encoded with a minifloat on a range [-1, 1].
+         * See documentation for the SetMvaId method. Encoded with a minifloat on a range [-1, 1].
          */
-        minifloat::Repr_t mvaID;
+        minifloat::Repr_t mvaId;
     };
 }

@@ -1,18 +1,20 @@
 #include <UserCode/SingleTop/interface/Electron.h>
 
+#include <stdexcept>
+
 
 using namespace pec;
 
 
 Electron::Electron():
     Lepton(),
-    cutBasedID(0), mvaID(0)
+    cutBasedId(0), mvaId(0)
 {}
 
 
 Electron::Electron(Electron const &src):
     Lepton(src),
-    cutBasedID(src.cutBasedID), mvaID(src.mvaID)
+    cutBasedId(src.cutBasedId), mvaId(src.mvaId)
 {}
 
 
@@ -20,8 +22,8 @@ Electron &Electron::operator=(Electron const &src)
 {
     Lepton::operator=(src);
     
-    cutBasedID = src.cutBasedID;
-    mvaID = src.mvaID;
+    cutBasedId = src.cutBasedId;
+    mvaId = src.mvaId;
     
     return *this;
 }
@@ -31,30 +33,41 @@ void Electron::Reset()
 {
     Lepton::Reset();
     
-    cutBasedID = 0;
-    mvaID = 0;
+    cutBasedId = 0;
+    mvaId = 0;
 }
 
 
-void Electron::SetCutBasedID(unsigned mask)
+void Electron::SetCutBasedIdBit(unsigned bitIndex, bool value /*= true*/)
 {
-    cutBasedID = mask;
+    if (bitIndex >= 8)
+        throw std::runtime_error("Electron::SetCutBasedIdBit: Given index exceeds the maximal "
+         "allowed value.");
+    
+    if (value)
+        cutBasedId |= (1 << bitIndex);
+    else
+        cutBasedId &= ~(1 << bitIndex);
 }
 
 
-void Electron::SetMvaID(double mva)
+void Electron::SetMvaId(double mva)
 {
-    mvaID = minifloat::encodeRange(-1., 1., mva);
+    mvaId = minifloat::encodeRange(-1., 1., mva);
 }
 
 
-UChar_t Electron::CutBasedID() const
+bool Electron::CutBasedId(unsigned bitIndex) const
 {
-    return cutBasedID;
+    if (bitIndex >= 8)
+        throw std::runtime_error("Electron::CutBasedId: Given index exceeds the maximal allowed "
+         "value.");
+    
+    return (cutBasedId & (1 << bitIndex));
 }
 
 
-double Electron::MvaID() const
+double Electron::MvaId() const
 {
-    return minifloat::decodeRange(-1., 1., mvaID);
+    return minifloat::decodeRange(-1., 1., mvaId);
 }
