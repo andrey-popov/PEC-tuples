@@ -19,21 +19,6 @@ namespace pec
     class Jet: public CandidateWithID
     {
     public:
-        /// Considered algorithms for jet pile-up ID
-        enum PileUpIDAlgo
-        {
-            CutBased,
-            MVA
-        };
-        
-        /// Working points of jet pile-up ID algorithms
-        enum PileUpIDWorkingPoint
-        {
-            Loose,
-            Medium,
-            Tight
-        };
-        
         /**
          * \brief Supported definitions of jet flavour
          * 
@@ -63,9 +48,6 @@ namespace pec
         /// Sets the value of the CSV b-tagging discriminator
         void SetBTagCSV(double bTag);
         
-        /// Sets the value of the TCHP b-tagging discriminator
-        void SetBTagTCHP(double bTag);
-        
         /// Sets mass of the secondary vertex associated with the jet
         void SetSecVertexMass(double mass);
         
@@ -86,9 +68,6 @@ namespace pec
          */
         void SetPullAngle(double angle);
         
-        /// Saves decision of a pile-up ID algorithm
-        void SetPileUpID(PileUpIDAlgo algo, PileUpIDWorkingPoint wp, bool pass = true);
-        
         /**
          * \brief Sets jet flavour
          * 
@@ -99,9 +78,6 @@ namespace pec
         
         /// Returns the value of the CSV b-tagging discriminator
         double BTagCSV() const;
-        
-        /// Returns the value of the THCP b-tagging discriminator
-        double BTagTCHP() const;
         
         /**
          * \brief Returns mass of the secondary vertex associated with the jet
@@ -133,9 +109,6 @@ namespace pec
          */
         double PullAngle() const;
         
-        /// Returns decision of a pile-up ID algorithm
-        bool PileUpID(PileUpIDAlgo algo, PileUpIDWorkingPoint wp) const;
-        
         /**
          * \brief Returns jet flavour for the given definition
          * 
@@ -147,12 +120,12 @@ namespace pec
         
     private:
         /**
-         * \brief Values of b-tagging discriminators
+         * \brief Value of b-tagging discriminator
          * 
          * Encoded as a generic minifloat with parameters (true, 12, 1), the range representable
          * with normal numbers is [0.5, 64).
          */
-        minifloat::Repr_t bTagCSV, bTagTCHP;
+        minifloat::Repr_t bTagCSV;
         
         /**
          * \brief Mass of the secondary vertex associated to the jet (if any)
@@ -185,17 +158,6 @@ namespace pec
          * range (-pi, pi).
          */
         minifloat::Repr_t pullAngle;
-        
-        /**
-         * \brief Encodes jet pile-up ID
-         * 
-         * A bit set to store decisions of two jet pile-up ID algorithms. First three bits (0x1,
-         * 0x2, 0x4) are set to true if the jet passes loose, medium, or tight working point of
-         * the cut-based algorithm, respectively. The next three bits (0x8, 0x10, 0x20) are set in a
-         * similar fashion if the jet passes working points of an MVA algorithm.
-         * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID
-         */
-        UChar_t pileUpID;
         
         /**
          * \brief "Algorithmic" definition of jet flavour
