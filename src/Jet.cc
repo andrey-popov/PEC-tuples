@@ -12,7 +12,7 @@ Jet::Jet():
     area(0),
     charge(0),
     pullAngle(0),
-    flavourAlgorithmic(0), flavourPhysics(0)
+    flavour(0)
 {}
 
 
@@ -22,7 +22,7 @@ Jet::Jet(Jet const &src):
     area(src.area),
     charge(src.charge),
     pullAngle(src.pullAngle),
-    flavourAlgorithmic(src.flavourAlgorithmic), flavourPhysics(src.flavourPhysics)
+    flavour(src.flavour)
 {}
 
 
@@ -35,8 +35,7 @@ Jet &Jet::operator=(Jet const &src)
     area = src.area;
     charge = src.charge;
     pullAngle = src.pullAngle;
-    flavourAlgorithmic = src.flavourAlgorithmic;
-    flavourPhysics = src.flavourPhysics;
+    flavour = src.flavour;
     
     return *this;
 }
@@ -51,8 +50,7 @@ void Jet::Reset()
     area = 0;
     charge = 0;
     pullAngle = 0;
-    flavourAlgorithmic = 0;
-    flavourPhysics = 0;
+    flavour = 0;
 }
 
 
@@ -91,21 +89,9 @@ void Jet::SetPullAngle(double angle)
 }
 
 
-void Jet::SetFlavour(FlavourType type, int flavour)
+void Jet::SetFlavour(int flavour_)
 {
-    switch (type)
-    {
-        case FlavourType::Algorithmic:
-            flavourAlgorithmic = flavour;
-            break;
-        
-        case FlavourType::Physics:
-            flavourPhysics = flavour;
-            break;
-        
-        default:
-            throw std::runtime_error("Jet::SetFlavour: Requested flavour type is not supported.");
-    }
+    flavour = flavour_;
 }
 
 
@@ -139,17 +125,7 @@ double Jet::PullAngle() const
 }
 
 
-int Jet::Flavour(FlavourType type) const
+int Jet::Flavour() const
 {
-    switch (type)
-    {
-        case FlavourType::Algorithmic:
-            return flavourAlgorithmic;
-        
-        case FlavourType::Physics:
-            return flavourPhysics;
-        
-        default:
-            throw std::runtime_error("Jet::SetFlavour: Requested flavour type is not supported.");
-    }
+    return flavour;
 }

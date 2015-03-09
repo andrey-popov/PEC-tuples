@@ -19,19 +19,6 @@ namespace pec
     class Jet: public CandidateWithID
     {
     public:
-        /**
-         * \brief Supported definitions of jet flavour
-         * 
-         * Described in [1].
-         * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools?rev=30#Legacy_jet_flavour_definition
-         */
-        enum FlavourType
-        {
-            Algorithmic,
-            Physics
-        };
-        
-    public:
         /// Constructor with no parameters
         Jet();
         
@@ -71,10 +58,11 @@ namespace pec
         /**
          * \brief Sets jet flavour
          * 
-         * This method must be used for simulation only. See further details in the documentation
-         * for the Flavour method.
+         * This method must be used for simulation only. It is assumed that the flavour is
+         * determined with the clustering of ghost hadrons as described in [1].
+         * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
          */
-        void SetFlavour(FlavourType type, int flavour);
+        void SetFlavour(int flavour);
         
         /// Returns the value of the CSV b-tagging discriminator
         double BTagCSV() const;
@@ -110,13 +98,12 @@ namespace pec
         double PullAngle() const;
         
         /**
-         * \brief Returns jet flavour for the given definition
+         * \brief Returns jet flavour
          * 
          * Expected to return zero for real data. If the flavour of a jet in a simulated event is
-         * undefined, a zero is returned. See the list of supported flavour definitions in the
-         * documentation for the FlavourType enumeration.
+         * undefined, a zero is returned.
          */
-        int Flavour(FlavourType type) const;
+        int Flavour() const;
         
     private:
         /**
@@ -159,18 +146,7 @@ namespace pec
          */
         minifloat::Repr_t pullAngle;
         
-        /**
-         * \brief "Algorithmic" definition of jet flavour
-         * 
-         * See documentation for the Flavour method.
-         */
-        Char_t flavourAlgorithmic;
-        
-        /**
-         * \brief "Physics" definition of jet flavour
-         * 
-         * See documentation of the Flavour method.
-         */
-        Char_t flavourPhysics;
+        /// Jet flavour
+        Char_t flavour;
     };
 }

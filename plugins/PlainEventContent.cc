@@ -337,9 +337,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             // These are variables is from the generator tree, but it's more convenient to
             //calculate it here
             {
-                storeJet.SetFlavour(pec::Jet::FlavourType::Algorithmic, j.partonFlavour());
-                storeJet.SetFlavour(pec::Jet::FlavourType::Physics,
-                 (j.genParton() == nullptr) ? 0 : j.genParton()->pdgId());
+                storeJet.SetFlavour(j.hadronFlavour());
                 
                 storeJet.SetBit(0, (j.genJet() and j.genJet()->pt() > 8. and
                  ROOT::Math::VectorUtil::DeltaR(j.p4(), j.genJet()->p4()) < 0.25));
