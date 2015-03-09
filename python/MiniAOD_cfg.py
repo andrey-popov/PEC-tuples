@@ -38,12 +38,9 @@ process.options = cms.untracked.PSet(
     wantSummary = cms.untracked.bool(True))
 
 
-
-# The configuration supports options that can be given in the command line or pycfg_params in the
-# [CMSSW] section of the CRAB configuration. An example of calling syntax:
-#    cmsRun Main_cfg.py runOnData=False,HLTProcess=REDIGI311X
-from UserCode.SingleTop.VarParsing import VarParsing  # multicrab bugfix
-options = VarParsing ('python')
+# Parse command-line options
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing('python')
 
 options.register('runOnData', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether it runs on the real data')
