@@ -1,4 +1,4 @@
-<use  name = "UserCode/SingleTop" />
+<use  name = "Analysis/PECTuples" />
 <use  name = "CondFormats/JetMETObjects" />
 <use  name = "DataFormats/PatCandidates" />
 <use  name = "HLTrigger/HLTcore" />
@@ -7,7 +7,7 @@
 <!-- <use  name = "LHAPDF" /> -->
 <use  name = "root" />
 
-<library  name = "UserCodeSingleTop_plugins" file = "*.cc">
+<library  name = "AnalysisPECTuples_plugins" file = "*.cc">
     <flags  EDM_PLUGIN = "1" />
     <flags  CXXFLAGS = "-O2" />
 </library>

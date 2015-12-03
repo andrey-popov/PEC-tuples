@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UserCode/SingleTop/interface/GenParticle.h>
+#include <Analysis/PECTuples/interface/GenParticle.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>

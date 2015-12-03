@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UserCode/SingleTop/interface/Candidate.h>
+#include <Analysis/PECTuples/interface/Candidate.h>
 
 
 namespace pec

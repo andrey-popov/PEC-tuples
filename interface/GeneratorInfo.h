@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UserCode/SingleTop/interface/minifloats.h>
+#include <Analysis/PECTuples/interface/minifloats.h>
 
 #include <Rtypes.h>
 

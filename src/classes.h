@@ -1,16 +1,16 @@
-#include <UserCode/SingleTop/interface/Candidate.h>
-#include <UserCode/SingleTop/interface/CandidateWithID.h>
-#include <UserCode/SingleTop/interface/Lepton.h>
-#include <UserCode/SingleTop/interface/Muon.h>
-#include <UserCode/SingleTop/interface/Electron.h>
-#include <UserCode/SingleTop/interface/Jet.h>
-#include <UserCode/SingleTop/interface/GenParticle.h>
-#include <UserCode/SingleTop/interface/GenJet.h>
-#include <UserCode/SingleTop/interface/ShowerParton.h>
+#include <Analysis/PECTuples/interface/Candidate.h>
+#include <Analysis/PECTuples/interface/CandidateWithID.h>
+#include <Analysis/PECTuples/interface/Lepton.h>
+#include <Analysis/PECTuples/interface/Muon.h>
+#include <Analysis/PECTuples/interface/Electron.h>
+#include <Analysis/PECTuples/interface/Jet.h>
+#include <Analysis/PECTuples/interface/GenParticle.h>
+#include <Analysis/PECTuples/interface/GenJet.h>
+#include <Analysis/PECTuples/interface/ShowerParton.h>
 
-#include <UserCode/SingleTop/interface/EventID.h>
-#include <UserCode/SingleTop/interface/PileUpInfo.h>
-#include <UserCode/SingleTop/interface/GeneratorInfo.h>
+#include <Analysis/PECTuples/interface/EventID.h>
+#include <Analysis/PECTuples/interface/PileUpInfo.h>
+#include <Analysis/PECTuples/interface/GeneratorInfo.h>
 
 #include <vector>
 

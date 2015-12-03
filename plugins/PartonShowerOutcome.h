@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include <UserCode/SingleTop/interface/ShowerParton.h>
+#include <Analysis/PECTuples/interface/ShowerParton.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>

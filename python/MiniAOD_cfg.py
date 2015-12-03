@@ -155,14 +155,14 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Define the leptons
-from UserCode.SingleTop.ObjectsDefinitions_cff import *
+from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
 eleQualityCuts, eleIDMaps = DefineElectrons(process, paths)
 muQualityCuts = DefineMuons(process, paths)
 
 
 # Include the event filters
-# from UserCode.SingleTop.EventFilters_cff import ApplyEventFilters
+# from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
 # ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
 #     runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
 # paths.append(process.eventFiltersSequence)

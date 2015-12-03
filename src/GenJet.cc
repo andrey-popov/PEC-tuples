@@ -1,4 +1,4 @@
-#include <UserCode/SingleTop/interface/GenJet.h>
+#include <Analysis/PECTuples/interface/GenJet.h>
 
 
 using namespace pec;

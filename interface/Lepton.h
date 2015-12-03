@@ -1,7 +1,7 @@
 #pragma once
 
-#include <UserCode/SingleTop/interface/minifloats.h>
-#include <UserCode/SingleTop/interface/CandidateWithID.h>
+#include <Analysis/PECTuples/interface/minifloats.h>
+#include <Analysis/PECTuples/interface/CandidateWithID.h>
 
 
 namespace pec

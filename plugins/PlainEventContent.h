@@ -1,11 +1,11 @@
 #pragma once
 
-#include <UserCode/SingleTop/interface/Electron.h>
-#include <UserCode/SingleTop/interface/Muon.h>
-#include <UserCode/SingleTop/interface/Jet.h>
-#include <UserCode/SingleTop/interface/EventID.h>
-#include <UserCode/SingleTop/interface/PileUpInfo.h>
-#include <UserCode/SingleTop/interface/GeneratorInfo.h>
+#include <Analysis/PECTuples/interface/Electron.h>
+#include <Analysis/PECTuples/interface/Muon.h>
+#include <Analysis/PECTuples/interface/Jet.h>
+#include <Analysis/PECTuples/interface/EventID.h>
+#include <Analysis/PECTuples/interface/PileUpInfo.h>
+#include <Analysis/PECTuples/interface/GeneratorInfo.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>

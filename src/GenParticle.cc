@@ -1,4 +1,4 @@
-#include <UserCode/SingleTop/interface/GenParticle.h>
+#include <Analysis/PECTuples/interface/GenParticle.h>
 
 #include <stdexcept>
 

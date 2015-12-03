@@ -1,6 +1,6 @@
 #pragma once
 
-#include <UserCode/SingleTop/interface/GenJet.h>
+#include <Analysis/PECTuples/interface/GenJet.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>

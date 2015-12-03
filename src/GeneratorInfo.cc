@@ -1,5 +1,5 @@
-#include <UserCode/SingleTop/interface/GeneratorInfo.h>
-#include <UserCode/SingleTop/interface/minifloats.h>
+#include <Analysis/PECTuples/interface/GeneratorInfo.h>
+#include <Analysis/PECTuples/interface/minifloats.h>
 
 #include <algorithm>
 #include <stdexcept>
