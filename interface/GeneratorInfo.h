@@ -11,7 +11,6 @@ namespace pec
 {
     /**
      * \class GeneratorInfo
-     * \author Andrey Popov
      * \brief Aggregates basic generator-level information
      */
     class GeneratorInfo

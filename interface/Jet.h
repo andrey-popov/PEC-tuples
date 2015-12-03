@@ -8,7 +8,6 @@ namespace pec
 {
     /**
      * \class Jet
-     * \author Andrey Popov
      * \brief Represents a reconstructed jet
      * 
      * Stored four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet

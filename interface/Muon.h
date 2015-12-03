@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class Muon
-     * \author Andrey Popov
      * \brief Represents a reconstructed muon
      * 
      * At the moment it adds nothing to the base class.

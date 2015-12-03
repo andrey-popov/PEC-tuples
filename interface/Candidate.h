@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class Candidate
-     * \author Andrey Popov
      * \brief Stores four-momentum
      * 
      * Components of the four-momentum are compressed using minifloat functions.

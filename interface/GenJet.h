@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class GenJet
-     * \author Andrey Popov
      * \brief Generator-level jet
      * 
      * A bare four-momentum with an optional counter of hadrons with b and c quarks as constituents

@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class CandidateWithID
-     * \author Andrey Popov
      * \brief Adds a set of user-defined booleand IDs to the class Candidate
      * 
      * The ID flags are accessed by index, up to 8 flags are supported. If a flag is set to true,

@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class ShowerParton
-     * \author Andrey Popov
      * \brief Represents a parton from parton shower
      * 
      * 

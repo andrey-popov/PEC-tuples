@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class GenParticle
-     * \author Andrey Popov
      * \brief Minimalistic discription of a generator-level particle
      * 
      * The PDG ID is stored in a one-byte variable, thus the class is suitable only to store

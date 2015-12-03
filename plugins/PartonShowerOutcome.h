@@ -1,6 +1,5 @@
 /**
  * \file PartonShowerOutcome.h
- * \author Andrey Popov
  * 
  * 
  * Example configuration of the plugin:

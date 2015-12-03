@@ -9,7 +9,6 @@ namespace pec
 {
     /**
      * \class PileUpInfo
-     * \author Andrey Popov
      * \brief Combines information related to pile-up
      */
     class PileUpInfo

@@ -33,7 +33,6 @@
 
 /**
  * \class PlainEventContent
- * \author Andrey Popov
  * \brief This CMSSW plugin saves events in a ROOT file using a very slim format
  * 
  * The plugin stores most of basic objects: muons, electrons, jets, MET. It saves their

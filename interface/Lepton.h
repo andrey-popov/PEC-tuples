@@ -8,7 +8,6 @@ namespace pec
 {
     /**
      * \class Lepton
-     * \author Andrey Popov
      * \brief Base class for charged leptons
      */
     class Lepton: public CandidateWithID

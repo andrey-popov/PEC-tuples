@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
-""" @author Andrey Popov
-    
+"""
     The script loops over all files CMSSW_*.stdout in the current directory and combines trigger
     reports in the files into a single report
 """

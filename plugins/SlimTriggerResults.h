@@ -67,7 +67,6 @@ struct TriggerState
 
 /**
  * \class SlimTriggerResults
- * \author Andrey Popov
  * \brief An EDM plugin to save information about selected trigger paths
  * 
  * The module defines an EDM plugin to store information about selected trigger paths. The user

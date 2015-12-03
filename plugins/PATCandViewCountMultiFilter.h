@@ -1,6 +1,5 @@
 /**
  * \file PATCandViewCountMultiFilter.h
- * \author Andrey Popov
  * 
  * Defines a plugin that extends PATCandViewCountFilter to a case of multiple input collections.
  * For each collection it counts candidates that pass a user-defined selection. If the number of

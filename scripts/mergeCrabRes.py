@@ -1,8 +1,6 @@
 #! /bin/env python
 
 """
-@author Andrey Popov
-
 The script merges output ROOT files produced by a CRAB task.
 
 The current directory is seached for *.root files (user can provide a mask to tighten selection of

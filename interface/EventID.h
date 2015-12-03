@@ -7,7 +7,6 @@ namespace pec
 {
     /**
      * \class EventID
-     * \author Andrey Popov
      * \brief A class to aggregate event ID
      */
     class EventID

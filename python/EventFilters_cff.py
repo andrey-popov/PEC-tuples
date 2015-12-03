@@ -1,7 +1,3 @@
-# Metadata
-__author__ = 'Andrey Popov'
-__email__ = 'Andrey.Popov@cern.ch'
-
 import FWCore.ParameterSet.Config as cms
 
 # Function to set up appropriate filters for the actual process

@@ -1,8 +1,6 @@
 #! /usr/bin/env python
 
 ##
-# @author Andrey.Popov@cern.ch
-#
 # This scripts checks the CRAB results for consistency. It assertains that all the necessary files
 # are present, checks the exit codes, looks for excess ROOT output files (left from previous
 # submissions). It also calculates the total number of read events and events that passed the

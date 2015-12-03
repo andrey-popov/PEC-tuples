@@ -17,10 +17,6 @@ import string
 import re
 
 
-# Metadata
-__author__ = 'Andrey Popov'
-
-
 # Create a process
 import FWCore.ParameterSet.Config as cms
 process = cms.Process('Analysis')

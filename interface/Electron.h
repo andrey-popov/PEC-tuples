@@ -8,7 +8,6 @@ namespace pec
 {
     /**
      * \class Electron
-     * \author Andrey Popov
      * \brief Represents a reconstructed electron
      */
     class Electron: public Lepton

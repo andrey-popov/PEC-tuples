@@ -21,7 +21,6 @@
 
 /**
  * \class HardInteractionInfo
- * \author Andrey Popov
  * \brief Stores particles from the hard interaction in a ROOT file
  * 
  * Stores particles from the final and initial states of the hard(est) interaction. However, in

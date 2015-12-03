@@ -15,7 +15,6 @@
 
 /**
  * \class FirstVertexFilter
- * \author Andrey Popov
  * \brief This CMSSW plugin performs selection on the first primary vertex
  *
  * The plugin performs string-based filtering on the first vertex in the collection given. The

@@ -4,10 +4,6 @@
     """
 
 
-# Metadata
-__author__ = 'Andrey Popov'
-
-
 import FWCore.ParameterSet.Config as cms
 
 

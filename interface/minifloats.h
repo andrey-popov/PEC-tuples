@@ -8,7 +8,6 @@
 /**
  * \brief Conversion functions to provide a 16-bit representation for storage of floating-point
  * numbers
- * \author Andrey Popov
  * 
  * The namespace defines pairs of functions to convert floating-point numbers (with a double
  * precision) to or from a 16-bit representation. Two families of conversion functions are provided:

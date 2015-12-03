@@ -21,7 +21,6 @@
 
 /**
  * \class GenJetsInfo
- * \author Andrey Popov
  * \brief A CMSSW plugin to save generator-level jets
  * 
  * Saves generator-level jets in a ROOT file. In the default configuration the plugin stores only
