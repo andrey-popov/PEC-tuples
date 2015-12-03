@@ -296,7 +296,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());
-            storeJet.SetBTagCSV(j.bDiscriminator("combinedInclusiveSecondaryVertexV2BJetTags"));
+            storeJet.SetBTagCSV(j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
             
             // Mass of the secondary vertex is available as userFloat [1]
             //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD?rev=32#Jets

@@ -32,21 +32,20 @@ def DefineElectrons(process, paths):
     paths.append(process.analysisPatElectrons)
     
     
-    # Calculate IDs for analysis electrons. The code is taken from the example in [1]; it looks
-    # quite strange and really badly written
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=13#Recipe_for_regular_users_for_min
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import setupAllVIDIdsInModule, \
-     setupVIDElectronSelection
-    process.load('RecoEgamma.ElectronIdentification.egmGsfElectronIDs_cfi')
+    # Calculate IDs for analysis electrons. The code is adapted from [1]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27#Recipe_for_regular_users_for_7_4
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import switchOnVIDElectronIdProducer, \
+     setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat
+    switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
     setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
-     'cutBasedElectronID_PHYS14_PU20bx25_V1_miniAOD_cff', setupVIDElectronSelection)
+     'cutBasedElectronID_Spring15_25ns_V1_cff', setupVIDElectronSelection)
     
     paths.append(process.egmGsfElectronIDs)
     
     
     # Define labels of electron IDs to be saved
-    eleIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-PHYS14-PU20bx25-V1-miniAOD-standalone-'
+    eleIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-'
     eleIDMaps = [
         cms.InputTag(eleIDLabelPrefix + 'veto'), cms.InputTag(eleIDLabelPrefix + 'loose'),
         cms.InputTag(eleIDLabelPrefix + 'medium'), cms.InputTag(eleIDLabelPrefix + 'tight')]

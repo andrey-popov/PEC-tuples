@@ -81,13 +81,13 @@ process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
 
-# Set the default global tag if user has not given any
-# https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=516#PHYS14_exercise_72X
+# Set the default global tag if user has not given any. They are set as recommended for JEC
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=98
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = 'N/A'
+        options.globalTag = '74X_dataRun2_v5 '
     else:
-        options.globalTag = 'PHYS14_25_V3'
+        options.globalTag = '74X_mcRun2_asymptotic_v4'
     
     print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
 
@@ -110,8 +110,8 @@ if runOnData:
     from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
     process.source.fileNames = filesRelValSingleMuMINIAOD
 else:
-    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValProdTTbarPileUpMINIAODSIM
-    process.source.fileNames = filesRelValProdTTbarPileUpMINIAODSIM
+    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
+    process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
 # process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
 if len(options.sourceFile) > 0:
