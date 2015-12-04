@@ -25,7 +25,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     runOnData(cfg.getParameter<bool>("runOnData"))
 {
     // Register required input data
-    muonToken = consumes<edm::View<pat::Muon>>(cfg.getParameter<InputTag>("muons"));
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
     
@@ -37,9 +36,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     
     
     // Construct string-based selectors for all objects
-    for (string const &selection: cfg.getParameter<vector<string>>("muSelection"))
-        muSelectors.emplace_back(selection);
-    
     for (string const &selection: cfg.getParameter<vector<string>>("jetSelection"))
         jetSelectors.emplace_back(selection);
 }
@@ -55,10 +51,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("primaryVertices")->
      setComment("Collection of reconstructed primary vertices.");
-    desc.add<InputTag>("muons")->setComment("Collection of muons.");
-    desc.add<vector<string>>("muSelection", vector<string>(0))->
-     setComment("User-defined selections for muons whose results will be stored in the ouput "
-     "tree.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
@@ -89,9 +81,6 @@ void PlainEventContent::beginJob()
     
     
     // Branches with reconstucted objects
-    storeMuonsPointer = &storeMuons;
-    outTree->Branch("muons", &storeMuonsPointer);
-    
     storeJetsPointer = &storeJets;
     outTree->Branch("jets", &storeJetsPointer);
     
@@ -129,49 +118,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Fill the tree with basic information
-    // Read the muon collection
-    Handle<View<pat::Muon>> srcMuons;
-    event.getByToken(muonToken, srcMuons);
-    
-    
-    // Loop through the muon collection and fill the relevant variables
-    storeMuons.clear();
-    pec::Muon storeMuon;  // will reuse this object to fill the vector
-    
-    for (unsigned i = 0; i < srcMuons->size(); ++i)
-    {
-        pat::Muon const &mu = srcMuons->at(i);
-        storeMuon.Reset();
-        
-        
-        // Set four-momentum. Mass is ignored
-        storeMuon.SetPt(mu.pt());
-        storeMuon.SetEta(mu.eta());
-        storeMuon.SetPhi(mu.phi());
-        
-        storeMuon.SetCharge(mu.charge());
-        storeMuon.SetDB(mu.dB());
-        
-        // Relative isolation with delta-beta correction. Definition from 2012 is used, and it is
-        //likely to change in 2015
-        storeMuon.SetRelIso((mu.chargedHadronIso() + max(mu.neutralHadronIso() + mu.photonIso() -
-         0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt());
-        
-        // Tight muons are defined according to [1]. Note it does not imply selection on isolation
-        //or kinematics
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideMuonId?rev=48#Tight_Muon
-        storeMuon.SetBit(0, mu.isTightMuon(vertices->front()));
-        
-        // Evaluate user-defined selectors if any
-        for (unsigned i = 0; i < muSelectors.size(); ++i)
-            storeMuon.SetBit(1 + i, muSelectors[i](mu));
-        
-        
-        // The muon is set up. Add it to the vector
-        storeMuons.emplace_back(storeMuon);
-    }
-    
-    
     // Read the jets collections
     Handle<View<pat::Jet>> srcJets;
     event.getByToken(jetToken, srcJets);

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/Muon.h>
 #include <Analysis/PECTuples/interface/Jet.h>
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
 #include <Analysis/PECTuples/interface/GeneratorInfo.h>
@@ -11,8 +10,6 @@
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
-#include <DataFormats/PatCandidates/interface/Electron.h>
-#include <DataFormats/PatCandidates/interface/Muon.h>
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <DataFormats/VertexReco/interface/Vertex.h>
@@ -72,9 +69,6 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
 private:
-    /// Collection of muons
-    edm::EDGetTokenT<edm::View<pat::Muon>> muonToken;
-    
     /// Collection of jets
     edm::EDGetTokenT<edm::View<pat::Jet>> jetToken;
     
@@ -89,13 +83,6 @@ private:
     
     /// A flag that indicates if corrected or raw momenta should be stored for jets
     bool const saveCorrectedJetMomenta;
-    
-    /**
-     * \brief String-based selections for muons
-     * 
-     * See comments for eleSelectors.
-     */
-    std::vector<StringCutObjectSelector<pat::Muon>> muSelectors;
     
     /**
      * \brief String-based selections for jets
@@ -143,22 +130,6 @@ private:
      * and simulation as in the latter case a branch with generator-level information is added.
      */
     TTree *outTree;
-    
-    /**
-     * \brief Trimmed muons to be stored in the output file
-     * 
-     * Mass is always close to the PDG value and thus does not encode useful information. It is set
-     * to zero to faciliate compression. Bit flags include the tight quality ID and user-defined
-     * selections. Consult the source code to find their indices.
-     */
-    std::vector<pec::Muon> storeMuons;
-    
-    /**
-     * \brief An auxiliary pointer
-     * 
-     * ROOT needs a variable with a pointer to an object to store the object in a tree.
-     */
-    std::vector<pec::Muon> *storeMuonsPointer;
     
     /**
      * \brief Trimmed jets to the stored in the output file

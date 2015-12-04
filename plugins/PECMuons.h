@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/Electron.h>
+#include <Analysis/PECTuples/interface/Muon.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -8,7 +8,8 @@
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
-#include <DataFormats/PatCandidates/interface/Electron.h>
+#include <DataFormats/PatCandidates/interface/Muon.h>
+#include <DataFormats/VertexReco/interface/VertexFwd.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
@@ -20,15 +21,15 @@
 
 
 /**
- * \class PECElectrons
- * \brief Stores electrons
+ * \class PECMuons
+ * \brief Stores muons
  * 
- * The plugin stores basic properties of electrons in the given collection. It saves their
- * four-momenta, isolation, quality flags, etc. The mass in the four-momentum is always set to zero
- * to facilitate file compression. Bit flags of stored objects include the conversion rejection flag
- * and results of custom selections specifed by the user.
+ * The plugin stores basic properties of muons in the given collection. It saves their four-momenta,
+ * isolation, quality flags, etc. The mass in the four-momentum is always set to zero
+ * to facilitate file compression. Bit flags of stored objects include the flag for tight muon
+ * according to the official definition and results of custom selections specifed by the user.
  */
-class PECElectrons: public edm::EDAnalyzer
+class PECMuons: public edm::EDAnalyzer
 {
 public:
     /**
@@ -36,7 +37,7 @@ public:
      * 
      * Reads the configuration of the plugin and create string-based selectors.
      */
-    PECElectrons(edm::ParameterSet const &cfg);
+    PECMuons(edm::ParameterSet const &cfg);
     
 public:
     /// Verifies configuration of the plugin
@@ -48,28 +49,28 @@ public:
     /**
      * \brief Analyses current event
      * 
-     * Copies electrons into the buffers, evaluates string-based selections, fills the output tree.
+     * Copies muons into the buffers, evaluates string-based selections, fills the output tree.
      */
     virtual void analyze(edm::Event const &event, edm::EventSetup const &) override;
     
 private:
-    /// Source collection of electrons
-    edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
-    
-    /// Maps with results of cut-based electron IDs
-    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> eleIDMapTokens;
+    /// Source collection of muons
+    edm::EDGetTokenT<edm::View<pat::Muon>> muonToken;
     
     /**
-     * \brief String-based selections
+     * \brief String-based selections for muons
      * 
-     * These selections do not affect which electrons are stored in the output files. Instead, each
+     * These selections do not affect which muons are stored in the output files. Instead, each
      * string defines a selection that is evaluated and whose result is saved in the bit field of
      * the CandidateWithID class.
      * 
      * Details on implementation are documented in [1].
      * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePhysicsCutParser
      */
-    std::vector<StringCutObjectSelector<pat::Electron>> eleSelectors;
+    std::vector<StringCutObjectSelector<pat::Muon>> muSelectors;
+    
+    /// Collection of reconstructed primary vertices
+    edm::EDGetTokenT<reco::VertexCollection> primaryVerticesToken;
     
     
     /// An object to handle the output ROOT file
@@ -79,13 +80,13 @@ private:
     /// Output tree
     TTree *outTree;
     
-    /// Buffer to store electrons
-    std::vector<pec::Electron> storeElectrons;
+    /// Buffer to store muons
+    std::vector<pec::Muon> storeMuons;
     
     /**
      * \brief An auxiliary pointer
      * 
      * ROOT needs a variable with a pointer to an object to store the object in a tree.
      */
-    std::vector<pec::Electron> *storeElectronsPointer;
+    std::vector<pec::Muon> *storeMuonsPointer;
 };

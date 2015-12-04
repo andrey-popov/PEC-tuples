@@ -223,10 +223,13 @@ process.electrons = cms.EDAnalyzer('PECElectrons',
     idMaps = cms.VInputTag(eleIDMaps),
     selection = eleQualityCuts)
 
+process.muons = cms.EDAnalyzer('PECMuons',
+    src = cms.InputTag('analysisPatMuons'),
+    selection = muQualityCuts,
+    primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'))
+
 process.eventContent = cms.EDAnalyzer('PlainEventContent',
     runOnData = cms.bool(runOnData),
-    muons = cms.InputTag('analysisPatMuons'),
-    muSelection = muQualityCuts,
     jets = cms.InputTag('analysisPatJets'),
     jetMinPt = cms.double(20.),
     jetMinRawPt = cms.double(10.),
@@ -239,7 +242,8 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     # used for JEC [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/jes/497.html?inline=-1
 
-paths.append(process.trigger, process.eventID, process.electrons, process.eventContent)
+paths.append(process.trigger, process.eventID, process.electrons, process.muons, \
+ process.eventContent)
 
 
 # Save information about the hard interaction

@@ -8,24 +8,24 @@ using namespace edm;
 using namespace std;
 
 
-PECElectrons::PECElectrons(edm::ParameterSet const &cfg)
+PECElectrons::PECElectrons(ParameterSet const &cfg)
 {
     // Register required input data
-    electronToken = consumes<edm::View<pat::Electron>>(cfg.getParameter<InputTag>("src"));
+    electronToken = consumes<View<pat::Electron>>(cfg.getParameter<InputTag>("src"));
     
-    for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("idMaps"))
-        eleIDMapTokens.emplace_back(consumes<edm::ValueMap<bool>>(tag));
+    for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("idMaps"))
+        eleIDMapTokens.emplace_back(consumes<ValueMap<bool>>(tag));
     
     
-    // Construct string-based selectors for all objects
+    // Construct string-based selectors
     for (string const &selection: cfg.getParameter<vector<string>>("selection"))
         eleSelectors.emplace_back(selection);
 }
 
 
-void PECElectrons::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+void PECElectrons::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
-    edm::ParameterSetDescription desc;
+    ParameterSetDescription desc;
     desc.add<InputTag>("src")->setComment("Source collection of electrons.");
     desc.add<vector<InputTag>>("idMaps", vector<InputTag>(0))->
      setComment("Maps with electron ID decisions.");
@@ -39,14 +39,14 @@ void PECElectrons::fillDescriptions(edm::ConfigurationDescriptions &descriptions
 
 void PECElectrons::beginJob()
 {
-    outTree = fileService->make<TTree>("Electrons", "Electrons");
+    outTree = fileService->make<TTree>("Electrons", "Properties of selected electrons");
     
     storeElectronsPointer = &storeElectrons;
     outTree->Branch("electrons", &storeElectronsPointer);
 }
 
 
-void PECElectrons::analyze(edm::Event const &event, edm::EventSetup const &)
+void PECElectrons::analyze(Event const &event, EventSetup const &)
 {
     // Read the electron collection and ID maps
     Handle<View<pat::Electron>> srcElectrons;
@@ -58,7 +58,7 @@ void PECElectrons::analyze(edm::Event const &event, edm::EventSetup const &)
         event.getByToken(eleIDMapTokens.at(i), eleIDMaps.at(i));
     
     
-    // Loop through the collection and fill the relevant variables
+    // Loop through the collection and store relevant properties of electrons
     storeElectrons.clear();
     pec::Electron storeElectron;  // will reuse this object to fill the vector
     
