@@ -31,8 +31,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     primaryVerticesToken =
      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
-    puSummaryToken = consumes<edm::View<PileupSummaryInfo>>(cfg.getParameter<InputTag>("puInfo"));
-    rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
     
     
     // Construct string-based selectors for all objects
@@ -65,10 +63,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Tag to access information about generator. If runOnData is true, this parameter "
      "is ignored.");
-    desc.add<InputTag>("rho", InputTag("kt6PFJets", "rho"))->
-     setComment("Rho (mean angular pt density).");
-    desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
-     setComment("True pile-up information. If runOnData is true, this parameter is ignored.");
     
     descriptions.add("eventContent", desc);
 }
@@ -94,11 +88,6 @@ void PlainEventContent::beginJob()
         generatorInfoPointer = &generatorInfo;
         outTree->Branch("genInfo", &generatorInfoPointer);
     }
-    
-    
-    // A branch with per-event information on pile-up
-    puInfoPointer = &puInfo;
-    outTree->Branch("puInfo", &puInfoPointer);
 }
 
 
@@ -289,35 +278,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             generatorInfo.SetPdfIds(pdf->id.first, pdf->id.second);
             generatorInfo.SetPdfQScale(pdf->scalePDF);
         }
-    }
-    
-    
-    // Save the pile-up information
-    puInfo.Reset();
-    //^ Same object is used for all events, hence need to reset it
-    
-    puInfo.SetNumPV(vertices->size());
-
-    Handle<double> rho;
-    event.getByToken(rhoToken, rho);
-    
-    puInfo.SetRho(*rho);
-    
-    
-    if (not runOnData)
-    {
-        Handle<View<PileupSummaryInfo>> puSummary;
-        event.getByToken(puSummaryToken, puSummary);
-        
-        puInfo.SetTrueNumPU(puSummary->front().getTrueNumInteractions());
-        //^ The true number of interactions is same for all bunch crossings
-        
-        for (unsigned i = 0; i < puSummary->size(); ++i)
-            if (puSummary->at(i).getBunchCrossing() == 0)
-            {
-                puInfo.SetInTimePU(puSummary->at(i).getPU_NumInteractions());
-                break;
-            }
     }
     
     

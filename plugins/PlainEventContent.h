@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Analysis/PECTuples/interface/Jet.h>
-#include <Analysis/PECTuples/interface/PileUpInfo.h>
 #include <Analysis/PECTuples/interface/GeneratorInfo.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
@@ -14,7 +13,6 @@
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <DataFormats/VertexReco/interface/Vertex.h>
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
-#include <SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
@@ -108,16 +106,6 @@ private:
     /// Collection of reconstructed primary vertices
     edm::EDGetTokenT<reco::VertexCollection> primaryVerticesToken;
     
-    /**
-     * \brief Pile-up information in simulation
-     * 
-     * Ignored in data.
-     */
-    edm::EDGetTokenT<edm::View<PileupSummaryInfo>> puSummaryToken;
-    
-    /// Rho (mean angular pt density)
-    edm::EDGetTokenT<double> rhoToken;
-    
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
@@ -175,15 +163,4 @@ private:
      * ROOT needs a variable with a pointer to an object to store the object in a tree.
      */
     pec::GeneratorInfo *generatorInfoPointer;
-    
-    
-    /// Information on pile-up to be stored in the output file
-    pec::PileUpInfo puInfo;
-    
-    /**
-     * \brief An auxiliary pointer
-     * 
-     * ROOT needs a variable with a pointer to an object to store the object in a tree.
-     */
-    pec::PileUpInfo *puInfoPointer;
 };

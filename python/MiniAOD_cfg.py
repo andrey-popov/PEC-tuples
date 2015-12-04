@@ -235,15 +235,19 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     jetMinRawPt = cms.double(10.),
     met = cms.InputTag('slimmedMETs'),
     generator = cms.InputTag('generator'),
-    primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
-    puInfo = cms.InputTag('addPileupInfo'),
-    rho = cms.InputTag('fixedGridRhoFastjetAll'))
+    primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'))
     #^ There are several various versions of rho stored in an event. Apparently, this is the one
     # used for JEC [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/jes/497.html?inline=-1
 
+process.pileUp = cms.EDAnalyzer('PECPileUp',
+    primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
+    rho = cms.InputTag('fixedGridRhoFastjetAll'),
+    runOnData = cms.bool(runOnData),
+    puInfo = cms.InputTag('addPileupInfo'))
+
 paths.append(process.trigger, process.eventID, process.electrons, process.muons, \
- process.eventContent)
+ process.eventContent, process.pileUp)
 
 
 # Save information about the hard interaction
