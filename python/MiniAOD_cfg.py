@@ -216,6 +216,8 @@ process.trigger = cms.EDFilter('SlimTriggerResults',
     triggerPrescales = cms.InputTag('patTrigger'))
 
 # Save the event content
+process.eventID = cms.EDAnalyzer('PECEventID')
+
 process.eventContent = cms.EDAnalyzer('PlainEventContent',
     runOnData = cms.bool(runOnData),
     electrons = cms.InputTag('analysisPatElectrons'),
@@ -235,7 +237,7 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     # used for JEC [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/jes/497.html?inline=-1
 
-paths.append(process.trigger, process.eventContent)
+paths.append(process.trigger, process.eventID, process.eventContent)
 
 
 # Save information about the hard interaction

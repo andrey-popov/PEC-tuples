@@ -3,7 +3,6 @@
 #include <Analysis/PECTuples/interface/Electron.h>
 #include <Analysis/PECTuples/interface/Muon.h>
 #include <Analysis/PECTuples/interface/Jet.h>
-#include <Analysis/PECTuples/interface/EventID.h>
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
 #include <Analysis/PECTuples/interface/GeneratorInfo.h>
 
@@ -163,16 +162,6 @@ private:
      * and simulation as in the latter case a branch with generator-level information is added.
      */
     TTree *outTree;
-    
-    /// Event ID
-    pec::EventID eventId;
-    
-    /**
-     * \brief An auxiliary pointer
-     * 
-     * ROOT needs a variable with a pointer to an object to store the object in a tree.
-     */
-    pec::EventID *eventIdPointer;
     
     /**
      * \brief Trimmed electrons to be stored in the output file

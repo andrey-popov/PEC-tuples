@@ -101,11 +101,6 @@ void PlainEventContent::beginJob()
     outTree = fileService->make<TTree>("EventContent", "Minimalistic description of events");
     
     
-    // A branch with event ID
-    eventIdPointer = &eventId;
-    outTree->Branch("eventId", &eventIdPointer);
-    
-    
     // Branches with reconstucted objects
     storeElectronsPointer = &storeElectrons;
     outTree->Branch("electrons", &storeElectronsPointer);
@@ -136,14 +131,6 @@ void PlainEventContent::beginJob()
 
 void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
-    // Fill the event ID tree
-    eventId.Reset();
-    
-    eventId.SetRunNumber(event.id().run());
-    eventId.SetEventNumber(event.id().event());
-    eventId.SetLumiSectionNumber(event.luminosityBlock());
-    
-    
     // Read the primary vertices
     Handle<reco::VertexCollection> vertices;
     event.getByToken(primaryVerticesToken, vertices);
