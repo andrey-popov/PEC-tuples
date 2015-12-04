@@ -29,7 +29,7 @@ public:
     PECEventID(edm::ParameterSet const &);
     
 public:
-    /// A method to verify configuration of the plugin
+    /// Verifies configuration of the plugin
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
     /// Creates output tree

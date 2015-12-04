@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/Electron.h>
 #include <Analysis/PECTuples/interface/Muon.h>
 #include <Analysis/PECTuples/interface/Jet.h>
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
@@ -73,9 +72,6 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &setup);
     
 private:
-    /// Collection of electrons
-    edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
-    
     /// Collection of muons
     edm::EDGetTokenT<edm::View<pat::Muon>> muonToken;
     
@@ -93,21 +89,6 @@ private:
     
     /// A flag that indicates if corrected or raw momenta should be stored for jets
     bool const saveCorrectedJetMomenta;
-    
-    /// Maps with results of cut-based electron IDs
-    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> eleIDMapTokens;
-    
-    /**
-     * \brief String-based selections for electrons
-     * 
-     * These selections do not affect which objects are stored in the output files. Instead, each
-     * string defines a selection that is evalueated and whose result is saved in the bit field of
-     * the CandidateWithID class.
-     * 
-     * Details on implementation are documented in [1].
-     * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePhysicsCutParser
-     */
-    std::vector<StringCutObjectSelector<pat::Electron>> eleSelectors;
     
     /**
      * \brief String-based selections for muons
@@ -162,25 +143,6 @@ private:
      * and simulation as in the latter case a branch with generator-level information is added.
      */
     TTree *outTree;
-    
-    /**
-     * \brief Trimmed electrons to be stored in the output file
-     * 
-     * Mass is always close to the PDG value and thus does not encode useful information. It is set
-     * to zero to faciliate compression. Bit flags include conversion rejection, trigger-emulating
-     * preselection required for the triggering MVA ID [1-2], and user-defined selections. Consult
-     * the source code to find their indices.
-     * [1] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentification#Training_of_the_MVA
-     * [2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma-elecid/72.html
-     */
-    std::vector<pec::Electron> storeElectrons;
-    
-    /**
-     * \brief An auxiliary pointer
-     * 
-     * ROOT needs a variable with a pointer to an object to store the object in a tree.
-     */
-    std::vector<pec::Electron> *storeElectronsPointer;
     
     /**
      * \brief Trimmed muons to be stored in the output file

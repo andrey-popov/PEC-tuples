@@ -25,13 +25,9 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     runOnData(cfg.getParameter<bool>("runOnData"))
 {
     // Register required input data
-    electronToken = consumes<edm::View<pat::Electron>>(cfg.getParameter<InputTag>("electrons"));
     muonToken = consumes<edm::View<pat::Muon>>(cfg.getParameter<InputTag>("muons"));
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
-    
-    for (edm::InputTag const &tag: cfg.getParameter<vector<InputTag>>("eleIDMaps"))
-        eleIDMapTokens.emplace_back(consumes<edm::ValueMap<bool>>(tag));
     
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     primaryVerticesToken =
@@ -41,9 +37,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     
     
     // Construct string-based selectors for all objects
-    for (string const &selection: cfg.getParameter<vector<string>>("eleSelection"))
-        eleSelectors.emplace_back(selection);
-    
     for (string const &selection: cfg.getParameter<vector<string>>("muSelection"))
         muSelectors.emplace_back(selection);
     
@@ -62,12 +55,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("primaryVertices")->
      setComment("Collection of reconstructed primary vertices.");
-    desc.add<InputTag>("electrons")->setComment("Collection of electrons.");
-    desc.add<vector<InputTag>>("eleIDMaps", vector<InputTag>(0))->
-     setComment("Maps with electron ID decisions.");
-    desc.add<vector<string>>("eleSelection", vector<string>(0))->
-     setComment("User-defined selections for electrons whose results will be stored in the output "
-     "tree.");
     desc.add<InputTag>("muons")->setComment("Collection of muons.");
     desc.add<vector<string>>("muSelection", vector<string>(0))->
      setComment("User-defined selections for muons whose results will be stored in the ouput "
@@ -102,9 +89,6 @@ void PlainEventContent::beginJob()
     
     
     // Branches with reconstucted objects
-    storeElectronsPointer = &storeElectrons;
-    outTree->Branch("electrons", &storeElectronsPointer);
-    
     storeMuonsPointer = &storeMuons;
     outTree->Branch("muons", &storeMuonsPointer);
     
@@ -145,65 +129,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
     
     
     // Fill the tree with basic information
-    // Read the electron collection
-    Handle<View<pat::Electron>> srcElectrons;
-    event.getByToken(electronToken, srcElectrons);
-    
-    
-    // Read electron ID maps
-    vector<Handle<ValueMap<bool>>> eleIDMaps(eleIDMapTokens.size());
-    
-    for (unsigned i = 0; i < eleIDMapTokens.size(); ++i)
-        event.getByToken(eleIDMapTokens.at(i), eleIDMaps.at(i));
-    
-    
-    // Loop through the electron collection and fill the relevant variables
-    storeElectrons.clear();
-    pec::Electron storeElectron;  // will reuse this object to fill the vector
-    
-    for (unsigned i = 0; i < srcElectrons->size(); ++i)
-    {
-        pat::Electron const &el = srcElectrons->at(i);
-        storeElectron.Reset();
-        
-        
-        // Set four-momentum. Mass is ignored
-        storeElectron.SetPt(el.pt());
-        storeElectron.SetEta(el.eta());
-        storeElectron.SetPhi(el.phi());
-        
-        storeElectron.SetCharge(el.charge());
-        storeElectron.SetDB(el.dB());
-        
-        
-        // Isolation with delta-beta correction. The delta-beta factor of 0.5 is taken from
-        //configuration of electron ID modules, which also apply a cut on the isolation
-        storeElectron.SetRelIso((el.chargedHadronIso() + max(el.neutralHadronIso() +
-         el.photonIso() - 0.5 * el.puChargedHadronIso(), 0.)) / el.pt());
-        
-        
-        // Copy electron IDs from the maps
-        Ptr<pat::Electron> const elPtr(srcElectrons, i);
-        
-        for (unsigned i = 0; i < eleIDMaps.size(); ++i)
-            storeElectron.SetCutBasedIdBit(i, (*eleIDMaps.at(i))[elPtr]);
-        
-        
-        // Conversion rejection [1]. True for a "good" electron
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
-        storeElectron.SetBit(0, el.passConversionVeto());
-        
-        
-        // Evaluate user-defined selectors if any
-        for (unsigned i = 0; i < eleSelectors.size(); ++i)
-            storeElectron.SetBit(1 + i, eleSelectors[i](el));
-        
-        
-        // The electron is set up. Add it to the vector
-        storeElectrons.emplace_back(storeElectron);
-    }
-    
-    
     // Read the muon collection
     Handle<View<pat::Muon>> srcMuons;
     event.getByToken(muonToken, srcMuons);
