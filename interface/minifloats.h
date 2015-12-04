@@ -5,6 +5,9 @@
 #include <cmath>
 
 
+#define MINIFLOATS_DISABLED
+
+
 /**
  * \brief Conversion functions to provide a 16-bit representation for storage of floating-point
  * numbers
