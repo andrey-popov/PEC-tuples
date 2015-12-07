@@ -193,7 +193,6 @@ paths.append(process.countGoodJets)
 
 
 
-# Modules to save the needed information to the ROOT file
 # Save decisions of selected triggers. The list is aligned with menu [1] used in 25 ns MC and menus
 # deployed online
 # [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
@@ -208,7 +207,10 @@ process.pecTrigger = cms.EDFilter('SlimTriggerResults',
     triggerBits = cms.InputTag('TriggerResults', processName = 'HLT'),
     triggerPrescales = cms.InputTag('patTrigger'))
 
-# Save the event content
+paths.append(process.pecTrigger)
+
+
+# Save event ID and basic event content
 process.pecEventID = cms.EDAnalyzer('PECEventID')
 
 process.pecElectrons = cms.EDAnalyzer('PECElectrons',
@@ -234,13 +236,14 @@ process.pecPileUp = cms.EDAnalyzer('PECPileUp',
     runOnData = cms.bool(runOnData),
     puInfo = cms.InputTag('addPileupInfo'))
 
-process.pecGenerator = cms.EDAnalyzer('PECGenerator',
-    generator = cms.InputTag('generator'))
-
 paths.append(process.pecTrigger, process.pecEventID, process.pecElectrons, process.pecMuons, \
  process.pecJetMET, process.pecPileUp)
 
+
+# Save global generator information
 if not runOnData:
+    process.pecGenerator = cms.EDAnalyzer('PECGenerator',
+        generator = cms.InputTag('generator'))
     paths.append(process.pecGenerator)
 
 
