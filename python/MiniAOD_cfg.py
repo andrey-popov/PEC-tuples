@@ -197,7 +197,7 @@ paths.append(process.countGoodJets)
 # Save decisions of selected triggers. The list is aligned with menu [1] used in 25 ns MC and menus
 # deployed online
 # [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
-process.trigger = cms.EDFilter('SlimTriggerResults',
+process.pecTrigger = cms.EDFilter('SlimTriggerResults',
     triggers = cms.vstring(
         'Mu45_eta2p1', 'Mu50',
         'IsoMu17_eta2p1', 'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
@@ -209,47 +209,47 @@ process.trigger = cms.EDFilter('SlimTriggerResults',
     triggerPrescales = cms.InputTag('patTrigger'))
 
 # Save the event content
-process.eventID = cms.EDAnalyzer('PECEventID')
+process.pecEventID = cms.EDAnalyzer('PECEventID')
 
-process.electrons = cms.EDAnalyzer('PECElectrons',
+process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     src = cms.InputTag('analysisPatElectrons'),
     idMaps = cms.VInputTag(eleIDMaps),
     selection = eleQualityCuts)
 
-process.muons = cms.EDAnalyzer('PECMuons',
+process.pecMuons = cms.EDAnalyzer('PECMuons',
     src = cms.InputTag('analysisPatMuons'),
     selection = muQualityCuts,
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'))
 
-process.jetMET = cms.EDAnalyzer('PECJetMET',
+process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
     jetMinPt = cms.double(20.),
     jetMinRawPt = cms.double(10.),
     met = cms.InputTag('slimmedMETs'))
 
-process.pileUp = cms.EDAnalyzer('PECPileUp',
+process.pecPileUp = cms.EDAnalyzer('PECPileUp',
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
     rho = cms.InputTag('fixedGridRhoFastjetAll'),
     runOnData = cms.bool(runOnData),
     puInfo = cms.InputTag('addPileupInfo'))
 
-process.generator = cms.EDAnalyzer('PECGenerator',
+process.pecGenerator = cms.EDAnalyzer('PECGenerator',
     generator = cms.InputTag('generator'))
 
-paths.append(process.trigger, process.eventID, process.electrons, process.muons, \
- process.jetMET, process.pileUp)
+paths.append(process.pecTrigger, process.pecEventID, process.pecElectrons, process.pecMuons, \
+ process.pecJetMET, process.pecPileUp)
 
 if not runOnData:
-    paths.append(process.generator)
+    paths.append(process.pecGenerator)
 
 
 # Save information about the hard interaction
 if options.saveHardInteraction:
-    process.hardInteraction = cms.EDAnalyzer('HardInteractionInfo',
+    process.pecHardInteraction = cms.EDAnalyzer('HardInteractionInfo',
         genParticles = cms.InputTag('prunedGenParticles'),
         saveExtraParticles = cms.vuint32(6, 23, 24, 25))
-    paths.append(process.hardInteraction)
+    paths.append(process.pecHardInteraction)
 
 
 # Save information on heavy-flavour quarks
@@ -262,12 +262,12 @@ if options.saveHardInteraction:
 
 # Save information on generator-level jets
 if runOnData and options.saveGenJets:
-    process.genJets = cms.EDAnalyzer('PECGenJetMET',
+    process.pecGenJetMET = cms.EDAnalyzer('PECGenJetMET',
         jets = cms.InputTag('slimmedGenJets'),
         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
         saveFlavourCounters = cms.bool(True),
         met = cms.InputTag('slimmedMETs'))
-    paths.append(process.genJets)
+    paths.append(process.pecGenJetMET)
 
 
 # In case one of the channels is not requested for the processing, remove it
