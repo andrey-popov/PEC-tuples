@@ -194,22 +194,15 @@ paths.append(process.countGoodJets)
 
 
 # Modules to save the needed information to the ROOT file
-# Save the info on the specified triggers. The set of triggers is aligned with the menu used in
-# CMSSW_7_2_2_patch1
+# Save decisions of selected triggers. The list is aligned with menu [1] used in 25 ns MC and menus
+# deployed online
+# [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
 process.trigger = cms.EDFilter('SlimTriggerResults',
     triggers = cms.vstring(
-        'Mu40', 'IsoMu20_eta2p1_IterTrk02', 'IsoMu24_eta2p1_IterTrk02',
-        'Ele27_eta2p1_WP85_Gsf', 'Ele32_eta2p1_WP85_Gsf',
-        'IsoMu20_eta2p1_IterTrk02_TriCentralPFJet60_50_35',
-        'IsoMu20_eta2p1_IterTrk02_TriCentralPFJet40',
-        'IsoMu20_eta2p1_IterTrk02_CentralPFJet30_BTagCSV',
-        'IsoMu24_eta2p1_IterTrk02_TriCentralPFJet60_50_35',
-        'IsoMu24_eta2p1_IterTrk02_TriCentralPFJet40',
-        'IsoMu24_eta2p1_IterTrk02_CentralPFJet30_BTagCSV',
-        'Ele27_eta2p1_WP85_Gsf_TriCentralPFJet40', 'Ele27_eta2p1_WP85_Gsf_TriCentralPFJet60_50_35',
-        'Ele27_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV', 'Ele32_eta2p1_WP85_Gsf_TriCentralPFJet40',
-        'Ele32_eta2p1_WP85_Gsf_TriCentralPFJet60_50_35',
-        'Ele32_eta2p1_WP85_Gsf_CentralPFJet30_BTagCSV'),
+        'Mu45_eta2p1', 'Mu50',
+        'IsoMu17_eta2p1', 'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
+        'Ele22_eta2p1_WP75_Gsf', 'Ele27_eta2p1_WP75_Gsf',  # MC
+        'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf'),  # data
     filter = cms.bool(False),
     savePrescales = cms.bool(options.runOnData),
     triggerBits = cms.InputTag('TriggerResults', processName = 'HLT'),
