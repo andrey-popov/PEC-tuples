@@ -193,19 +193,29 @@ paths.append(process.countGoodJets)
 
 
 
-# Save decisions of selected triggers. The list is aligned with menu [1] used in 25 ns MC and menus
-# deployed online
+# Save decisions of selected triggers. The lists are aligned with menu [1] used in 25 ns MC and
+# menus deployed online
 # [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
-process.pecTrigger = cms.EDFilter('SlimTriggerResults',
-    triggers = cms.vstring(
-        'Mu45_eta2p1', 'Mu50',
-        'IsoMu17_eta2p1', 'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
-        'Ele22_eta2p1_WP75_Gsf', 'Ele27_eta2p1_WP75_Gsf',  # MC
-        'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf'),  # data
-    filter = cms.bool(False),
-    savePrescales = cms.bool(options.runOnData),
-    triggerBits = cms.InputTag('TriggerResults', processName = 'HLT'),
-    triggerPrescales = cms.InputTag('patTrigger'))
+if runOnData:
+    process.pecTrigger = cms.EDFilter('SlimTriggerResults',
+        triggers = cms.vstring(
+            'Mu45_eta2p1', 'Mu50',
+            'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
+            'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf'),
+        filter = cms.bool(False),
+        savePrescales = cms.bool(True),
+        triggerBits = cms.InputTag('TriggerResults', processName = 'HLT'),
+        triggerPrescales = cms.InputTag('patTrigger'))
+else:
+    process.pecTrigger = cms.EDFilter('SlimTriggerResults',
+        triggers = cms.vstring(
+            'Mu45_eta2p1', 'Mu50',
+            'IsoMu17_eta2p1', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
+            'Ele22_eta2p1_WP75_Gsf', 'Ele27_eta2p1_WP75_Gsf'),
+        filter = cms.bool(False),
+        savePrescales = cms.bool(False),
+        triggerBits = cms.InputTag('TriggerResults', processName = 'HLT'),
+        triggerPrescales = cms.InputTag('patTrigger'))
 
 paths.append(process.pecTrigger)
 
@@ -263,7 +273,7 @@ if options.saveHardInteraction:
 #     paths.append(process.heavyFlavours)
 
 
-# Save information on generator-level jets
+# Save information on generator-level jets and MET
 if runOnData and options.saveGenJets:
     process.pecGenJetMET = cms.EDAnalyzer('PECGenJetMET',
         jets = cms.InputTag('slimmedGenJets'),
