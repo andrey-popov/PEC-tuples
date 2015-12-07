@@ -1,24 +1,19 @@
-#include "PlainEventContent.h"
+#include "PECJetMET.h"
 
 #include <FWCore/Framework/interface/EventSetup.h>
 #include <FWCore/Framework/interface/ESHandle.h>
-#include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
-#include <TLorentzVector.h>
+#include <TMath.h>
 #include <Math/GenVector/VectorUtil.h>
-
-#include <memory>
-#include <cmath>
-#include <sstream>
 
 
 using namespace edm;
 using namespace std;
 
 
-PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
+PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
     saveCorrectedJetMomenta(cfg.getParameter<bool>("saveCorrectedJetMomenta")),
@@ -28,26 +23,18 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
     
-    primaryVerticesToken =
-     consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
     
-    
-    // Construct string-based selectors for all objects
+    // Construct string-based selectors
     for (string const &selection: cfg.getParameter<vector<string>>("jetSelection"))
         jetSelectors.emplace_back(selection);
 }
 
 
-void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
-    // Documentation for descriptions of the configuration is available in [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
-    
     edm::ParameterSetDescription desc;
     desc.add<bool>("runOnData")->
      setComment("Indicates whether data or simulation is being processed.");
-    desc.add<InputTag>("primaryVertices")->
-     setComment("Collection of reconstructed primary vertices.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
@@ -60,17 +47,15 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
      setComment("Indicates whether correctd or raw jet four-momenta should be stored.");
     desc.add<InputTag>("met")->setComment("MET.");
     
-    descriptions.add("eventContent", desc);
+    descriptions.add("jetMET", desc);
 }
 
 
-void PlainEventContent::beginJob()
+void PECJetMET::beginJob()
 {
-    // Create the output tree
-    outTree = fileService->make<TTree>("EventContent", "Minimalistic description of events");
+    outTree = fileService->make<TTree>("JetMET", "Properties of reconstructed jets and MET");
     
     
-    // Branches with reconstucted objects
     storeJetsPointer = &storeJets;
     outTree->Branch("jets", &storeJetsPointer);
     
@@ -79,28 +64,14 @@ void PlainEventContent::beginJob()
 }
 
 
-void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &setup)
+void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
-    // Read the primary vertices
-    Handle<reco::VertexCollection> vertices;
-    event.getByToken(primaryVerticesToken, vertices);
-    
-    if (vertices->size() == 0)
-    {
-        edm::Exception excp(edm::errors::LogicError);
-        excp << "Event contains zero good primary vertices.\n";
-        excp.raise();
-    }
-    
-    
-    
-    // Fill the tree with basic information
-    // Read the jets collections
+    // Read the jet collection
     Handle<View<pat::Jet>> srcJets;
     event.getByToken(jetToken, srcJets);
     
     
-    // Loop through the jet collection and fill the relevant variables
+    // Loop through the collection and store relevant properties of jets
     storeJets.clear();
     pec::Jet storeJet;  // will reuse this object to fill the vector
     
@@ -134,7 +105,7 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
             storeJet.SetBTagCSV(j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
             
             // Mass of the secondary vertex is available as userFloat [1]
-            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD?rev=32#Jets
+            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015?rev=92#Jets
             storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
             
             
@@ -247,4 +218,4 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
 }
 
 
-DEFINE_FWK_MODULE(PlainEventContent);
+DEFINE_FWK_MODULE(PECJetMET);

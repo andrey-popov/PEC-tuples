@@ -228,16 +228,12 @@ process.muons = cms.EDAnalyzer('PECMuons',
     selection = muQualityCuts,
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'))
 
-process.eventContent = cms.EDAnalyzer('PlainEventContent',
+process.jetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
     jetMinPt = cms.double(20.),
     jetMinRawPt = cms.double(10.),
-    met = cms.InputTag('slimmedMETs'),
-    primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'))
-    #^ There are several various versions of rho stored in an event. Apparently, this is the one
-    # used for JEC [1]
-    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/jes/497.html?inline=-1
+    met = cms.InputTag('slimmedMETs'))
 
 process.pileUp = cms.EDAnalyzer('PECPileUp',
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -249,7 +245,7 @@ process.generator = cms.EDAnalyzer('PECGenerator',
     generator = cms.InputTag('generator'))
 
 paths.append(process.trigger, process.eventID, process.electrons, process.muons, \
- process.eventContent, process.pileUp)
+ process.jetMET, process.pileUp)
 
 if not runOnData:
     paths.append(process.generator)
