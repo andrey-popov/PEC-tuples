@@ -234,7 +234,6 @@ process.eventContent = cms.EDAnalyzer('PlainEventContent',
     jetMinPt = cms.double(20.),
     jetMinRawPt = cms.double(10.),
     met = cms.InputTag('slimmedMETs'),
-    generator = cms.InputTag('generator'),
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'))
     #^ There are several various versions of rho stored in an event. Apparently, this is the one
     # used for JEC [1]
@@ -246,8 +245,14 @@ process.pileUp = cms.EDAnalyzer('PECPileUp',
     runOnData = cms.bool(runOnData),
     puInfo = cms.InputTag('addPileupInfo'))
 
+process.generator = cms.EDAnalyzer('PECGenerator',
+    generator = cms.InputTag('generator'))
+
 paths.append(process.trigger, process.eventID, process.electrons, process.muons, \
  process.eventContent, process.pileUp)
+
+if not runOnData:
+    paths.append(process.generator)
 
 
 # Save information about the hard interaction

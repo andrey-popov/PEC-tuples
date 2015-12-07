@@ -28,7 +28,6 @@ PlainEventContent::PlainEventContent(edm::ParameterSet const &cfg):
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
     
-    generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     primaryVerticesToken =
      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
     
@@ -60,9 +59,6 @@ void PlainEventContent::fillDescriptions(edm::ConfigurationDescriptions &descrip
     desc.add<bool>("saveCorrectedJetMomenta", false)->
      setComment("Indicates whether correctd or raw jet four-momenta should be stored.");
     desc.add<InputTag>("met")->setComment("MET.");
-    desc.add<InputTag>("generator", InputTag("generator"))->
-     setComment("Tag to access information about generator. If runOnData is true, this parameter "
-     "is ignored.");
     
     descriptions.add("eventContent", desc);
 }
@@ -80,14 +76,6 @@ void PlainEventContent::beginJob()
     
     storeMETsPointer = &storeMETs;
     outTree->Branch("METs", &storeMETsPointer);
-    
-    
-    // A branch with most basic generator-level information
-    if (not runOnData)
-    {
-        generatorInfoPointer = &generatorInfo;
-        outTree->Branch("genInfo", &generatorInfoPointer);
-    }
 }
 
 
@@ -251,33 +239,6 @@ void PlainEventContent::analyze(edm::Event const &event, edm::EventSetup const &
         storeMET.SetPt(met.genMET()->pt());
         storeMET.SetPhi(met.genMET()->phi());
         storeMETs.emplace_back(storeMET);
-    }
-    
-    
-    // Save the generator information (however the jet and MET generator info is already saved)
-    // Save the PDF and other generator information
-    if (not runOnData)
-    {
-        Handle<GenEventInfoProduct> generator;
-        event.getByToken(generatorToken, generator);
-        
-        generatorInfo.Reset();
-        //^ Same object is used for all events, hence need to reset it
-        
-        generatorInfo.SetProcessId(generator->signalProcessID());
-        
-        for (double const &weight: generator->weights())
-            generatorInfo.AddWeight(weight);
-        
-        
-        GenEventInfoProduct::PDF const *pdf = generator->pdf();
-        
-        if (pdf)
-        {
-            generatorInfo.SetPdfXs(pdf->x.first, pdf->x.second);
-            generatorInfo.SetPdfIds(pdf->id.first, pdf->id.second);
-            generatorInfo.SetPdfQScale(pdf->scalePDF);
-        }
     }
     
     

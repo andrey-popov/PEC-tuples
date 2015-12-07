@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Analysis/PECTuples/interface/Jet.h>
-#include <Analysis/PECTuples/interface/GeneratorInfo.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -12,7 +11,6 @@
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <DataFormats/VertexReco/interface/Vertex.h>
-#include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
@@ -96,13 +94,6 @@ private:
      */
     bool const runOnData;
     
-    /**
-     * \brief Generator information
-     * 
-     * Ignored in data.
-     */
-    edm::EDGetTokenT<GenEventInfoProduct> generatorToken;
-    
     /// Collection of reconstructed primary vertices
     edm::EDGetTokenT<reco::VertexCollection> primaryVerticesToken;
     
@@ -152,15 +143,4 @@ private:
      * ROOT needs a variable with a pointer to an object to store the object in a tree.
      */
     std::vector<pec::Candidate> *storeMETsPointer;
-    
-    
-    /// Basic generator information to be stored in the output file
-    pec::GeneratorInfo generatorInfo;
-    
-    /**
-     * \brief An auxiliary pointer
-     * 
-     * ROOT needs a variable with a pointer to an object to store the object in a tree.
-     */
-    pec::GeneratorInfo *generatorInfoPointer;
 };
