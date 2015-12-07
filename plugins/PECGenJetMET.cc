@@ -1,4 +1,4 @@
-#include "GenJetsInfo.h"
+#include "PECGenJetMET.h"
 
 #include <DataFormats/Candidate/interface/Candidate.h>
 #include <DataFormats/HepMCCandidate/interface/GenParticle.h>
@@ -14,20 +14,26 @@ using namespace std;
 using namespace edm;
 
 
-GenJetsInfo::GenJetsInfo(edm::ParameterSet const &cfg):
+PECGenJetMET::PECGenJetMET(edm::ParameterSet const &cfg):
     jetSelector(cfg.getParameter<string>("cut")),
     saveFlavourCounters(cfg.getParameter<bool>("saveFlavourCounters")),
     noDoubleCounting(cfg.getParameter<bool>("noDoubleCounting"))
 {
+    // Register required input data
     jetToken = consumes<View<reco::GenJet>>(cfg.getParameter<InputTag>("jets"));
+    
+    if (cfg.exists("met"))
+    {
+        metGiven = true;
+        metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
+    }
+    else
+        metGiven = false;
 }
 
 
-void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
+void PECGenJetMET::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
-    // Documentation for descriptions of the configuration is available in [1]
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideConfigurationValidationAndHelp
-    
     edm::ParameterSetDescription desc;
     desc.add<InputTag>("jets", InputTag("slimmedGenJets"))->
      setComment("Collection of generator-level jets.");
@@ -37,22 +43,30 @@ void GenJetsInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
      setComment("Indicates if information on flavours of nearby partons should be stored.");
     desc.add<bool>("noDoubleCounting", true)->
      setComment("Indicates if same heavy-flavour hadron can be counted in several jets.");
+    desc.addOptional<InputTag>("met")->setComment("MET.");
     
-    descriptions.add("genJets", desc);
+    descriptions.add("genJetMET", desc);
 }
 
 
-void GenJetsInfo::beginJob()
+void PECGenJetMET::beginJob()
 {
-    // Create the output tree
-    tree = fs->make<TTree>("GenJets", "Properties of generator-level jets");
+    tree = fs->make<TTree>("GenJetMET", "Properties of generator-level jets and generator-level "
+     "MET");
+    
     
     storeJetsPointer = &storeJets;
     tree->Branch("jets", &storeJetsPointer);
+    
+    if (metGiven)
+    {
+        storeMETsPointer = &storeMETs;
+        tree->Branch("METs", &storeMETsPointer);
+    }
 }
 
 
-void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
+void PECGenJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
     // Read the collection of generator-level jets
     Handle<View<reco::GenJet>> jets;
@@ -176,8 +190,27 @@ void GenJetsInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
     }
     
     
+    // Read MET
+    if (metGiven)
+    {
+        Handle<View<pat::MET>> metHandle;
+        event.getByToken(metToken, metHandle);
+        pat::MET const &met = metHandle->front();
+        
+        
+        storeMETs.clear();
+        
+        pec::Candidate storeMET;
+        storeMET.SetPt(met.genMET()->pt());
+        storeMET.SetPhi(met.genMET()->phi());
+        
+        storeMETs.emplace_back(storeMET);
+    }
+    
+    
+    // Fill the output tree
     tree->Fill();
 }
 
 
-DEFINE_FWK_MODULE(GenJetsInfo);
+DEFINE_FWK_MODULE(PECGenJetMET);

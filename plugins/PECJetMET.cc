@@ -203,16 +203,6 @@ void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
     }
     
     
-    // Save GEN-level MET
-    if (not runOnData)
-    {
-        storeMET.Reset();
-        storeMET.SetPt(met.genMET()->pt());
-        storeMET.SetPhi(met.genMET()->phi());
-        storeMETs.emplace_back(storeMET);
-    }
-    
-    
     // Fill the output tree
     outTree->Fill();
 }

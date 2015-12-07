@@ -117,10 +117,10 @@ private:
     /**
      * \brief Buffer to store MET
      * 
-     * Includes all METs whose input tags are provided to the plugin in the didecated parameter.
-     * Usually, these are METs with different corrections and/or systematical variations. MET is
-     * stored as an instance of pec::Candidate, but pseudorapidity and mass are set to zeros, which
-     * allows them to be compressed efficiently.
+     * Includes the nominal given MET as well as various its corrections and/or systematical
+     * variations. Cosult the source code to find the corresponding indices. MET is  stored as an
+     * instance of pec::Candidate, but pseudorapidity and mass are set to zeros, which allows them
+     * to be compressed efficiently.
      */
     std::vector<pec::Candidate> storeMETs;
     
