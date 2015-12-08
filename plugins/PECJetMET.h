@@ -73,9 +73,6 @@ private:
     /// Minimal raw transverse momentum to determine which jets are stored
     double const jetMinRawPt;
     
-    /// A flag that indicates if corrected or raw momenta should be stored for jets
-    bool const saveCorrectedJetMomenta;
-    
     /**
      * \brief String-based selections
      * 
@@ -94,6 +91,13 @@ private:
      * Determines if the plugin should read generator-level information for jets, such as flavour.
      */
     bool const runOnData;
+    
+    /**
+     * \brief Requests saving raw jet momenta only
+     * 
+     * JEC/JER factors and their uncertainties will not be saved.
+     */
+    bool const rawJetMomentaOnly;
     
     
     /// An object to handle the output ROOT file

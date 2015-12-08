@@ -19,8 +19,8 @@ using namespace std;
 PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
-    saveCorrectedJetMomenta(cfg.getParameter<bool>("saveCorrectedJetMomenta")),
-    runOnData(cfg.getParameter<bool>("runOnData"))
+    runOnData(cfg.getParameter<bool>("runOnData")),
+    rawJetMomentaOnly(cfg.getParameter<bool>("rawJetMomentaOnly"))
 {
     // Register required input data
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
@@ -46,8 +46,8 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
      setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
     desc.add<double>("jetMinRawPt", 10.)->
      setComment("Jets with raw pt above this threshold will be stored in the output tree.");
-    desc.add<bool>("saveCorrectedJetMomenta", false)->
-     setComment("Indicates whether correctd or raw jet four-momenta should be stored.");
+    desc.add<bool>("rawJetMomentaOnly", false)->
+     setComment("Requests that only raw jet momenta are saved but not their corrections.");
     desc.add<InputTag>("met")->setComment("MET.");
     
     descriptions.add("jetMET", desc);
@@ -120,9 +120,14 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             storeJet.SetPhi(rawP4.phi());
             storeJet.SetM(rawP4.mass());
             
-            storeJet.SetJECFactor(1. / j.jecFactor("Uncorrected"));
-            //^ Raw momentum is stored, and it will need to be corrected back to the current level
-            storeJet.SetJECUncertainty(curJECUnc);
+            if (not rawJetMomentaOnly)
+            {
+                storeJet.SetJECFactor(1. / j.jecFactor("Uncorrected"));
+                //^ Raw momentum is stored, and it will need to be corrected back to current level
+                
+                if (not runOnData)
+                    storeJet.SetJECUncertainty(curJECUnc);
+            }
             
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());
