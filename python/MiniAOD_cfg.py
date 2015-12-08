@@ -103,11 +103,13 @@ print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThr
 process.source = cms.Source('PoolSource')
 
 if runOnData:
-    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
-    process.source.fileNames = filesRelValSingleMuMINIAOD
+    # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
+    # process.source.fileNames = filesRelValSingleMuMINIAOD
+    process.source.fileNames = cms.untracked.vstring('/store/data/Run2015D/SingleMuon/MINIAOD/PromptReco-v4/000/258/159/00000/6CA1C627-246C-E511-8A6A-02163E014147.root')
 else:
-    from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
-    process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+    # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
+    # process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+    process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/00087FEB-236E-E511-9ACB-003048FF86CA.root')
 # process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
 if len(options.sourceFile) > 0:
