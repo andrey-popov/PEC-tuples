@@ -167,7 +167,7 @@ muQualityCuts = DefineMuons(process, paths)
 
 
 # Define the jets
-DefineJets(process, paths)
+DefineJets(process, paths, reapplyJEC = True, runOnData = runOnData)
 
 
 # The loose event selection

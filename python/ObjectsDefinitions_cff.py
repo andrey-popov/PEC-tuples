@@ -104,13 +104,33 @@ def DefineMuons(process, paths):
     return muQualityCuts
 
 
-def DefineJets(process, paths):
-    """ Applies quality selection to jets. The user is expected to operate with the following
-        collections:
+def DefineJets(process, paths, reapplyJEC = False, runOnData = False):
+    """ Reapplies JEC and applies quality selection to jets. User is expected to exploit the
+        following collections:
         
-        1. analysisPatJets: jets subjected to recommended quality selection; to be used in the
-        analysis.
+        analysisPatJets: Corrected jets subjected to the recommended filtering on quality.
     """
+    
+    # Reapply JEC if requested. The corrections are read from the current global tag
+    if reapplyJEC:
+        # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
+        # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
+        process.load('PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff')
+        
+        process.patJetCorrFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
+            src = cms.InputTag('slimmedJets'),
+            levels = ['L1FastJet', 'L2Relative', 'L3Absolute'],
+            payload = 'AK4PFchs')
+        
+        if runOnData:
+            process.patJetCorrFactorsReapplyJEC.levels.append('L2L3Residual')
+        
+        process.recorrectedSlimmedJets = process.patJetsUpdated.clone(
+            jetSource = cms.InputTag('slimmedJets'),
+            jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsReapplyJEC')))
+        
+        paths.append(process.patJetCorrFactorsReapplyJEC, process.recorrectedSlimmedJets)
+    
     
     # Set jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
     # HF-hadron energy is defined below differently from the formula in [2]. However, the formula
@@ -126,7 +146,8 @@ def DefineJets(process, paths):
     
     # Select jets that pass the above ID and some kinematical cuts
     process.analysisPatJets = cms.EDFilter('PATJetSelector',
-        src = cms.InputTag('slimmedJets'),
+        src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
+         cms.InputTag('slimmedJets')),
         cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetQualityCut))
     
     
