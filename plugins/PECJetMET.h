@@ -11,6 +11,7 @@
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
+#include <CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -19,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 
 /**
@@ -46,6 +48,9 @@ public:
     
     /// Creates output tree
     virtual void beginJob() override;
+    
+    /// Creates an object to access JEC uncertainty
+    virtual void beginRun(edm::Run const &, edm::EventSetup const &setup) override;
     
     /**
      * \brief Analyses current event
@@ -93,6 +98,10 @@ private:
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
+    
+    
+    /// An object to access JEC uncertainty
+    std::unique_ptr<JetCorrectionUncertainty> jecUncProvider;
     
     
     /// Output tree

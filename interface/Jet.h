@@ -31,6 +31,12 @@ namespace pec
         /// Resets the object to a state right after the default initialisation
         virtual void Reset();
         
+        /// Sets full jet energy correction factor
+        void SetJECFactor(double jecFactor);
+        
+        /// Sets relative uncertainty of the full jet energy correction factor
+        void SetJECUncertainty(double jecUncertainty);
+        
         /// Sets the value of the CSV b-tagging discriminator
         void SetBTagCSV(double bTag);
         
@@ -62,6 +68,24 @@ namespace pec
          * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
          */
         void SetFlavour(int flavour);
+        
+        /**
+         * \brief Returns full jet energy correction factor
+         * 
+         * The raw momentum should be rescaled using this factor in order to apply full JEC. The
+         * returned value might be zero if only raw momentum is saved and the correction must be
+         * applied by the user.
+         */
+        double JECFactor() const;
+        
+        /**
+         * \brief Returns relative uncertainty of the jet energy correction factor
+         * 
+         * Jet four-momentum corresponding to the up/down variation in the JEC systematics can be
+         * obtained as P4() * JECFactor() * (1 +/- JECUncertainty()). If only raw momentum has been
+         * stored and the correction is to be applied by the user, the method returns zero.
+         */
+        double JECUncertainty() const;
         
         /// Returns the value of the CSV b-tagging discriminator
         double BTagCSV() const;
@@ -105,6 +129,20 @@ namespace pec
         int Flavour() const;
         
     private:
+        /**
+         * \brief Full jet energy correction factor
+         * 
+         * Set to zero if only raw momentum is stored.
+         */
+        Float_t jecFactor;
+        
+        /**
+         * \brief Relative uncertainty of the full jet energy correction factor
+         * 
+         * Set to zero if only raw momentum is stored.
+         */
+        Float_t jecUncertainty;
+        
         /**
          * \brief Value of b-tagging discriminator
          * 

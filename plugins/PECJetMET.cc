@@ -1,5 +1,8 @@
 #include "PECJetMET.h"
 
+#include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
+#include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
+
 #include <FWCore/Framework/interface/EventSetup.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Utilities/interface/InputTag.h>
@@ -64,7 +67,19 @@ void PECJetMET::beginJob()
 }
 
 
-void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
+void PECJetMET::beginRun(Run const &, EventSetup const &setup)
+{
+    // Construct the object to obtain JEC uncertainty [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
+    ESHandle<JetCorrectorParametersCollection> jecParametersCollection;
+    setup.get<JetCorrectionsRecord>().get("AK4PFchs", jecParametersCollection); 
+    
+    JetCorrectorParameters const &jecParameters = (*jecParametersCollection)["Uncertainty"];
+    jecUncProvider.reset(new JetCorrectionUncertainty(jecParameters));
+}
+
+
+void PECJetMET::analyze(Event const &event, EventSetup const &setup)
 {
     // Read the jet collection
     Handle<View<pat::Jet>> srcJets;
@@ -78,27 +93,36 @@ void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
     for (unsigned int i = 0; i < srcJets->size(); ++i)
     {
         pat::Jet const &j = srcJets->at(i);
-        reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         storeJet.Reset();
+        
+        
+        // Calculate JEC uncertainty for the current jet. In future this piece of code will be
+        //elaborated to apply the selection on jet pt by taking jet systematics into consideration
+        double curJECUnc = 0.;
+        
+        if (not runOnData)
+        {
+            // Find JEC uncertainty for the current jet [1]
+            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
+            jecUncProvider->setJetEta(j.eta());
+            jecUncProvider->setJetPt(j.pt());
+            curJECUnc = jecUncProvider->getUncertainty(true);
+        }
+        
+        
+        // Perform filtering on transverse momentum and save properties of the current jet
+        reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         
         if (j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt)
         {
-            // Set four-momentum
-            if (saveCorrectedJetMomenta)
-            {
-                storeJet.SetPt(j.pt());
-                storeJet.SetEta(j.eta());
-                storeJet.SetPhi(j.phi());
-                storeJet.SetM(j.mass());
-            }
-            else
-            {
-                storeJet.SetPt(rawP4.pt());
-                storeJet.SetEta(rawP4.eta());
-                storeJet.SetPhi(rawP4.phi());
-                storeJet.SetM(rawP4.mass());
-            }
+            storeJet.SetPt(rawP4.pt());
+            storeJet.SetEta(rawP4.eta());
+            storeJet.SetPhi(rawP4.phi());
+            storeJet.SetM(rawP4.mass());
             
+            storeJet.SetJECFactor(1. / j.jecFactor("Uncorrected"));
+            //^ Raw momentum is stored, and it will need to be corrected back to the current level
+            storeJet.SetJECUncertainty(curJECUnc);
             
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());

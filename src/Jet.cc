@@ -8,6 +8,7 @@ using namespace pec;
 
 Jet::Jet():
     CandidateWithID(),
+    jecFactor(0), jecUncertainty(0),
     bTagCSV(0), secVertexMass(0),
     area(0),
     charge(0),
@@ -18,6 +19,7 @@ Jet::Jet():
 
 Jet::Jet(Jet const &src):
     CandidateWithID(src),
+    jecFactor(src.jecFactor), jecUncertainty(src.jecUncertainty),
     bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
     area(src.area),
     charge(src.charge),
@@ -30,6 +32,8 @@ Jet &Jet::operator=(Jet const &src)
 {
     CandidateWithID::operator=(src);
     
+    jecFactor = src.jecFactor;
+    jecUncertainty = src.jecUncertainty;
     bTagCSV = src.bTagCSV;
     secVertexMass = src.secVertexMass;
     area = src.area;
@@ -45,12 +49,26 @@ void Jet::Reset()
 {
     CandidateWithID::Reset();
     
+    jecFactor = 0;
+    jecUncertainty = 0;
     bTagCSV = 0;
     secVertexMass = 0;
     area = 0;
     charge = 0;
     pullAngle = 0;
     flavour = 0;
+}
+
+
+void Jet::SetJECFactor(double jecFactor_)
+{
+    jecFactor = jecFactor_;
+}
+
+
+void Jet::SetJECUncertainty(double jecUncertainty_)
+{
+    jecUncertainty = jecUncertainty_;
 }
 
 
@@ -92,6 +110,18 @@ void Jet::SetPullAngle(double angle)
 void Jet::SetFlavour(int flavour_)
 {
     flavour = flavour_;
+}
+
+
+double Jet::JECFactor() const
+{
+    return jecFactor;
+}
+
+
+double Jet::JECUncertainty() const
+{
+    return jecUncertainty;
 }
 
 
