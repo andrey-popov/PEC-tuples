@@ -240,7 +240,6 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     jets = cms.InputTag('analysisPatJets'),
     jecPayload = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
-    jetMinRawPt = cms.double(10.),
     met = cms.InputTag('slimmedMETs'))
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',

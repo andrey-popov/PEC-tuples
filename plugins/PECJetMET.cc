@@ -46,7 +46,7 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
      "tree.");
     desc.add<double>("jetMinPt", 20.)->
      setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
-    desc.add<double>("jetMinRawPt", 10.)->
+    desc.add<double>("jetMinRawPt", 999.)->
      setComment("Jets with raw pt above this threshold will be stored in the output tree.");
     desc.add<bool>("rawJetMomentaOnly", false)->
      setComment("Requests that only raw jet momenta are saved but not their corrections.");
@@ -98,9 +98,11 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
         storeJet.Reset();
         
         
-        // Calculate JEC uncertainty for the current jet. In future this piece of code will be
-        //elaborated to apply the selection on jet pt by taking jet systematics into consideration
-        double curJECUnc = 0.;
+        // Will check if the current jet satisfies the provided selection on transverse momentum.
+        //Jets just below the threshold might pass it as a result of a fluctuation in JEC.
+        //Check this possibility
+        double jetPtUpFluctuationFactor = 1.;
+        double curJECUncertainty = 0.;
         
         if (not runOnData)
         {
@@ -108,14 +110,18 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
             jecUncProvider->setJetEta(j.eta());
             jecUncProvider->setJetPt(j.pt());
-            curJECUnc = jecUncProvider->getUncertainty(true);
+            curJECUncertainty = jecUncProvider->getUncertainty(true);
+            
+            
+            // Update the factor for upwards fluctuation
+            jetPtUpFluctuationFactor = 1. + curJECUncertainty;
         }
         
         
         // Perform filtering on transverse momentum and save properties of the current jet
         reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         
-        if (j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt)
+        if (j.pt() * jetPtUpFluctuationFactor > jetMinPt or rawP4.pt() > jetMinRawPt)
         {
             storeJet.SetPt(rawP4.pt());
             storeJet.SetEta(rawP4.eta());
@@ -128,7 +134,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
                 //^ Raw momentum is stored, and it will need to be corrected back to current level
                 
                 if (not runOnData)
-                    storeJet.SetJECUncertainty(curJECUnc);
+                    storeJet.SetJECUncertainty(curJECUncertainty);
             }
             
             storeJet.SetArea(j.jetArea());
