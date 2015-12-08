@@ -76,7 +76,7 @@ muChan = (options.channels.find('m') != -1)
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=98
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = '74X_dataRun2_v5 '
+        options.globalTag = '74X_dataRun2_v5'
     else:
         options.globalTag = '74X_mcRun2_asymptotic_v4'
     
