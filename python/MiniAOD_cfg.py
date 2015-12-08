@@ -72,12 +72,7 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Set the global tag
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
-process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
-
-# Set the default global tag if user has not given any. They are set as recommended for JEC
+# Provide a default global tag if user has not given any. It is set as recommended for JEC
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=98
 if len(options.globalTag) == 0:
     if runOnData:
@@ -86,6 +81,11 @@ if len(options.globalTag) == 0:
         options.globalTag = '74X_mcRun2_asymptotic_v4'
     
     print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
+
+# Set the global tag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
+from Configuration.AlCa.GlobalTag import GlobalTag
+process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
 
 
 # Parse jet selection
