@@ -17,6 +17,7 @@ using namespace std;
 
 
 PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
+    jecPayloadLabel(cfg.getParameter<string>("jecPayload")),
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
     runOnData(cfg.getParameter<bool>("runOnData")),
@@ -39,6 +40,7 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
     desc.add<bool>("runOnData")->
      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
+    desc.add<string>("jecPayload")->setComment("Label of applied JEC payload.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "tree.");
@@ -72,7 +74,7 @@ void PECJetMET::beginRun(Run const &, EventSetup const &setup)
     // Construct the object to obtain JEC uncertainty [1]
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
     ESHandle<JetCorrectorParametersCollection> jecParametersCollection;
-    setup.get<JetCorrectionsRecord>().get("AK4PFchs", jecParametersCollection); 
+    setup.get<JetCorrectionsRecord>().get(jecPayloadLabel, jecParametersCollection); 
     
     JetCorrectorParameters const &jecParameters = (*jecParametersCollection)["Uncertainty"];
     jecUncProvider.reset(new JetCorrectionUncertainty(jecParameters));

@@ -67,6 +67,13 @@ private:
     /// MET
     edm::EDGetTokenT<edm::View<pat::MET>> metToken;
     
+    /**
+     * \brief Label of the applied JEC payload
+     * 
+     * Needed to access JEC uncertainties.
+     */
+    std::string const jecPayloadLabel;
+    
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;
     
