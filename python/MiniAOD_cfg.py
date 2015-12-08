@@ -83,8 +83,8 @@ if len(options.globalTag) == 0:
     print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
 
 # Set the global tag
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
-from Configuration.AlCa.GlobalTag import GlobalTag
+process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
 
 
