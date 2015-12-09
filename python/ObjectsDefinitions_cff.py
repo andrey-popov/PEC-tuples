@@ -7,7 +7,7 @@
 import FWCore.ParameterSet.Config as cms
 
 
-def DefineElectrons(process, paths):
+def DefineElectrons(process):
     """ This function adjusts electrons. The user is expected to use the following products only:
         
         1. analysisPatElectrons: loose non-isolated electrons to be saved in tuples.
@@ -25,8 +25,6 @@ def DefineElectrons(process, paths):
         src = cms.InputTag('slimmedElectrons'),
         cut = cms.string('pt > 20. & abs(eta) < 2.5'))
     
-    paths.append(process.analysisPatElectrons)
-    
     
     # Calculate IDs for analysis electrons. The code is adapted from [1]
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27#Recipe_for_regular_users_for_7_4
@@ -36,8 +34,6 @@ def DefineElectrons(process, paths):
     process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
     setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
      'cutBasedElectronID_Spring15_25ns_V1_cff', setupVIDElectronSelection)
-    
-    paths.append(process.egmGsfElectronIDs)
     
     
     # Define labels of electron IDs to be saved
@@ -58,15 +54,13 @@ def DefineElectrons(process, paths):
         src = cms.InputTag('analysisPatElectrons'),
         cut = cms.string('pt > 27. & abs(eta) < 2.1'))
     
-    paths.append(process.patElectronsForEventSelection)
-    
     
     # Return values
     return eleQualityCuts, eleIDMaps
 
 
 
-def DefineMuons(process, paths):
+def DefineMuons(process):
     """ This function adjusts muons. The following collections and variables are expected to be
         used by the user:
         
@@ -83,8 +77,6 @@ def DefineMuons(process, paths):
         src = cms.InputTag('slimmedMuons'),
         cut = cms.string('pt > 10. & abs(eta) < 2.5'))
     
-    paths.append(process.analysisPatMuons)
-    
     
     # Specify additional selection cuts to be evaluated. They have been migrated into the source
     # code of plugins, and the list is empty
@@ -97,14 +89,12 @@ def DefineMuons(process, paths):
         src = cms.InputTag('analysisPatMuons'),
         cut = cms.string('pt > 20. & abs(eta) < 2.1'))
     
-    paths.append(process.patMuonsForEventSelection)
-    
     
     # Return values
     return muQualityCuts
 
 
-def DefineJets(process, paths, reapplyJEC = False, runOnData = False):
+def DefineJets(process, reapplyJEC = False, runOnData = False):
     """ Reapplies JEC and applies quality selection to jets. User is expected to exploit the
         following collections:
         
@@ -128,8 +118,6 @@ def DefineJets(process, paths, reapplyJEC = False, runOnData = False):
         process.recorrectedSlimmedJets = process.patJetsUpdated.clone(
             jetSource = cms.InputTag('slimmedJets'),
             jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsReapplyJEC')))
-        
-        paths.append(process.patJetCorrFactorsReapplyJEC, process.recorrectedSlimmedJets)
     
     
     # Set jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
@@ -149,6 +137,3 @@ def DefineJets(process, paths, reapplyJEC = False, runOnData = False):
         src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
          cms.InputTag('slimmedJets')),
         cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetQualityCut))
-    
-    
-    paths.append(process.analysisPatJets)

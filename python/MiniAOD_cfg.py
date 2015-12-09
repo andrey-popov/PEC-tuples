@@ -31,7 +31,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 # Ask to print a summary in the log
 process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True))
+    wantSummary = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(True))
 
 
 # Parse command-line options
@@ -155,8 +156,8 @@ paths.append(process.goodOfflinePrimaryVertices)
 # Define the leptons
 from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
-eleQualityCuts, eleIDMaps = DefineElectrons(process, paths)
-muQualityCuts = DefineMuons(process, paths)
+eleQualityCuts, eleIDMaps = DefineElectrons(process)
+muQualityCuts = DefineMuons(process)
 
 
 # Include the event filters
@@ -167,7 +168,7 @@ muQualityCuts = DefineMuons(process, paths)
 
 
 # Define the jets
-DefineJets(process, paths, reapplyJEC = True, runOnData = runOnData)
+DefineJets(process, reapplyJEC = True, runOnData = runOnData)
 
 
 # The loose event selection
