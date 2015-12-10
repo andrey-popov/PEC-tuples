@@ -62,7 +62,18 @@ def DefineElectrons(process, paths):
     
     # Additional selections to be evaluated
     eleQualityCuts = cms.vstring(
-        '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)')
+        # EE-EB gap
+        '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)',
+        # Trigger-emulating preselection [1], referenced from [2]
+        # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1645/2/1/1.html
+        # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23#Recipes_for_7_4_12_Spring15_MVA
+        'pt > 15. & \
+         ((abs(superCluster.eta) < 1.4442 & full5x5_sigmaIetaIeta < 0.012 & hcalOverEcal < 0.9 & \
+          ecalPFClusterIso / pt < 0.37 & hcalPFClusterIso / pt < 0.25 & dr03TkSumPt / pt < 0.18 & \
+          abs(deltaEtaSuperClusterTrackAtVtx) < 0.0095 & \
+          abs(deltaPhiSuperClusterTrackAtVtx) < 0.065) | \
+         (abs(superCluster.eta) > 1.5660 & full5x5_sigmaIetaIeta < 0.033 & hcalOverEcal < 0.09 & \
+          ecalPFClusterIso / pt < 0.45 & hcalPFClusterIso / pt < 0.28 & dr03TkSumPt / pt < 0.18))')
     
     
     # Define electrons to be used for event selection at the Grid level. They are subjected to
