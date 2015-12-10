@@ -114,7 +114,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             
             
             // Update the factor for upwards fluctuation
-            jetPtUpFluctuationFactor = 1. + curJECUncertainty;
+            jetPtUpFluctuationFactor = 1. + fabs(curJECUncertainty);
         }
         
         
