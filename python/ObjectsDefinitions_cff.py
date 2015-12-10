@@ -137,3 +137,16 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
          cms.InputTag('slimmedJets')),
         cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetQualityCut))
+    
+    
+    # When running over simulation, produce jet collections with varied systematic uncertainties.
+    # They will be used to perform the loose event selection, taking the uncertainty into account
+    if not runOnData:
+        process.analysisPatJetsScaleUp = cms.EDProducer('ShiftedPATJetProducer',
+            src = cms.InputTag('analysisPatJets'),
+            jetCorrPayloadName = cms.string('AK4PFchs'),
+            jetCorrUncertaintyTag = cms.string('Uncertainty'),
+            addResidualJES = cms.bool(False),
+            shiftBy = cms.double(+1.))
+        
+        process.analysisPatJetsScaleDown = process.analysisPatJetsScaleUp.clone(shiftBy = -1.)

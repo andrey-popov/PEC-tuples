@@ -183,10 +183,9 @@ process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
     src = cms.VInputTag('analysisPatJets'),
     cut = cms.string('pt > ' + str(jetPtThreshold)),
     minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999))
-# if not runOnData:
-#     process.countGoodJets.src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
-#      'smearedPatJetsResUp', 'smearedPatJetsResUp',
-#      'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt')
+if not runOnData:
+    process.countGoodJets.src = cms.VInputTag('analysisPatJets',
+        'analysisPatJetsScaleUp', 'analysisPatJetsScaleDown')
 
 if elChan:
     process.elPath += process.countTightPatElectrons
