@@ -10,13 +10,15 @@ import FWCore.ParameterSet.Config as cms
 def DefineElectrons(process, paths):
     """ This function adjusts electrons. The user is expected to use the following products only:
         
-        1. analysisPatElectrons: loose non-isolated electrons to be saved in tuples.
+        analysisPatElectrons: Loose non-isolated electrons to be saved in tuples.
         
-        2. eleIDMaps: input tags to access maps of cut-based electron IDs.
+        eleIDMaps: Input tags to access maps of cut-based electron IDs.
         
-        3. eleQualityCuts: vector of quality cuts to be applied to the above collection.
+        eleMVAIDMap: Input tag to access MVA-based electron ID.
         
-        4. patElectronsForEventSelection: collection of electrons that pass basic kinematical cuts;
+        eleQualityCuts: Vector of quality cuts to be applied to the above collection.
+        
+        patElectronsForEventSelection: collection of electrons that pass basic kinematical cuts;
         to be used for the event selection.
     """
     
@@ -28,23 +30,34 @@ def DefineElectrons(process, paths):
     paths.append(process.analysisPatElectrons)
     
     
-    # Calculate IDs for analysis electrons. The code is adapted from [1]
+    # Calculate cut-based [1] and MVA ID [2] for analysis electrons
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27#Recipe_for_regular_users_for_7_4
+    # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import switchOnVIDElectronIdProducer, \
      setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
-    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
-    setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
-     'cutBasedElectronID_Spring15_25ns_V1_cff', setupVIDElectronSelection)
     
-    paths.append(process.egmGsfElectronIDs)
+    for idModule in ['cutBasedElectronID_Spring15_25ns_V1_cff', \
+     'mvaElectronID_Spring15_25ns_Trig_V1_cff']:
+        setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
+         idModule, setupVIDElectronSelection)
+    
+    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
+    process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
+    
+    paths.append(process.electronMVAValueMapProducer, process.egmGsfElectronIDs)
     
     
     # Define labels of electron IDs to be saved
-    eleIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-'
-    eleIDMaps = [
-        cms.InputTag(eleIDLabelPrefix + 'veto'), cms.InputTag(eleIDLabelPrefix + 'loose'),
-        cms.InputTag(eleIDLabelPrefix + 'medium'), cms.InputTag(eleIDLabelPrefix + 'tight')]
+    eleCutBasedIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-'
+    eleCutBasedIDMaps = [
+        cms.InputTag(eleCutBasedIDLabelPrefix + 'veto'),
+        cms.InputTag(eleCutBasedIDLabelPrefix + 'loose'),
+        cms.InputTag(eleCutBasedIDLabelPrefix + 'medium'),
+        cms.InputTag(eleCutBasedIDLabelPrefix + 'tight')]
+    
+    eleMVAIDMap = \
+     'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values'
     
     
     # Additional selections to be evaluated
@@ -62,7 +75,7 @@ def DefineElectrons(process, paths):
     
     
     # Return values
-    return eleQualityCuts, eleIDMaps
+    return eleQualityCuts, eleCutBasedIDMaps, eleMVAIDMap
 
 
 

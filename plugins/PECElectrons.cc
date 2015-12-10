@@ -16,6 +16,11 @@ PECElectrons::PECElectrons(ParameterSet const &cfg)
     for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("idMaps"))
         eleIDMapTokens.emplace_back(consumes<ValueMap<bool>>(tag));
     
+    InputTag mvaIDMapTag(cfg.getParameter<InputTag>("mvaIDMap"));
+    
+    if (mvaIDMapTag.label() != "")
+        eleMVAIDMapToken = consumes<ValueMap<float>>(mvaIDMapTag);
+    
     
     // Construct string-based selectors
     for (string const &selection: cfg.getParameter<vector<string>>("selection"))
@@ -29,6 +34,8 @@ void PECElectrons::fillDescriptions(ConfigurationDescriptions &descriptions)
     desc.add<InputTag>("src")->setComment("Source collection of electrons.");
     desc.add<vector<InputTag>>("idMaps", vector<InputTag>(0))->
      setComment("Maps with electron ID decisions.");
+    desc.add<InputTag>("mvaIDMap", InputTag(""))->
+     setComment("Map with real-valued response of an MVA ID discriminator.");
     desc.add<vector<string>>("selection", vector<string>(0))->
      setComment("User-defined selections for electrons whose results will be stored in the output "
      "tree.");
@@ -51,11 +58,15 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
     // Read the electron collection and ID maps
     Handle<View<pat::Electron>> srcElectrons;
     vector<Handle<ValueMap<bool>>> eleIDMaps(eleIDMapTokens.size());
+    Handle<ValueMap<float>> eleMVAIDMap;
     
     event.getByToken(electronToken, srcElectrons);
     
     for (unsigned i = 0; i < eleIDMapTokens.size(); ++i)
         event.getByToken(eleIDMapTokens.at(i), eleIDMaps.at(i));
+    
+    if (not eleMVAIDMapToken.isUninitialized())
+        event.getByToken(eleMVAIDMapToken, eleMVAIDMap);
     
     
     // Loop through the collection and store relevant properties of electrons
@@ -88,6 +99,9 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         
         for (unsigned i = 0; i < eleIDMaps.size(); ++i)
             storeElectron.SetCutBasedIdBit(i, (*eleIDMaps.at(i))[elPtr]);
+        
+        if (not eleMVAIDMapToken.isUninitialized())
+            storeElectron.SetMvaId((*eleMVAIDMap)[elPtr]);
         
         
         // Conversion rejection [1]. True for a "good" electron
