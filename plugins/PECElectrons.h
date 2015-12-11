@@ -57,10 +57,10 @@ private:
     edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
     
     /// Maps with results of cut-based electron IDs
-    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> eleIDMapTokens;
+    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> boolIDMapTokens;
     
-    /// Map with MVA electron ID
-    edm::EDGetTokenT<edm::ValueMap<float>> eleMVAIDMapToken;
+    /// Maps with MVA electron ID
+    std::vector<edm::EDGetTokenT<edm::ValueMap<float>>> contIDMapTokens;
     
     /**
      * \brief String-based selections

@@ -227,8 +227,8 @@ process.pecEventID = cms.EDAnalyzer('PECEventID')
 
 process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     src = cms.InputTag('analysisPatElectrons'),
-    idMaps = cms.VInputTag(eleCutBasedIDMaps),
-    mvaIDMap = cms.InputTag(eleMVAIDMap),
+    boolIDMaps = cms.VInputTag(eleCutBasedIDMaps),
+    contIDMaps = cms.VInputTag(eleMVAIDMap),
     selection = eleQualityCuts)
 
 process.pecMuons = cms.EDAnalyzer('PECMuons',

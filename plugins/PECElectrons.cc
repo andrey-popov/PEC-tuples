@@ -13,13 +13,11 @@ PECElectrons::PECElectrons(ParameterSet const &cfg)
     // Register required input data
     electronToken = consumes<View<pat::Electron>>(cfg.getParameter<InputTag>("src"));
     
-    for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("idMaps"))
-        eleIDMapTokens.emplace_back(consumes<ValueMap<bool>>(tag));
+    for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("boolIDMaps"))
+        boolIDMapTokens.emplace_back(consumes<ValueMap<bool>>(tag));
     
-    InputTag mvaIDMapTag(cfg.getParameter<InputTag>("mvaIDMap"));
-    
-    if (mvaIDMapTag.label() != "")
-        eleMVAIDMapToken = consumes<ValueMap<float>>(mvaIDMapTag);
+    for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("contIDMaps"))
+        contIDMapTokens.emplace_back(consumes<ValueMap<float>>(tag));
     
     
     // Construct string-based selectors
@@ -32,10 +30,10 @@ void PECElectrons::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
     ParameterSetDescription desc;
     desc.add<InputTag>("src")->setComment("Source collection of electrons.");
-    desc.add<vector<InputTag>>("idMaps", vector<InputTag>(0))->
-     setComment("Maps with electron ID decisions.");
-    desc.add<InputTag>("mvaIDMap", InputTag(""))->
-     setComment("Map with real-valued response of an MVA ID discriminator.");
+    desc.add<vector<InputTag>>("boolIDMaps", vector<InputTag>(0))->
+     setComment("Maps with boolean electron ID decisions.");
+    desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>(0))->
+     setComment("Maps with real-valued electron ID decisions.");
     desc.add<vector<string>>("selection", vector<string>(0))->
      setComment("User-defined selections for electrons whose results will be stored in the output "
      "tree.");
@@ -57,16 +55,16 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
 {
     // Read the electron collection and ID maps
     Handle<View<pat::Electron>> srcElectrons;
-    vector<Handle<ValueMap<bool>>> eleIDMaps(eleIDMapTokens.size());
-    Handle<ValueMap<float>> eleMVAIDMap;
+    vector<Handle<ValueMap<bool>>> boolIDMaps(boolIDMapTokens.size());
+    vector<Handle<ValueMap<float>>> contIDMaps(contIDMapTokens.size());
     
     event.getByToken(electronToken, srcElectrons);
     
-    for (unsigned i = 0; i < eleIDMapTokens.size(); ++i)
-        event.getByToken(eleIDMapTokens.at(i), eleIDMaps.at(i));
+    for (unsigned i = 0; i < boolIDMapTokens.size(); ++i)
+        event.getByToken(boolIDMapTokens.at(i), boolIDMaps.at(i));
     
-    if (not eleMVAIDMapToken.isUninitialized())
-        event.getByToken(eleMVAIDMapToken, eleMVAIDMap);
+    for (unsigned i = 0; i < contIDMapTokens.size(); ++i)
+        event.getByToken(contIDMapTokens.at(i), contIDMaps.at(i));
     
     
     // Loop through the collection and store relevant properties of electrons
@@ -97,11 +95,11 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         // Copy electron IDs from the maps
         Ptr<pat::Electron> const elPtr(srcElectrons, i);
         
-        for (unsigned i = 0; i < eleIDMaps.size(); ++i)
-            storeElectron.SetCutBasedIdBit(i, (*eleIDMaps.at(i))[elPtr]);
+        for (unsigned i = 0; i < boolIDMaps.size(); ++i)
+            storeElectron.SetBooleanID(i, (*boolIDMaps.at(i))[elPtr]);
         
-        if (not eleMVAIDMapToken.isUninitialized())
-            storeElectron.SetMvaId((*eleMVAIDMap)[elPtr]);
+        for (unsigned i = 0; i < contIDMaps.size(); ++i)
+            storeElectron.SetContinuousID(i, (*contIDMaps.at(i))[elPtr]);
         
         
         // Conversion rejection [1]. True for a "good" electron

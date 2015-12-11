@@ -1,21 +1,31 @@
 #include <Analysis/PECTuples/interface/Electron.h>
 
+#include <algorithm>
+#include <iterator>
 #include <stdexcept>
+#include <type_traits>
 
 
 using namespace pec;
 
 
+unsigned const Electron::contIdSize;
+
+
 Electron::Electron():
     Lepton(),
-    cutBasedId(0), mvaId(0)
-{}
+    cutBasedId(0)
+{
+    std::fill(std::begin(mvaId), std::end(mvaId), 0);
+}
 
 
 Electron::Electron(Electron const &src):
     Lepton(src),
-    cutBasedId(src.cutBasedId), mvaId(src.mvaId)
-{}
+    cutBasedId(src.cutBasedId)
+{
+    std::copy(std::begin(src.mvaId), std::end(src.mvaId), std::begin(mvaId));
+}
 
 
 Electron &Electron::operator=(Electron const &src)
@@ -23,7 +33,7 @@ Electron &Electron::operator=(Electron const &src)
     Lepton::operator=(src);
     
     cutBasedId = src.cutBasedId;
-    mvaId = src.mvaId;
+    std::copy(std::begin(src.mvaId), std::end(src.mvaId), std::begin(mvaId));
     
     return *this;
 }
@@ -34,14 +44,14 @@ void Electron::Reset()
     Lepton::Reset();
     
     cutBasedId = 0;
-    mvaId = 0;
+    std::fill(std::begin(mvaId), std::end(mvaId), 0);
 }
 
 
-void Electron::SetCutBasedIdBit(unsigned bitIndex, bool value /*= true*/)
+void Electron::SetBooleanID(unsigned bitIndex, bool value /*= true*/)
 {
     if (bitIndex >= 8)
-        throw std::runtime_error("Electron::SetCutBasedIdBit: Given index exceeds the maximal "
+        throw std::runtime_error("pec::Electron::SetBooleanID: Given index exceeds the maximal "
          "allowed value.");
     
     if (value)
@@ -51,23 +61,31 @@ void Electron::SetCutBasedIdBit(unsigned bitIndex, bool value /*= true*/)
 }
 
 
-void Electron::SetMvaId(double mva)
+void Electron::SetContinuousID(unsigned index, double mva)
 {
-    mvaId = minifloat::encodeRange(-1., 1., mva);
+    if (index >= contIdSize)
+        throw std::runtime_error("pec::Electron::SetContinuousID: Given index exceeds the maximal "
+         "allowed value. Consider increasing constant pec::Electron::contIdSize.");
+    
+    mvaId[index] = minifloat::encodeRange(-1., 1., mva);
 }
 
 
-bool Electron::CutBasedId(unsigned bitIndex) const
+bool Electron::BooleanID(unsigned bitIndex) const
 {
     if (bitIndex >= 8)
-        throw std::runtime_error("Electron::CutBasedId: Given index exceeds the maximal allowed "
-         "value.");
+        throw std::runtime_error("pec::Electron::CutBasedId: Given index exceeds the maximal "
+         "allowed value.");
     
     return (cutBasedId & (1 << bitIndex));
 }
 
 
-double Electron::MvaId() const
+double Electron::ContinuousID(unsigned index) const
 {
-    return minifloat::decodeRange(-1., 1., mvaId);
+    if (index >= contIdSize)
+        throw std::runtime_error("pec::Electron::SetMvaId: Given index exceeds the maximal allowed "
+         "value.");
+    
+    return minifloat::decodeRange(-1., 1., mvaId[index]);
 }

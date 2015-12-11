@@ -9,6 +9,11 @@ namespace pec
     /**
      * \class Electron
      * \brief Represents a reconstructed electron
+     * 
+     * Extends class Lepton by adding sets of boolean and real-valued identification decisions. They
+     * are intended to be used to store results of cut-based and MVA algorithms, respectively. Up to
+     * eight boolean flags can be stored. The maximal number of MVA-based decisions is given by
+     * contIdSize, which can be changed at compile time only.
      */
     class Electron: public Lepton
     {
@@ -30,45 +35,50 @@ namespace pec
          * \brief Sets a decision of a cut-based ID
          * 
          * The decision is encoded in a bit field. Decision for several working points can be
-         * written using several bits.
+         * written using several bits. Throughs an exception if the index of out of the supported
+         * range.
          */
-        void SetCutBasedIdBit(unsigned bitIndex, bool value = true);
+        void SetBooleanID(unsigned bitIndex, bool value = true);
         
         /**
-         * \brief Sets the value of MVA-based ID
+         * \brief Saves real-valued response of an MVA discriminator
          * 
-         * Expected to be used with the triggering MVA ID documented in [1].
-         * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentification
+         * Throws an exception if the index is out of the supported range.
          */
-        void SetMvaId(double mva);
+        void SetContinuousID(unsigned index, double mva);
         
         /**
          * \brief Returns decision of selected version of the cut-based ID
          * 
          * See documentation for the SetCutBasedId method.
          */
-        bool CutBasedId(unsigned bitIndex) const;
+        bool BooleanID(unsigned bitIndex) const;
         
         /**
          * \brief Returns the value of MVA-based ID
          * 
          * See documentation for the SetMvaID method.
          */
-        double MvaId() const;
+        double ContinuousID(unsigned index) const;
         
     private:
         /**
-         * \brief Encodes flags for cut-based ID
+         * \brief Encodes flags for boolean ID decisions
          * 
-         * Decisions for various working points are incorporated into this variable.
+         * Usually, decisions for various working points of a cut-based identification algorithm are
+         * incorporated into this variable.
          */
         UChar_t cutBasedId;
         
+        /// Maximal number of continuous ID discriminators that can be stored
+        static unsigned const contIdSize = 1;
+
         /**
-         * \brief MVA-based ID
+         * \brief Continuous ID decisions
          * 
-         * See documentation for the SetMvaId method. Encoded with a minifloat on a range [-1, 1].
+         * See documentation for the SetContinuousId method. Encoded with a minifloat on a range
+         * [-1, 1].
          */
-        minifloat::Repr_t mvaId;
+        minifloat::Repr_t mvaId[contIdSize];
     };
 }
