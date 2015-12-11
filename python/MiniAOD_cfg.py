@@ -276,7 +276,7 @@ if options.saveHardInteraction:
 
 
 # Save information on generator-level jets and MET
-if runOnData and options.saveGenJets:
+if not runOnData and options.saveGenJets:
     process.pecGenJetMET = cms.EDAnalyzer('PECGenJetMET',
         jets = cms.InputTag('slimmedGenJets'),
         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
