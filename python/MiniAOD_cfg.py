@@ -155,7 +155,8 @@ paths.append(process.goodOfflinePrimaryVertices)
 # Define the leptons
 from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
-eleQualityCuts, eleCutBasedIDMaps, eleMVAIDMap = DefineElectrons(process, paths)
+eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
+ DefineElectrons(process, paths)
 muQualityCuts = DefineMuons(process, paths)
 
 
@@ -227,8 +228,9 @@ process.pecEventID = cms.EDAnalyzer('PECEventID')
 
 process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     src = cms.InputTag('analysisPatElectrons'),
+    embeddedBoolIDs = cms.vstring(eleEmbeddedCutBasedIDLabels),
     boolIDMaps = cms.VInputTag(eleCutBasedIDMaps),
-    contIDMaps = cms.VInputTag(eleMVAIDMap),
+    contIDMaps = cms.VInputTag(eleMVAIDMaps),
     selection = eleQualityCuts)
 
 process.pecMuons = cms.EDAnalyzer('PECMuons',

@@ -8,7 +8,9 @@ using namespace edm;
 using namespace std;
 
 
-PECElectrons::PECElectrons(ParameterSet const &cfg)
+PECElectrons::PECElectrons(ParameterSet const &cfg):
+    embeddedBoolIDLabels(cfg.getParameter<vector<string>>("embeddedBoolIDs")),
+    embeddedContIDLabels(cfg.getParameter<vector<string>>("embeddedContIDs"))
 {
     // Register required input data
     electronToken = consumes<View<pat::Electron>>(cfg.getParameter<InputTag>("src"));
@@ -30,10 +32,14 @@ void PECElectrons::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
     ParameterSetDescription desc;
     desc.add<InputTag>("src")->setComment("Source collection of electrons.");
+    desc.add<vector<string>>("embeddedBoolIDs", vector<string>(0))->
+     setComment("Labels of embedded boolean electron ID decisions to be stored.");
     desc.add<vector<InputTag>>("boolIDMaps", vector<InputTag>(0))->
-     setComment("Maps with boolean electron ID decisions.");
+     setComment("Maps with additional boolean electron ID decisions to be stored.");
+    desc.add<vector<string>>("embeddedContIDs", vector<string>(0))->
+     setComment("Labels of embedded real-valued electron ID decisions to be stored.");
     desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>(0))->
-     setComment("Maps with real-valued electron ID decisions.");
+     setComment("Maps with additional real-valued electron ID decisions to be stored.");
     desc.add<vector<string>>("selection", vector<string>(0))->
      setComment("User-defined selections for electrons whose results will be stored in the output "
      "tree.");
@@ -92,14 +98,27 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
          el.photonIso() - 0.5 * el.puChargedHadronIso(), 0.)) / el.pt());
         
         
-        // Copy electron IDs from the maps
+        // Copy embedded ID decisions
+        unsigned const nEmbeddedBoolIDs = embeddedBoolIDLabels.size();
+        unsigned const nEmbeddedContIDs = embeddedContIDLabels.size();
+        
+        for (unsigned i = 0; i < nEmbeddedBoolIDs; ++i)
+            storeElectron.SetBooleanID(i, (el.electronID(embeddedBoolIDLabels.at(i)) > 0.5f));
+            //^ Since pat::Electron::electronID returns a float, need to be accurate with the
+            //conversion to a boolean value
+        
+        for (unsigned i = 0; i < nEmbeddedContIDs; ++i)
+            storeElectron.SetContinuousID(i, el.electronID(embeddedContIDLabels.at(i)));
+        
+        
+        // Copy additional ID decisions from the maps
         Ptr<pat::Electron> const elPtr(srcElectrons, i);
         
         for (unsigned i = 0; i < boolIDMaps.size(); ++i)
-            storeElectron.SetBooleanID(i, (*boolIDMaps.at(i))[elPtr]);
+            storeElectron.SetBooleanID(nEmbeddedBoolIDs + i, (*boolIDMaps.at(i))[elPtr]);
         
         for (unsigned i = 0; i < contIDMaps.size(); ++i)
-            storeElectron.SetContinuousID(i, (*contIDMaps.at(i))[elPtr]);
+            storeElectron.SetContinuousID(nEmbeddedContIDs + i, (*contIDMaps.at(i))[elPtr]);
         
         
         // Conversion rejection [1]. True for a "good" electron

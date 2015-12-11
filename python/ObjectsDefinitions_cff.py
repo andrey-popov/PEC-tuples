@@ -8,18 +8,22 @@ import FWCore.ParameterSet.Config as cms
 
 
 def DefineElectrons(process, paths):
-    """ This function adjusts electrons. The user is expected to use the following products only:
+    """ 
+        This function adjusts electrons. The user is expected to use only the following collections
+        and objects:
         
-        analysisPatElectrons: Loose non-isolated electrons to be saved in tuples.
+        analysisPatElectrons: Collection of loose non-isolated electrons to be saved in tuples.
         
-        eleIDMaps: Input tags to access maps of cut-based electron IDs.
+        patElectronsForEventSelection: Collection of electrons that pass basic kinematical cuts.
+        To be used in the loose event selection.
         
-        eleMVAIDMap: Input tag to access MVA-based electron ID.
+        eleEmbeddedCutBasedIDLabels: Labels of embedded boolean electron IDs to be stored in tuples.
         
-        eleQualityCuts: Vector of quality cuts to be applied to the above collection.
+        eleCutBasedIDMaps: Input tags to access maps of boolean electron IDs to be stored in tuples.
         
-        patElectronsForEventSelection: collection of electrons that pass basic kinematical cuts;
-        to be used for the event selection.
+        eleMVAIDMaps: Input tags to access real-valued electron IDs to be stored in tuples.
+        
+        eleQualityCuts: Vector of quality cuts whose decisions are to be stured in tuples.
     """
     
     # Collection of electrons that will be stored in tuples
@@ -30,34 +34,31 @@ def DefineElectrons(process, paths):
     paths.append(process.analysisPatElectrons)
     
     
-    # Calculate cut-based [1] and MVA ID [2] for analysis electrons
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27#Recipe_for_regular_users_for_7_4
-    # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
+    # Labels to access embedded cut-based ID
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27
+    eleEmbeddedCutBasedIDLabels = ['cutBasedElectronID-Spring15-25ns-V1-standalone-' + p \
+     for p in ['veto', 'loose', 'medium', 'tight']]
+    
+    
+    # Decisions of triggering MVA ID are not stored in MiniAOD2015v2 and should be calculated
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import switchOnVIDElectronIdProducer, \
      setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     
-    for idModule in ['cutBasedElectronID_Spring15_25ns_V1_cff', \
-     'mvaElectronID_Spring15_25ns_Trig_V1_cff']:
+    for idModule in ['mvaElectronID_Spring15_25ns_Trig_V1_cff']:
         setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
          idModule, setupVIDElectronSelection)
     
-    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
     process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
+    paths.append(process.electronMVAValueMapProducer)
     
-    paths.append(process.electronMVAValueMapProducer, process.egmGsfElectronIDs)
     
-    
-    # Define labels of electron IDs to be saved
-    eleCutBasedIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-'
-    eleCutBasedIDMaps = [
-        cms.InputTag(eleCutBasedIDLabelPrefix + 'veto'),
-        cms.InputTag(eleCutBasedIDLabelPrefix + 'loose'),
-        cms.InputTag(eleCutBasedIDLabelPrefix + 'medium'),
-        cms.InputTag(eleCutBasedIDLabelPrefix + 'tight')]
-    
-    eleMVAIDMap = \
-     'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values'
+    # Labels of maps with electron ID. No maps are needed for the cut-based ID since its decisions
+    # are saved in pat::Electron
+    eleCutBasedIDMaps = []
+    eleMVAIDMaps = [
+        'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values']
     
     
     # Additional selections to be evaluated
@@ -86,7 +87,7 @@ def DefineElectrons(process, paths):
     
     
     # Return values
-    return eleQualityCuts, eleCutBasedIDMaps, eleMVAIDMap
+    return eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps
 
 
 

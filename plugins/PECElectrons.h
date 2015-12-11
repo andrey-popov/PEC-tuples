@@ -16,6 +16,7 @@
 
 #include <TTree.h>
 
+#include <string>
 #include <vector>
 
 
@@ -25,8 +26,13 @@
  * 
  * The plugin stores basic properties of electrons in the given collection. It saves their
  * four-momenta, isolation, quality flags, etc. The mass in the four-momentum is always set to zero
- * to facilitate file compression. Bit flags of stored objects include the conversion rejection flag
- * and results of custom selections specifed by the user.
+ * to facilitate file compression. Bit field inherited from CandidateWithID includes decision of a
+ * conversion rejection algorithm and results of custom selections specifed by the user.
+ * 
+ * The plugin can store various IDs in a flexible way. It can store a variable number of boolean and
+ * real-valued decisions embedded in pat::Electron, accessing them via labels provided in the
+ * configuration. In addition, it can include boolean and real-valued decisions provided in the form
+ * of value maps. All IDs are optional.
  */
 class PECElectrons: public edm::EDAnalyzer
 {
@@ -56,10 +62,16 @@ private:
     /// Source collection of electrons
     edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
     
-    /// Maps with results of cut-based electron IDs
+    /// Names of embedded boolean IDs to be saved
+    std::vector<std::string> embeddedBoolIDLabels;
+    
+    /// Maps with additional boolean IDs
     std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> boolIDMapTokens;
     
-    /// Maps with MVA electron ID
+    /// Names of embedded real-valued IDs to be saved
+    std::vector<std::string> embeddedContIDLabels;
+    
+    /// Maps additional real-valued IDs
     std::vector<edm::EDGetTokenT<edm::ValueMap<float>>> contIDMapTokens;
     
     /**
