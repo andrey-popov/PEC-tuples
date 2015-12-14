@@ -41,3 +41,12 @@ def ApplyEventFilters(process, paths, runOnData = False,
     
     paths.append(process.applyEmulatedMETFilters)
     
+    
+    # Reject few more events with noise from a bad SC in EE. They have not been flagged by trigger
+    # bits saved in MiniAOD
+    process.newEEBadSC = cms.EDFilter('EventIDFilter',
+        eventListFile = cms.string('Analysis/PECTuples/data/ecalscn1043093_Dec01.txt'),
+        rejectKnownEvents = cms.bool(True))
+    
+    paths.append(process.newEEBadSC)
+    
