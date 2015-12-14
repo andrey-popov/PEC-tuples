@@ -127,8 +127,10 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         
         
         // Evaluate user-defined selectors if any
+        unsigned const nUsedBits = 1;
+        
         for (unsigned i = 0; i < eleSelectors.size(); ++i)
-            storeElectron.SetBit(1 + i, eleSelectors[i](el));
+            storeElectron.SetBit(nUsedBits + i, eleSelectors[i](el));
         
         
         // The electron is set up. Add it to the vector
