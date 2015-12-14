@@ -152,21 +152,11 @@ process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
 paths.append(process.goodOfflinePrimaryVertices)
 
 
-# Define the leptons
+# Define basic reconstructed objects
 from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
 eleQualityCuts, eleIDMaps = DefineElectrons(process, paths)
 muQualityCuts = DefineMuons(process, paths)
-
-
-# Include the event filters
-# from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
-# ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
-#     runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
-# paths.append(process.eventFiltersSequence)
-
-
-# Define the jets
 DefineJets(process, paths)
 
 
@@ -193,6 +183,12 @@ if muChan:
     process.muPath += process.countTightPatMuons
 paths.append(process.countGoodJets)
 
+
+# Apply event filters recommended for analyses involving MET
+from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
+ApplyEventFilters(process, paths,
+    runOnData = runOnData,
+    goodVertices = 'goodOfflinePrimaryVertices')
 
 
 # Save decisions of selected triggers. The lists are aligned with menu [1] used in 25 ns MC and
