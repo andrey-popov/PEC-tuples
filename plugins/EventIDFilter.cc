@@ -101,7 +101,7 @@ void EventIDFilter::ReadTextFile(string const &fileName)
         
         unsigned long const run = stol(matchResults[1]);
         unsigned long const lumiSection = stol(matchResults[2]);
-        unsigned long const event = stol(matchResults[3]);
+        unsigned long long const event = stoll(matchResults[3]);
         
         knownEvents.emplace_back(run, lumiSection, event);
     }
