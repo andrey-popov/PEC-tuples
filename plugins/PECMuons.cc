@@ -86,9 +86,11 @@ void PECMuons::analyze(Event const &event, EventSetup const &)
         storeMuon.SetCharge(mu.charge());
         storeMuon.SetDB(mu.dB());
         
-        // Relative isolation with delta-beta correction
-        storeMuon.SetRelIso((mu.chargedHadronIso() + max(mu.neutralHadronIso() + mu.photonIso() -
-         0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt());
+        // Relative isolation with delta-beta correction [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2?rev=22#Muon_Isolation
+        auto const &isoR04 = mu.pfIsolationR04();
+        storeMuon.SetRelIso((isoR04.sumChargedHadronPt +
+         max(isoR04.sumNeutralHadronEt + isoR04.sumPhotonEt - 0.5 * isoR04.sumPUPt, 0.)) / mu.pt());
         
         
         // Moun identification bits [1]. Note this does not imply selection on isolation or
