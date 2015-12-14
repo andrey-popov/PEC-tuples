@@ -1,1 +1,0 @@
-The instruction has been moved to https://github.com/andrey-popov/single-top/wiki/InstallSoftware
