@@ -6,6 +6,7 @@
 #include <FWCore/Framework/interface/MakerMacros.h>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/regex.hpp>
 
 #include <algorithm>
 #include <fstream>
@@ -75,28 +76,32 @@ void EventIDFilter::ReadTextFile(string const &fileName)
     }
     
     
-    // Read IDs from the file
+    // Read IDs from the file. Lines are parsed with the help of a regular expression
     string line;
-    istringstream ist;
+    boost::regex eventIDRegex("^(\\d+):(\\d+):(\\d+)$", boost::regex::extended);
+    boost::smatch matchResults;
     
     while (true)
     {
+        // Read the next line from the input file
         getline(eventListFile, line);
         
         if (eventListFile.eof() or line.length() == 0)
             break;
         
         
-        ist.clear();
-        ist.str(line);  // should contain three numbers separated by semicolon
+        // Extract the event ID from the line and add it to the collection
+        if (not boost::regex_match(line, matchResults, eventIDRegex))
+        {
+            Exception excp(errors::LogicError);
+            excp << "Failed to parse line\n  \"" << line << "\"\nof input file \"" << fileName <<
+             "\". The file format seems to be wrong.\n";
+            excp.raise();
+        }
         
-        unsigned long run, lumiSection, event;
-        ist >> run;
-        ist.ignore();
-        ist >> lumiSection;
-        ist.ignore();
-        ist >> event;
-        
+        unsigned long const run = stol(matchResults[1]);
+        unsigned long const lumiSection = stol(matchResults[2]);
+        unsigned long const event = stol(matchResults[3]);
         
         knownEvents.emplace_back(run, lumiSection, event);
     }

@@ -42,7 +42,7 @@ private:
      * \brief Reads a collection of event IDs from a text file
      * 
      * Event IDs must be stored in the form "run:lumi:event", one per line. No blank lines or
-     * comments are allowed.
+     * comments are allowed. If method fails to parse the file, it throws an exception.
      */
     void ReadTextFile(std::string const &fileName);
     
