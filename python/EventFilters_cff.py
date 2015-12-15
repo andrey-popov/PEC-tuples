@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def ApplyEventFilters(process, paths, runOnData = False):
+def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
     """ 
         (Documentation is to be added.)
     """
@@ -36,7 +36,8 @@ def ApplyEventFilters(process, paths, runOnData = False):
         HLTPaths = cms.vstring('Flag_eeBadScFilter'),
         andOr = cms.bool(False),  # AND mode
         throw = cms.bool(True),
-        TriggerResultsTag = cms.InputTag('TriggerResults', '', 'PAT'))
+        TriggerResultsTag = cms.InputTag('TriggerResults', '',
+            'RECO' if runOnData and isPromptReco else 'PAT'))
     
     paths.append(process.applyEmulatedMETFilters)
     
