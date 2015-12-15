@@ -5,12 +5,17 @@
 #include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
+#include <TFile.h>
+#include <TTree.h>
+
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/regex.hpp>
 
 #include <algorithm>
 #include <fstream>
-#include <sstream>
+#include <memory>
+#include <list>
+#include <utility>
 
 
 using namespace edm;
@@ -25,6 +30,8 @@ EventIDFilter::EventIDFilter(ParameterSet const &cfg):
     
     if (boost::ends_with(eventListFileName, ".txt"))
         ReadTextFile(eventListFileName);
+    else if (boost::ends_with(eventListFileName, ".root"))
+        ReadROOTFile(eventListFileName);
     else
     {
         Exception excp(errors::LogicError);
@@ -108,6 +115,101 @@ void EventIDFilter::ReadTextFile(string const &fileName)
     
     
     eventListFile.close();
+}
+
+
+void EventIDFilter::ReadROOTFile(string const &fileName)
+{
+    // Open the ROOT file with event IDs
+    unique_ptr<TFile> eventListFile(TFile::Open(FileInPath(fileName).fullPath().c_str()));
+    
+    if (eventListFile->IsZombie())
+    {
+        Exception excp(errors::FileOpenError);
+        excp << "Cannot open file \"" << fileName << "\".\n";
+        excp.raise();
+    }
+    
+    
+    // Get the tree with event IDs
+    string const treeName("EventID");
+    unique_ptr<TTree> eventListTree(dynamic_cast<TTree *>(eventListFile->Get(treeName.c_str())));
+    
+    if (not eventListTree)
+    {
+        Exception excp(errors::LogicError);
+        excp << "Input file \"" << fileName << "\" does not follow expected format. Cannot find " <<
+         "tree \"" << treeName << "\".\n";
+        excp.raise();
+    }
+    
+    
+    // Make sure expected branches are present and contain data of proper types
+    list<string> missingBranches, wrongTypeBranches;
+    
+    for (auto const &b: initializer_list<pair<string, string>>{make_pair("run"s, "i"s),
+     make_pair("lumi"s, "i"), make_pair("event"s, "l"s)})
+    {
+        auto const &branchName = b.first;
+        auto const &branchType = b.second;
+        
+        TBranch *branch = eventListTree->GetBranch(branchName.c_str());
+        
+        if (not branch)
+            missingBranches.emplace_back(branchName);
+        else
+        {
+            if (not ((branchName + "/" + branchType) == branch->GetTitle()))
+                wrongTypeBranches.emplace_back(branchName);
+        }
+    }
+    
+    if (missingBranches.size() > 0)
+    {
+        Exception excp(errors::LogicError);
+        auto bIt = missingBranches.begin();
+        excp << "In the tree \"" << treeName << "\" in input file \"" << fileName <<
+         "\", following branches are missing: \"" << *bIt << "\"";
+        
+        for (++bIt; bIt != missingBranches.end(); ++bIt)
+            excp << ", \"" << *bIt << "\"";
+        
+        excp << ".\n";
+        excp.raise();
+    }
+    
+    if (wrongTypeBranches.size() > 0)
+    {
+        Exception excp(errors::LogicError);
+        auto bIt = wrongTypeBranches.begin();
+        excp << "In the tree \"" << treeName << "\" in input file \"" << fileName <<
+         "\", following branches have wrong types: \"" << *bIt << "\"";
+        
+        for (++bIt; bIt != wrongTypeBranches.end(); ++bIt)
+            excp << ", \"" << *bIt << "\"";
+        
+        excp << ".\n";
+        excp.raise();
+    }
+    
+    
+    // Set up buffers to read the tree
+    UInt_t run, lumiSection;
+    ULong64_t event;
+    
+    eventListTree->SetBranchAddress("run", &run);
+    eventListTree->SetBranchAddress("lumi", &lumiSection);
+    eventListTree->SetBranchAddress("event", &event);
+    
+    
+    // Finally, read event IDs from the tree
+    unsigned long const nEntries = eventListTree->GetEntries();
+    
+    for (unsigned long ev = 0; ev < nEntries; ++ev)
+    {
+        eventListTree->GetEntry(ev);
+        knownEvents.emplace_back(run, lumiSection, event);
+    }
 }
 
 

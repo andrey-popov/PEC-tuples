@@ -16,8 +16,8 @@
  * \brief Performs event filtering based on given collection of event IDs
  * 
  * Depending on the configuration, keeps or rejects events whose IDs are found in the collection.
- * The collection is read from a text file. Its format is described in the documentation for the
- * ReadTextFile method.
+ * The collection is read from a text or a ROOT file. Their formats are described in the
+ * documentation for methods ReadTextFile and ReadROOTFile.
  */
 class EventIDFilter: public edm::EDFilter
 {
@@ -45,6 +45,15 @@ private:
      * comments are allowed. If method fails to parse the file, it throws an exception.
      */
     void ReadTextFile(std::string const &fileName);
+    
+    /**
+     * \brief Reads a collection of event IDs from a ROOT file
+     * 
+     * Event IDs must be stored in a tree called "EventID" in branches "run", "lumi", "event" of
+     * types 'i', 'i', 'l' (as defined in TBranch) respectively. If these requirements are not
+     * satisfied, the method throws an exception.
+     */
+    void ReadROOTFile(std::string const &fileName);
     
 private:
     /**
