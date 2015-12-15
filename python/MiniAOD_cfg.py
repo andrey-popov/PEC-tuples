@@ -187,8 +187,7 @@ paths.append(process.countGoodJets)
 # Apply event filters recommended for analyses involving MET
 from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
 ApplyEventFilters(process, paths,
-    runOnData = runOnData,
-    goodVertices = 'goodOfflinePrimaryVertices')
+    runOnData = runOnData)
 
 
 # Save decisions of selected triggers. The lists are aligned with menu [1] used in 25 ns MC and

@@ -1,7 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def ApplyEventFilters(process, paths, runOnData = False,
-                      goodVertices = 'goodOfflinePrimaryVertices'):
+def ApplyEventFilters(process, paths, runOnData = False):
     """ 
         (Documentation is to be added.)
     """
