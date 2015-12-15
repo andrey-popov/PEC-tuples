@@ -50,3 +50,12 @@ def ApplyEventFilters(process, paths, runOnData = False,
     
     paths.append(process.newEEBadSC)
     
+    
+    # Reject events flagged by the updated CSC beam halo filter. Use ROOT file with the list of
+    # event IDs instead of a text one because of the large number of events
+    process.cscBeamHalo = cms.EDFilter('EventIDFilter',
+        eventListFile = cms.string('Analysis/PECTuples/data/csc2015_Dec01.root'),
+        rejectKnownEvents = cms.bool(True))
+    
+    paths.append(process.cscBeamHalo)
+    
