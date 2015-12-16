@@ -8,16 +8,22 @@ import FWCore.ParameterSet.Config as cms
 
 
 def DefineElectrons(process, paths):
-    """ This function adjusts electrons. The user is expected to use the following products only:
+    """ 
+        This function adjusts electrons. The user is expected to use only the following collections
+        and objects:
         
-        1. analysisPatElectrons: loose non-isolated electrons to be saved in tuples.
+        analysisPatElectrons: Collection of loose non-isolated electrons to be saved in tuples.
         
-        2. eleIDMaps: input tags to access maps of cut-based electron IDs.
+        patElectronsForEventSelection: Collection of electrons that pass basic kinematical cuts.
+        To be used in the loose event selection.
         
-        3. eleQualityCuts: vector of quality cuts to be applied to the above collection.
+        eleEmbeddedCutBasedIDLabels: Labels of embedded boolean electron IDs to be stored in tuples.
         
-        4. patElectronsForEventSelection: collection of electrons that pass basic kinematical cuts;
-        to be used for the event selection.
+        eleCutBasedIDMaps: Input tags to access maps of boolean electron IDs to be stored in tuples.
+        
+        eleMVAIDMaps: Input tags to access real-valued electron IDs to be stored in tuples.
+        
+        eleQualityCuts: Vector of quality cuts whose decisions are to be stured in tuples.
     """
     
     # Collection of electrons that will be stored in tuples
@@ -28,28 +34,47 @@ def DefineElectrons(process, paths):
     paths.append(process.analysisPatElectrons)
     
     
-    # Calculate IDs for analysis electrons. The code is adapted from [1]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27#Recipe_for_regular_users_for_7_4
+    # Labels to access embedded cut-based ID
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27
+    eleEmbeddedCutBasedIDLabels = ['cutBasedElectronID-Spring15-25ns-V1-standalone-' + p \
+     for p in ['veto', 'loose', 'medium', 'tight']]
+    
+    
+    # Decisions of triggering MVA ID are not stored in MiniAOD2015v2 and should be calculated
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import switchOnVIDElectronIdProducer, \
      setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
-    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
-    setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
-     'cutBasedElectronID_Spring15_25ns_V1_cff', setupVIDElectronSelection)
     
-    paths.append(process.egmGsfElectronIDs)
+    for idModule in ['mvaElectronID_Spring15_25ns_Trig_V1_cff']:
+        setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
+         idModule, setupVIDElectronSelection)
+    
+    process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
+    paths.append(process.electronMVAValueMapProducer)
     
     
-    # Define labels of electron IDs to be saved
-    eleIDLabelPrefix = 'egmGsfElectronIDs:cutBasedElectronID-Spring15-25ns-V1-standalone-'
-    eleIDMaps = [
-        cms.InputTag(eleIDLabelPrefix + 'veto'), cms.InputTag(eleIDLabelPrefix + 'loose'),
-        cms.InputTag(eleIDLabelPrefix + 'medium'), cms.InputTag(eleIDLabelPrefix + 'tight')]
+    # Labels of maps with electron ID. No maps are needed for the cut-based ID since its decisions
+    # are saved in pat::Electron
+    eleCutBasedIDMaps = []
+    eleMVAIDMaps = [
+        'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values']
     
     
     # Additional selections to be evaluated
     eleQualityCuts = cms.vstring(
-        '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)')
+        # EE-EB gap
+        '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)',
+        # Trigger-emulating preselection [1], referenced from [2]
+        # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1645/2/1/1.html
+        # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23#Recipes_for_7_4_12_Spring15_MVA
+        'pt > 15. & \
+         ((abs(superCluster.eta) < 1.4442 & full5x5_sigmaIetaIeta < 0.012 & hcalOverEcal < 0.9 & \
+          ecalPFClusterIso / pt < 0.37 & hcalPFClusterIso / pt < 0.25 & dr03TkSumPt / pt < 0.18 & \
+          abs(deltaEtaSuperClusterTrackAtVtx) < 0.0095 & \
+          abs(deltaPhiSuperClusterTrackAtVtx) < 0.065) | \
+         (abs(superCluster.eta) > 1.5660 & full5x5_sigmaIetaIeta < 0.033 & hcalOverEcal < 0.09 & \
+          ecalPFClusterIso / pt < 0.45 & hcalPFClusterIso / pt < 0.28 & dr03TkSumPt / pt < 0.18))')
     
     
     # Define electrons to be used for event selection at the Grid level. They are subjected to
@@ -62,7 +87,7 @@ def DefineElectrons(process, paths):
     
     
     # Return values
-    return eleQualityCuts, eleIDMaps
+    return eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps
 
 
 

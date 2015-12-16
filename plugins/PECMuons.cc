@@ -86,18 +86,26 @@ void PECMuons::analyze(Event const &event, EventSetup const &)
         storeMuon.SetCharge(mu.charge());
         storeMuon.SetDB(mu.dB());
         
-        // Relative isolation with delta-beta correction
-        storeMuon.SetRelIso((mu.chargedHadronIso() + max(mu.neutralHadronIso() + mu.photonIso() -
-         0.5 * mu.puChargedHadronIso(), 0.)) / mu.pt());
+        // Relative isolation with delta-beta correction [1]
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2?rev=22#Muon_Isolation
+        auto const &isoR04 = mu.pfIsolationR04();
+        storeMuon.SetRelIso((isoR04.sumChargedHadronPt +
+         max(isoR04.sumNeutralHadronEt + isoR04.sumPhotonEt - 0.5 * isoR04.sumPUPt, 0.)) / mu.pt());
         
-        // Tight muons are defined according to [1]. Note it does not imply selection on isolation
-        //or kinematics
-        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2?rev=22#Tight_Muon
-        storeMuon.SetBit(0, mu.isTightMuon(vertices->front()));
+        
+        // Moun identification bits [1]. Note this does not imply selection on isolation or
+        //kinematics
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/SWGuideMuonIdRun2?rev=22#Muon_Identification
+        storeMuon.SetBit(0, mu.isLooseMuon());
+        storeMuon.SetBit(1, mu.isMediumMuon());
+        storeMuon.SetBit(2, mu.isTightMuon(vertices->front()));
+        
         
         // Evaluate user-defined selectors if any
+        unsigned const nUsedBits = 3;
+        
         for (unsigned i = 0; i < muSelectors.size(); ++i)
-            storeMuon.SetBit(1 + i, muSelectors[i](mu));
+            storeMuon.SetBit(nUsedBits + i, muSelectors[i](mu));
         
         
         // The muon is set up. Add it to the vector

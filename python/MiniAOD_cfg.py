@@ -161,7 +161,8 @@ paths.append(process.goodOfflinePrimaryVertices)
 # Define basic reconstructed objects
 from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
-eleQualityCuts, eleIDMaps = DefineElectrons(process, paths)
+eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
+ DefineElectrons(process, paths)
 muQualityCuts = DefineMuons(process, paths)
 DefineJets(process, paths)
 
@@ -229,7 +230,11 @@ process.pecEventID = cms.EDAnalyzer('PECEventID')
 
 process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     src = cms.InputTag('analysisPatElectrons'),
-    idMaps = cms.VInputTag(eleIDMaps),
+    rho = cms.InputTag('fixedGridRhoFastjetAll'),
+    effAreas = cms.FileInPath('RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt'),
+    embeddedBoolIDs = cms.vstring(eleEmbeddedCutBasedIDLabels),
+    boolIDMaps = cms.VInputTag(eleCutBasedIDMaps),
+    contIDMaps = cms.VInputTag(eleMVAIDMaps),
     selection = eleQualityCuts)
 
 process.pecMuons = cms.EDAnalyzer('PECMuons',

@@ -9,6 +9,7 @@
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
 #include <DataFormats/PatCandidates/interface/Electron.h>
+#include <RecoEgamma/EgammaTools/interface/EffectiveAreas.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
@@ -16,6 +17,7 @@
 
 #include <TTree.h>
 
+#include <string>
 #include <vector>
 
 
@@ -25,8 +27,13 @@
  * 
  * The plugin stores basic properties of electrons in the given collection. It saves their
  * four-momenta, isolation, quality flags, etc. The mass in the four-momentum is always set to zero
- * to facilitate file compression. Bit flags of stored objects include the conversion rejection flag
- * and results of custom selections specifed by the user.
+ * to facilitate file compression. Bit field inherited from CandidateWithID includes decision of a
+ * conversion rejection algorithm and results of custom selections specifed by the user.
+ * 
+ * The plugin can store various IDs in a flexible way. It can store a variable number of boolean and
+ * real-valued decisions embedded in pat::Electron, accessing them via labels provided in the
+ * configuration. In addition, it can include boolean and real-valued decisions provided in the form
+ * of value maps. All IDs are optional.
  */
 class PECElectrons: public edm::EDAnalyzer
 {
@@ -53,11 +60,34 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &) override;
     
 private:
+    /**
+     * \brief Calculates rho-corrected relative isolation for the given electron
+     * 
+     * Generic description of electron isolation is provided in [1]. Note that the effective areas
+     * are now calculated in a more elaborate way than in Run 1 [2].
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolationRun2
+     * [2] https://indico.cern.ch/event/369239/contribution/4
+     */
+    double CalculateRhoIsolation(reco::GsfElectron const &el, double const rho) const;
+    
+private:
     /// Source collection of electrons
     edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
     
-    /// Maps with results of cut-based electron IDs
-    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> eleIDMapTokens;
+    /// Rho (mean angular pt density)
+    edm::EDGetTokenT<double> rhoToken;
+    
+    /// Names of embedded boolean IDs to be saved
+    std::vector<std::string> embeddedBoolIDLabels;
+    
+    /// Maps with additional boolean IDs
+    std::vector<edm::EDGetTokenT<edm::ValueMap<bool>>> boolIDMapTokens;
+    
+    /// Names of embedded real-valued IDs to be saved
+    std::vector<std::string> embeddedContIDLabels;
+    
+    /// Maps additional real-valued IDs
+    std::vector<edm::EDGetTokenT<edm::ValueMap<float>>> contIDMapTokens;
     
     /**
      * \brief String-based selections
@@ -74,6 +104,10 @@ private:
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
+    
+    
+    /// An object to access effective areas for electron isolation
+    EffectiveAreas eaReader;
     
     
     /// Output tree
