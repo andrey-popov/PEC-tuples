@@ -40,6 +40,9 @@ options = VarParsing('python')
 
 options.register('runOnData', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether it runs on the real data')
+options.register('isPromptReco', False, VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation')
 options.register('globalTag', '', VarParsing.multiplicity.singleton,
     VarParsing.varType.string, 'The relevant global tag')
 # The outputName is postfixed with ".root" automatically
@@ -99,23 +102,26 @@ jetPtThreshold = int(jetSelParsed.group(2))
 print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThreshold, 'GeV/c.'
 
 
-# Define the input files to be used for testing
+# Define the input files
 process.source = cms.Source('PoolSource')
-
-if runOnData:
-    # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
-    # process.source.fileNames = filesRelValSingleMuMINIAOD
-    process.source.fileNames = cms.untracked.vstring('/store/data/Run2015D/SingleMuon/MINIAOD/PromptReco-v4/000/258/159/00000/6CA1C627-246C-E511-8A6A-02163E014147.root')
-else:
-    # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
-    # process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
-    process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/00087FEB-236E-E511-9ACB-003048FF86CA.root')
-# process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
 if len(options.sourceFile) > 0:
     process.source.fileNames = cms.untracked.vstring(options.sourceFile)
+else:
+    # Default input files for testing
+    if runOnData:
+        # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
+        # process.source.fileNames = filesRelValSingleMuMINIAOD
+        process.source.fileNames = cms.untracked.vstring('/store/data/Run2015D/SingleMuon/MINIAOD/PromptReco-v4/000/258/159/00000/6CA1C627-246C-E511-8A6A-02163E014147.root')
+        options.isPromptReco = True
+    else:
+        # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
+        # process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
+        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISpring15MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/74X_mcRun2_asymptotic_v2-v1/40000/00087FEB-236E-E511-9ACB-003048FF86CA.root')
 
-# Set a specific event range here (useful for debuggin)
+# process.source.fileNames = cms.untracked.vstring('/store/relval/...')
+
+# Set a specific event range here (useful for debugging)
 # process.source.eventsToProcess = cms.untracked.VEventRange('1:5')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
@@ -152,21 +158,11 @@ process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
 paths.append(process.goodOfflinePrimaryVertices)
 
 
-# Define the leptons
+# Define basic reconstructed objects
 from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
 eleQualityCuts, eleIDMaps = DefineElectrons(process, paths)
 muQualityCuts = DefineMuons(process, paths)
-
-
-# Include the event filters
-# from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
-# ApplyEventFilters(process, runOnData, goodVertices = 'goodOfflinePrimaryVertices',
-#     runOnFastSim = options.runOnFastSim, run53XFilters = options.run53XSpecific)
-# paths.append(process.eventFiltersSequence)
-
-
-# Define the jets
 DefineJets(process, paths)
 
 
@@ -193,6 +189,12 @@ if muChan:
     process.muPath += process.countTightPatMuons
 paths.append(process.countGoodJets)
 
+
+# Apply event filters recommended for analyses involving MET
+from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
+ApplyEventFilters(process, paths,
+    runOnData = runOnData,
+    isPromptReco = options.isPromptReco)
 
 
 # Save decisions of selected triggers. The lists are aligned with menu [1] used in 25 ns MC and

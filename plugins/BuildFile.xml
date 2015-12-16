@@ -9,5 +9,5 @@
 
 <library  name = "AnalysisPECTuples_plugins" file = "*.cc">
     <flags  EDM_PLUGIN = "1" />
-    <flags  CXXFLAGS = "-O2" />
+    <flags  CXXFLAGS = "-O2 -std=c++14" />
 </library>

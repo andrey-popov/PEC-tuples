@@ -1,0 +1,3 @@
+# Ignore potentially large files
+*.root
+*.tar.gz
