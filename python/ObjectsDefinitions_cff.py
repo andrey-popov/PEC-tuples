@@ -101,7 +101,8 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         analysisPatJets: Corrected jets subjected to the recommended filtering on quality.
     """
     
-    # Reapply JEC if requested. The corrections are read from the current global tag
+    # Reapply JEC if requested [1]. The corrections are read from the current global tag
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#CorrPatJets
     if reapplyJEC:
         # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
         # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
@@ -120,23 +121,28 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
             jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsReapplyJEC')))
     
     
-    # Set jet identification criteria as recommended in [1-2]. The fraction of neutral-hadron and
-    # HF-hadron energy is defined below differently from the formula in [2]. However, the formula
-    # is written for uncorrected jets, while JEC-corrected ones are used below. One can rescale the
-    # jet energy in the formula, but the expression below yields the same result. All accessors to
-    # energy fractions from PAT jets account for the effect of JEC
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID
-    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1429.html
-    jetQualityCut = 'numberOfDaughters > 1 & '\
-     '(neutralHadronEnergyFraction + HFHadronEnergyFraction) < 0.99 & '\
-     'neutralEmEnergyFraction < 0.99 & (abs(eta) < 2.4 & chargedEmEnergyFraction < 0.99 & '\
-     'chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 | abs(eta) >= 2.4)'
+    # Jet ID [1]. Accessors to energy fractions in pat::Jet take into account JEC, and thus there is
+    # no need to unapply the corrections
+    jetLooseID = (
+        # Common block of requirements for |eta| < 3
+        'abs(eta) <= 3. & (chargedMultiplicity + neutralMultiplicity) > 1 & ' +
+         'neutralHadronEnergyFraction < 0.99 & neutralEmEnergyFraction < 0.99 & ' +
+            # Additional requirements for |eta| < 2.4
+            '(chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 & ' +
+             'chargedEmEnergyFraction < 0.99' +
+            ' | ' +
+            # There are no additional requirements for 2.4 < |eta| < 3.
+            'abs(eta) >= 2.4)' +
+        ' | ' +
+        # Requirements for the HF region
+        'abs(eta) > 3. & neutralMultiplicity > 10 & neutralEmEnergyFraction < 0.90')
+    
     
     # Select jets that pass the above ID and some kinematical cuts
     process.analysisPatJets = cms.EDFilter('PATJetSelector',
         src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
          cms.InputTag('slimmedJets')),
-        cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetQualityCut))
+        cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetLooseID))
     
     
     # When running over simulation, produce jet collections with varied systematic uncertainties.
