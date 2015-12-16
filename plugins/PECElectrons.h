@@ -9,6 +9,7 @@
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
 #include <DataFormats/PatCandidates/interface/Electron.h>
+#include <RecoEgamma/EgammaTools/interface/EffectiveAreas.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
@@ -59,8 +60,22 @@ public:
     virtual void analyze(edm::Event const &event, edm::EventSetup const &) override;
     
 private:
+    /**
+     * \brief Calculates rho-corrected relative isolation for the given electron
+     * 
+     * Generic description of electron isolation is provided in [1]. Note that the effective areas
+     * are now calculated in a more elaborate way than in Run 1 [2].
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolationRun2
+     * [2] https://indico.cern.ch/event/369239/contribution/4
+     */
+    double CalculateRhoIsolation(reco::GsfElectron const &el, double const rho) const;
+    
+private:
     /// Source collection of electrons
     edm::EDGetTokenT<edm::View<pat::Electron>> electronToken;
+    
+    /// Rho (mean angular pt density)
+    edm::EDGetTokenT<double> rhoToken;
     
     /// Names of embedded boolean IDs to be saved
     std::vector<std::string> embeddedBoolIDLabels;
@@ -89,6 +104,10 @@ private:
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
+    
+    
+    /// An object to access effective areas for electron isolation
+    EffectiveAreas eaReader;
     
     
     /// Output tree

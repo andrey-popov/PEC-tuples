@@ -228,6 +228,8 @@ process.pecEventID = cms.EDAnalyzer('PECEventID')
 
 process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     src = cms.InputTag('analysisPatElectrons'),
+    rho = cms.InputTag('fixedGridRhoFastjetAll'),
+    effAreas = cms.FileInPath('RecoEgamma/ElectronIdentification/data/Spring15/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_25ns.txt'),
     embeddedBoolIDs = cms.vstring(eleEmbeddedCutBasedIDLabels),
     boolIDMaps = cms.VInputTag(eleCutBasedIDMaps),
     contIDMaps = cms.VInputTag(eleMVAIDMaps),
