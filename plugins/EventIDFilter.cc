@@ -26,7 +26,7 @@ EventIDFilter::EventIDFilter(ParameterSet const &cfg):
     rejectKnownEvents(cfg.getParameter<bool>("rejectKnownEvents"))
 {
     // Check the type of the input file with collection of event IDs and read it
-    string const eventListFileName(cfg.getParameter<string>("eventListFile"));
+    string const eventListFileName((cfg.getParameter<FileInPath>("eventListFile")).fullPath());
     
     if (boost::ends_with(eventListFileName, ".txt"))
         ReadTextFile(eventListFileName);
@@ -50,7 +50,7 @@ EventIDFilter::EventIDFilter(ParameterSet const &cfg):
 void EventIDFilter::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
     ParameterSetDescription desc;
-    desc.add<string>("eventListFile")->
+    desc.add<FileInPath>("eventListFile")->
      setComment("Name of a text file containing a list of events.");
     desc.add<bool>("rejectKnownEvents", false)->
      setComment("Determines whether a known event is kept or rejected.");
@@ -73,7 +73,7 @@ bool EventIDFilter::filter(Event &event, EventSetup const &)
 void EventIDFilter::ReadTextFile(string const &fileName)
 {
     // Open the given text file with event IDs
-    ifstream eventListFile(FileInPath(fileName).fullPath());
+    ifstream eventListFile(fileName);
     
     if (not eventListFile.good())
     {
@@ -121,7 +121,7 @@ void EventIDFilter::ReadTextFile(string const &fileName)
 void EventIDFilter::ReadROOTFile(string const &fileName)
 {
     // Open the ROOT file with event IDs
-    unique_ptr<TFile> eventListFile(TFile::Open(FileInPath(fileName).fullPath().c_str()));
+    unique_ptr<TFile> eventListFile(TFile::Open(fileName.c_str()));
     
     if (eventListFile->IsZombie())
     {

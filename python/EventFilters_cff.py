@@ -47,7 +47,7 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
         # Reject few more events with noise from a bad SC in EE. They have not been flagged by
         # trigger bits saved in MiniAOD
         process.newEEBadSC = cms.EDFilter('EventIDFilter',
-            eventListFile = cms.string('Analysis/PECTuples/data/ecalscn1043093_Dec01.txt'),
+            eventListFile = cms.FileInPath('Analysis/PECTuples/data/ecalscn1043093_Dec01.txt'),
             rejectKnownEvents = cms.bool(True))
         
         paths.append(process.newEEBadSC)
@@ -56,7 +56,7 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
         # Reject events flagged by the updated CSC beam halo filter. Use ROOT file with the list of
         # event IDs instead of a text one because of the large number of events
         process.cscBeamHalo = cms.EDFilter('EventIDFilter',
-            eventListFile = cms.string('Analysis/PECTuples/data/csc2015_Dec01.root'),
+            eventListFile = cms.FileInPath('Analysis/PECTuples/data/csc2015_Dec01.root'),
             rejectKnownEvents = cms.bool(True))
         
         paths.append(process.cscBeamHalo)
