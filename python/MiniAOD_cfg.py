@@ -168,7 +168,7 @@ muQualityCuts = DefineMuons(process)
 
 
 # Define the jets
-DefineJets(process, reapplyJEC = True, runOnData = runOnData)
+jetQualityCuts = DefineJets(process, reapplyJEC = True, runOnData = runOnData)
 
 
 # The loose event selection
@@ -240,6 +240,7 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     jets = cms.InputTag('analysisPatJets'),
     jecPayload = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
+    jetSelection = jetQualityCuts,
     met = cms.InputTag('slimmedMETs'))
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',

@@ -95,10 +95,13 @@ def DefineMuons(process):
 
 
 def DefineJets(process, reapplyJEC = False, runOnData = False):
-    """ Reapplies JEC and applies quality selection to jets. User is expected to exploit the
-        following collections:
+    """ 
+        Adjusts jets. In particular, it reapplies JEC. User is expected to exploit the following
+        products only:
         
-        analysisPatJets: Corrected jets subjected to the recommended filtering on quality.
+        analysisPatJets: Corrected jets to be used in the analysis.
+        
+        jetQualityCuts: Vector of quality cuts to be applied to the above collection.
     """
     
     # Reapply JEC if requested [1]. The corrections are read from the current global tag
@@ -121,6 +124,13 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
             jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsReapplyJEC')))
     
     
+    # Define analysis-level jets by applying a very loose selection
+    process.analysisPatJets = cms.EDFilter('PATJetSelector',
+        src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
+         cms.InputTag('slimmedJets')),
+        cut = cms.string('pt > 10. & abs(eta) < 5.'))
+    
+    
     # Jet ID [1]. Accessors to energy fractions in pat::Jet take into account JEC, and thus there is
     # no need to unapply the corrections
     jetLooseID = (
@@ -137,12 +147,8 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         # Requirements for the HF region
         'abs(eta) > 3. & neutralMultiplicity > 10 & neutralEmEnergyFraction < 0.90')
     
-    
-    # Select jets that pass the above ID and some kinematical cuts
-    process.analysisPatJets = cms.EDFilter('PATJetSelector',
-        src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
-         cms.InputTag('slimmedJets')),
-        cut = cms.string('pt > 5. & abs(eta) < 4.7 & ' + jetLooseID))
+    # Specify additional selection to be evaluated
+    jetQualityCuts = cms.vstring(jetLooseID)
     
     
     # When running over simulation, produce jet collections with varied systematic uncertainties.
@@ -156,3 +162,6 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
             shiftBy = cms.double(+1.))
         
         process.analysisPatJetsScaleDown = process.analysisPatJetsScaleUp.clone(shiftBy = -1.)
+    
+    
+    return jetQualityCuts
