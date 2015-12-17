@@ -229,8 +229,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
         using Var = pat::MET::METUncertainty;
         
         for (Var const &var: {Var::JetEnUp, Var::JetEnDown, Var::JetResUp, Var::JetResDown,
-         Var::MuonEnUp, Var::MuonEnDown, Var::ElectronEnUp, Var::ElectronEnDown,
-         Var::TauEnUp, Var::TauEnDown, Var::UnclusteredEnUp, Var::UnclusteredEnDown})
+         Var::UnclusteredEnUp, Var::UnclusteredEnDown})
         {
             storeMET.Reset();
             storeMET.SetPt(met.shiftedPt(var, pat::MET::Type1));
