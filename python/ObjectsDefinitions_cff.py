@@ -165,3 +165,37 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
     
     
     return jetQualityCuts
+
+
+def DefineMETs(process, runOnData = False, jecUncertaintyTextFile = ''):
+    """
+    """
+    
+    # Recalculate MET corrections. A very poor documentation is available in [1]. There is a
+    # relevant discussion in hypernews
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
+    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/437.html?inline=-1
+    from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
+     runMetCorAndUncFromMiniAOD
+    runMetCorAndUncFromMiniAOD(
+        process,
+        metType = 'PF',
+        isData = runOnData,
+        repro74X = False,
+        # electronColl = '', muonColl = '', photonColl = '', tauColl = '',
+        jetColl = 'slimmedJets',
+        jetCollUnskimmed = 'slimmedJets',
+        pfCandColl = 'packedPFCandidates',
+        jecUncFile = jecUncertaintyTextFile,
+        postfix = '')
+    #^ Keyword argument repro74X in the above configuration is not documented. It should be set to
+    # True when running over a MiniAOD dataset produced in a 7_4_X release with X <= 12.
+    # Use default collections of leptons, taus, and photons. Could have switched off calculation of
+    # the corresponding variations of MET by setting collection names to '', but PATMETSlimmer
+    # requires these variations [1].
+    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_4_15_patch1/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
+    
+    
+    # Wrong correction level specified in the default configuration [1]
+    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/met/437/1/1/1.html
+    process.metcalo.correctionLevel = 'rawCalo'

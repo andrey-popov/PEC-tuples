@@ -171,6 +171,11 @@ muQualityCuts = DefineMuons(process)
 jetQualityCuts = DefineJets(process, reapplyJEC = True, runOnData = runOnData)
 
 
+# Define MET
+DefineMETs(process, runOnData = runOnData,
+    jecUncertaintyTextFile = 'Analysis/PECTuples/data/Summer15_25nsV6_MC_UncertaintySources_AK4PFchs.txt')
+
+
 # The loose event selection
 process.countTightPatElectrons = cms.EDFilter('PATCandViewCountFilter',
     src = cms.InputTag('patElectronsForEventSelection'),
@@ -241,7 +246,7 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     jecPayload = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
     jetSelection = jetQualityCuts,
-    met = cms.InputTag('slimmedMETs'))
+    met = cms.InputTag('slimmedMETs', processName = process.name_()))
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -282,7 +287,7 @@ if runOnData and options.saveGenJets:
         jets = cms.InputTag('slimmedGenJets'),
         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
         saveFlavourCounters = cms.bool(True),
-        met = cms.InputTag('slimmedMETs'))
+        met = cms.InputTag('slimmedMETs', processName = process.name_()))
     paths.append(process.pecGenJetMET)
 
 
