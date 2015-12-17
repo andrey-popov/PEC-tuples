@@ -210,3 +210,11 @@ def DefineMETs(process, runOnData = False, jetCollection = '', jecUncertaintyTex
         process.shiftedPatJetEnUp.addResidualJES = False
         process.shiftedPatJetEnDown.addResidualJES = False
         process.patPFMetT1T2Corr.isMC = True
+    
+    
+    # Update the type of JEC uncertainties used (total instead of 'SubTotalMC') as recommended
+    # in [1-2]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETRun2Corrections?rev=35#type_1_PF_MET_recommended
+    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/425/1/1/1/1/1.html
+    for module in ['shiftedPatJetEnUp', 'shiftedPatJetEnDown']:
+        getattr(process, module).jetCorrUncertaintyTag = ''

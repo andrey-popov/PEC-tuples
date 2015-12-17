@@ -174,7 +174,7 @@ recorrectedJetsLabel, jetQualityCuts = DefineJets(process, reapplyJEC = True, ru
 # Define MET
 DefineMETs(process, runOnData = runOnData,
     jetCollection = recorrectedJetsLabel,
-    jecUncertaintyTextFile = 'Analysis/PECTuples/data/Summer15_25nsV6_MC_UncertaintySources_AK4PFchs.txt')
+    jecUncertaintyTextFile = 'Analysis/PECTuples/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt')
 
 
 # The loose event selection
