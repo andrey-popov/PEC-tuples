@@ -202,3 +202,11 @@ def DefineMETs(process, runOnData = False, jetCollection = '', jecUncertaintyTex
     # Wrong correction level specified in the default configuration [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/met/437/1/1/1.html
     process.metcalo.correctionLevel = 'rawCalo'
+    
+    
+    # In several places residual corrections are mistakenly applied regardless of whether data or
+    # simulation are processed
+    if not runOnData:
+        process.shiftedPatJetEnUp.addResidualJES = False
+        process.shiftedPatJetEnDown.addResidualJES = False
+        process.patPFMetT1T2Corr.isMC = True
