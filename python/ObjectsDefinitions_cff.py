@@ -101,6 +101,8 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         
         analysisPatJets: Corrected jets to be used in the analysis.
         
+        recorrectedJetsLabel: Label of collection of jets with up-to-date JEC and no selection.
+        
         jetQualityCuts: Vector of quality cuts to be applied to the above collection.
     """
     
@@ -123,11 +125,12 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
             jetSource = cms.InputTag('slimmedJets'),
             jetCorrFactorsSource = cms.VInputTag(cms.InputTag('jetCorrectionFactorsReapplyJEC')))
     
+    recorrectedJetsLabel = ('recorrectedSlimmedJets' if reapplyJEC else 'slimmedJets')
+    
     
     # Define analysis-level jets by applying a very loose selection
     process.analysisPatJets = cms.EDFilter('PATJetSelector',
-        src = (cms.InputTag('recorrectedSlimmedJets') if reapplyJEC else \
-         cms.InputTag('slimmedJets')),
+        src = cms.InputTag(recorrectedJetsLabel),
         cut = cms.string('pt > 10. & abs(eta) < 5.'))
     
     
@@ -164,10 +167,10 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         process.analysisPatJetsScaleDown = process.analysisPatJetsScaleUp.clone(shiftBy = -1.)
     
     
-    return jetQualityCuts
+    return recorrectedJetsLabel, jetQualityCuts
 
 
-def DefineMETs(process, runOnData = False, jecUncertaintyTextFile = ''):
+def DefineMETs(process, runOnData = False, jetCollection = '', jecUncertaintyTextFile = ''):
     """
     """
     
@@ -183,8 +186,8 @@ def DefineMETs(process, runOnData = False, jecUncertaintyTextFile = ''):
         isData = runOnData,
         repro74X = False,
         # electronColl = '', muonColl = '', photonColl = '', tauColl = '',
-        jetColl = 'slimmedJets',
-        jetCollUnskimmed = 'slimmedJets',
+        jetColl = jetCollection,
+        jetCollUnskimmed = jetCollection,
         pfCandColl = 'packedPFCandidates',
         jecUncFile = jecUncertaintyTextFile,
         postfix = '')

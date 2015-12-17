@@ -168,11 +168,12 @@ muQualityCuts = DefineMuons(process)
 
 
 # Define the jets
-jetQualityCuts = DefineJets(process, reapplyJEC = True, runOnData = runOnData)
+recorrectedJetsLabel, jetQualityCuts = DefineJets(process, reapplyJEC = True, runOnData = runOnData)
 
 
 # Define MET
 DefineMETs(process, runOnData = runOnData,
+    jetCollection = recorrectedJetsLabel,
     jecUncertaintyTextFile = 'Analysis/PECTuples/data/Summer15_25nsV6_MC_UncertaintySources_AK4PFchs.txt')
 
 
