@@ -111,17 +111,17 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
         process.load('PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff')
         
-        process.patJetCorrFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
+        process.jetCorrectionFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
             src = cms.InputTag('slimmedJets'),
             levels = ['L1FastJet', 'L2Relative', 'L3Absolute'],
             payload = 'AK4PFchs')
         
         if runOnData:
-            process.patJetCorrFactorsReapplyJEC.levels.append('L2L3Residual')
+            process.jetCorrectionFactorsReapplyJEC.levels.append('L2L3Residual')
         
         process.recorrectedSlimmedJets = process.patJetsUpdated.clone(
             jetSource = cms.InputTag('slimmedJets'),
-            jetCorrFactorsSource = cms.VInputTag(cms.InputTag('patJetCorrFactorsReapplyJEC')))
+            jetCorrFactorsSource = cms.VInputTag(cms.InputTag('jetCorrectionFactorsReapplyJEC')))
     
     
     # Define analysis-level jets by applying a very loose selection
