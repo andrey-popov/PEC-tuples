@@ -218,3 +218,9 @@ def DefineMETs(process, runOnData = False, jetCollection = '', jecUncertaintyTex
     # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/425/1/1/1/1/1.html
     for module in ['shiftedPatJetEnUp', 'shiftedPatJetEnDown']:
         getattr(process, module).jetCorrUncertaintyTag = ''
+    
+    
+    # Drop corrections for phi modulation since they are not recommended at the moment [1]
+    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/met/422/1/1/1.html
+    del(process.slimmedMETs.tXYUncForRaw)
+    del(process.slimmedMETs.tXYUncForT1)
