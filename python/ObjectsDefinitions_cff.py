@@ -170,7 +170,7 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
     return recorrectedJetsLabel, jetQualityCuts
 
 
-def DefineMETs(process, runOnData = False, jetCollection = '', jecUncertaintyTextFile = ''):
+def DefineMETs(process, runOnData = False, jetCollection = ''):
     """
     """
     
@@ -189,7 +189,7 @@ def DefineMETs(process, runOnData = False, jetCollection = '', jecUncertaintyTex
         jetColl = jetCollection,
         jetCollUnskimmed = jetCollection,
         pfCandColl = 'packedPFCandidates',
-        jecUncFile = jecUncertaintyTextFile,
+        jecUncFile = 'Analysis/PECTuples/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt',
         postfix = '')
     #^ Keyword argument repro74X in the above configuration is not documented. It should be set to
     # True when running over a MiniAOD dataset produced in a 7_4_X release with X <= 12.
