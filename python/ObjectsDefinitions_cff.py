@@ -109,11 +109,10 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
     # Reapply JEC if requested [1]. The corrections are read from the current global tag
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#CorrPatJets
     if reapplyJEC:
-        # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetCorrFactorsUpdated
-        # from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import patJetsUpdated
-        process.load('PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff')
+        from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import \
+            patJetCorrFactorsUpdated, patJetsUpdated
         
-        process.jetCorrectionFactorsReapplyJEC = process.patJetCorrFactorsUpdated.clone(
+        process.jetCorrectionFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
             src = cms.InputTag('slimmedJets'),
             levels = ['L1FastJet', 'L2Relative', 'L3Absolute'],
             payload = 'AK4PFchs')
@@ -121,7 +120,7 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
         if runOnData:
             process.jetCorrectionFactorsReapplyJEC.levels.append('L2L3Residual')
         
-        process.recorrectedSlimmedJets = process.patJetsUpdated.clone(
+        process.recorrectedSlimmedJets = patJetsUpdated.clone(
             jetSource = cms.InputTag('slimmedJets'),
             jetCorrFactorsSource = cms.VInputTag(cms.InputTag('jetCorrectionFactorsReapplyJEC')))
     
