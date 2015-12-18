@@ -78,7 +78,7 @@ def DefineElectrons(process):
     # tighter kinematical cuts
     process.patElectronsForEventSelection = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('analysisPatElectrons'),
-        cut = cms.string('pt > 27. & abs(eta) < 2.1'))
+        cut = cms.string('pt > 22. & abs(eta) < 2.5'))
     
     
     # Return values
@@ -113,7 +113,7 @@ def DefineMuons(process):
     # kinematical cuts to muons but allows a muon to be non-isolated or poorly identified
     process.patMuonsForEventSelection = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('analysisPatMuons'),
-        cut = cms.string('pt > 20. & abs(eta) < 2.1'))
+        cut = cms.string('pt > 17. & abs(eta) < 2.5'))
     
     
     # Return values
