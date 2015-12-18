@@ -31,7 +31,8 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 # Ask to print a summary in the log
 process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True))
+    wantSummary = cms.untracked.bool(True),
+    allowUnscheduled = cms.untracked.bool(True))
 
 
 # Parse command-line options
@@ -162,9 +163,10 @@ paths.append(process.goodOfflinePrimaryVertices)
 from Analysis.PECTuples.ObjectsDefinitions_cff import *
 
 eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
- DefineElectrons(process, paths)
-muQualityCuts = DefineMuons(process, paths)
-DefineJets(process, paths)
+ DefineElectrons(process)
+muQualityCuts = DefineMuons(process)
+recorrectedJetsLabel, jetQualityCuts = DefineJets(process, reapplyJEC = True, runOnData = runOnData)
+DefineMETs(process, runOnData = runOnData, jetCollection = recorrectedJetsLabel)
 
 
 # The loose event selection
@@ -179,10 +181,9 @@ process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
     src = cms.VInputTag('analysisPatJets'),
     cut = cms.string('pt > ' + str(jetPtThreshold)),
     minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999))
-# if not runOnData:
-#     process.countGoodJets.src = cms.VInputTag('analysisPatJets', 'smearedPatJets',
-#      'smearedPatJetsResUp', 'smearedPatJetsResUp',
-#      'shiftedPatJetsEnUpForCorrMEt', 'shiftedPatJetsEnDownForCorrMEt')
+if not runOnData:
+    process.countGoodJets.src = cms.VInputTag('analysisPatJets',
+        'analysisPatJetsScaleUp', 'analysisPatJetsScaleDown')
 
 if elChan:
     process.elPath += process.countTightPatElectrons
@@ -245,9 +246,10 @@ process.pecMuons = cms.EDAnalyzer('PECMuons',
 process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
+    jecPayload = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
-    jetMinRawPt = cms.double(10.),
-    met = cms.InputTag('slimmedMETs'))
+    jetSelection = jetQualityCuts,
+    met = cms.InputTag('slimmedMETs', processName = process.name_()))
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
@@ -288,7 +290,7 @@ if not runOnData and options.saveGenJets:
         jets = cms.InputTag('slimmedGenJets'),
         cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
         saveFlavourCounters = cms.bool(True),
-        met = cms.InputTag('slimmedMETs'))
+        met = cms.InputTag('slimmedMETs', processName = process.name_()))
     paths.append(process.pecGenJetMET)
 
 

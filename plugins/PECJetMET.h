@@ -11,6 +11,7 @@
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
+#include <CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -19,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 
 /**
@@ -47,6 +49,9 @@ public:
     /// Creates output tree
     virtual void beginJob() override;
     
+    /// Creates an object to access JEC uncertainty
+    virtual void beginRun(edm::Run const &, edm::EventSetup const &setup) override;
+    
     /**
      * \brief Analyses current event
      * 
@@ -62,14 +67,18 @@ private:
     /// MET
     edm::EDGetTokenT<edm::View<pat::MET>> metToken;
     
+    /**
+     * \brief Label of the applied JEC payload
+     * 
+     * Needed to access JEC uncertainties.
+     */
+    std::string const jecPayloadLabel;
+    
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;
     
     /// Minimal raw transverse momentum to determine which jets are stored
     double const jetMinRawPt;
-    
-    /// A flag that indicates if corrected or raw momenta should be stored for jets
-    bool const saveCorrectedJetMomenta;
     
     /**
      * \brief String-based selections
@@ -90,9 +99,20 @@ private:
      */
     bool const runOnData;
     
+    /**
+     * \brief Requests saving raw jet momenta only
+     * 
+     * JEC/JER factors and their uncertainties will not be saved.
+     */
+    bool const rawJetMomentaOnly;
+    
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
+    
+    
+    /// An object to access JEC uncertainty
+    std::unique_ptr<JetCorrectionUncertainty> jecUncProvider;
     
     
     /// Output tree

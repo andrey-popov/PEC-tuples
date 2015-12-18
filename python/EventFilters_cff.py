@@ -25,7 +25,7 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
         inputLabel = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHEIsoNoiseFilterResult'),
         reverseDecision = cms.bool(False))
     
-    paths.append(process.HBHENoiseFilterResultProducer, process.ApplyBaselineHBHENoiseFilter,
+    paths.append(process.ApplyBaselineHBHENoiseFilter,
         process.ApplyBaselineHBHEIsoNoiseFilter)
     
     

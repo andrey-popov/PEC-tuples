@@ -1,5 +1,8 @@
 #include "PECJetMET.h"
 
+#include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
+#include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
+
 #include <FWCore/Framework/interface/EventSetup.h>
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Utilities/interface/InputTag.h>
@@ -14,10 +17,11 @@ using namespace std;
 
 
 PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
+    jecPayloadLabel(cfg.getParameter<string>("jecPayload")),
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
-    saveCorrectedJetMomenta(cfg.getParameter<bool>("saveCorrectedJetMomenta")),
-    runOnData(cfg.getParameter<bool>("runOnData"))
+    runOnData(cfg.getParameter<bool>("runOnData")),
+    rawJetMomentaOnly(cfg.getParameter<bool>("rawJetMomentaOnly"))
 {
     // Register required input data
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
@@ -36,15 +40,16 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
     desc.add<bool>("runOnData")->
      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
+    desc.add<string>("jecPayload")->setComment("Label of applied JEC payload.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "tree.");
     desc.add<double>("jetMinPt", 20.)->
      setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
-    desc.add<double>("jetMinRawPt", 10.)->
+    desc.add<double>("jetMinRawPt", 999.)->
      setComment("Jets with raw pt above this threshold will be stored in the output tree.");
-    desc.add<bool>("saveCorrectedJetMomenta", false)->
-     setComment("Indicates whether correctd or raw jet four-momenta should be stored.");
+    desc.add<bool>("rawJetMomentaOnly", false)->
+     setComment("Requests that only raw jet momenta are saved but not their corrections.");
     desc.add<InputTag>("met")->setComment("MET.");
     
     descriptions.add("jetMET", desc);
@@ -64,7 +69,19 @@ void PECJetMET::beginJob()
 }
 
 
-void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
+void PECJetMET::beginRun(Run const &, EventSetup const &setup)
+{
+    // Construct the object to obtain JEC uncertainty [1]
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
+    ESHandle<JetCorrectorParametersCollection> jecParametersCollection;
+    setup.get<JetCorrectionsRecord>().get(jecPayloadLabel, jecParametersCollection); 
+    
+    JetCorrectorParameters const &jecParameters = (*jecParametersCollection)["Uncertainty"];
+    jecUncProvider.reset(new JetCorrectionUncertainty(jecParameters));
+}
+
+
+void PECJetMET::analyze(Event const &event, EventSetup const &setup)
 {
     // Read the jet collection
     Handle<View<pat::Jet>> srcJets;
@@ -78,27 +95,47 @@ void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
     for (unsigned int i = 0; i < srcJets->size(); ++i)
     {
         pat::Jet const &j = srcJets->at(i);
-        reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
         storeJet.Reset();
         
-        if (j.pt() > jetMinPt or rawP4.pt() > jetMinRawPt)
+        
+        // Will check if the current jet satisfies the provided selection on transverse momentum.
+        //Jets just below the threshold might pass it as a result of a fluctuation in JEC.
+        //Check this possibility
+        double jetPtUpFluctuationFactor = 1.;
+        double curJECUncertainty = 0.;
+        
+        if (not runOnData)
         {
-            // Set four-momentum
-            if (saveCorrectedJetMomenta)
-            {
-                storeJet.SetPt(j.pt());
-                storeJet.SetEta(j.eta());
-                storeJet.SetPhi(j.phi());
-                storeJet.SetM(j.mass());
-            }
-            else
-            {
-                storeJet.SetPt(rawP4.pt());
-                storeJet.SetEta(rawP4.eta());
-                storeJet.SetPhi(rawP4.phi());
-                storeJet.SetM(rawP4.mass());
-            }
+            // Find JEC uncertainty for the current jet [1]
+            //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
+            jecUncProvider->setJetEta(j.eta());
+            jecUncProvider->setJetPt(j.pt());
+            curJECUncertainty = jecUncProvider->getUncertainty(true);
             
+            
+            // Update the factor for upwards fluctuation
+            jetPtUpFluctuationFactor = 1. + fabs(curJECUncertainty);
+        }
+        
+        
+        // Perform filtering on transverse momentum and save properties of the current jet
+        reco::Candidate::LorentzVector const &rawP4 = j.correctedP4("Uncorrected");
+        
+        if (j.pt() * jetPtUpFluctuationFactor > jetMinPt or rawP4.pt() > jetMinRawPt)
+        {
+            storeJet.SetPt(rawP4.pt());
+            storeJet.SetEta(rawP4.eta());
+            storeJet.SetPhi(rawP4.phi());
+            storeJet.SetM(rawP4.mass());
+            
+            if (not rawJetMomentaOnly)
+            {
+                storeJet.SetJECFactor(1. / j.jecFactor("Uncorrected"));
+                //^ Raw momentum is stored, and it will need to be corrected back to current level
+                
+                if (not runOnData)
+                    storeJet.SetJECUncertainty(curJECUncertainty);
+            }
             
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());
@@ -192,8 +229,7 @@ void PECJetMET::analyze(edm::Event const &event, edm::EventSetup const &setup)
         using Var = pat::MET::METUncertainty;
         
         for (Var const &var: {Var::JetEnUp, Var::JetEnDown, Var::JetResUp, Var::JetResDown,
-         Var::MuonEnUp, Var::MuonEnDown, Var::ElectronEnUp, Var::ElectronEnDown,
-         Var::TauEnUp, Var::TauEnDown, Var::UnclusteredEnUp, Var::UnclusteredEnDown})
+         Var::UnclusteredEnUp, Var::UnclusteredEnDown})
         {
             storeMET.Reset();
             storeMET.SetPt(met.shiftedPt(var, pat::MET::Type1));
