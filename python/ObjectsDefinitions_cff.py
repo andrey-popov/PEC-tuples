@@ -171,6 +171,24 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
 
 def DefineMETs(process, runOnData = False, jetCollection = ''):
     """
+        Configures recalculation of corrected MET and its systematic uncertainties. Name of the jet
+        collection exploited in the procedure is provided as an argument of the function. Only
+        type-1 corrections are applied to MET. Due to limitations of MET tools, uncertainties are
+        calculated even when runnning over data. Moreover, the uncertainties include ones
+        corresponding to variations in energies of leptons, taus, and photons, although they are not
+        used in the analysis.
+        
+        Uncertainties corresponding to JER are computed using outdated parameters. A recipe for
+        13 TeV data is still under development.
+        
+        There have been many problems with the MET PAT tool and related CMSSW plugins. Although some
+        of them are fixed here, there might be others. Thus, MET should be used with a great
+        causion.
+        
+        The user should use the following products only:
+        
+        slimmedMETs: Recomputed corrected MET with uncertainties. Overrides a namesake collection
+            in MiniAOD.
     """
     
     # Recalculate MET corrections. A very poor documentation is available in [1]. There is a
