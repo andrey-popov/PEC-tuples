@@ -46,13 +46,13 @@ void PileUpInfo::SetNumPV(unsigned numPV_)
 }
 
 
-void PileUpInfo::SetRho(double rho_)
+void PileUpInfo::SetRho(float rho_)
 {
     rho = rho_;
 }
 
 
-void PileUpInfo::SetTrueNumPU(double lambda)
+void PileUpInfo::SetTrueNumPU(float lambda)
 {
     trueNumPU = lambda;
 }
@@ -70,13 +70,13 @@ unsigned PileUpInfo::NumPV() const
 }
 
 
-double PileUpInfo::Rho() const
+float PileUpInfo::Rho() const
 {
     return rho;
 }
 
 
-double PileUpInfo::TrueNumPU() const
+float PileUpInfo::TrueNumPU() const
 {
     return trueNumPU;
 }

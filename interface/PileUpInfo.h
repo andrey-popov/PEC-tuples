@@ -29,14 +29,14 @@ namespace pec
         void SetNumPV(unsigned numPV);
         
         /// Sets average angular pt density
-        void SetRho(double rho);
+        void SetRho(float rho);
         
         /**
          * \brief Sets the true number of pile-up interactions
          * 
          * The method must be used for simulation only.
          */
-        void SetTrueNumPU(double lambda);
+        void SetTrueNumPU(float lambda);
         
         /**
          * \brief Sets the number of pile-up interactions in the nominal bunch crossing
@@ -49,7 +49,7 @@ namespace pec
         unsigned NumPV() const;
         
         /// Returns average angular pt density, GeV
-        double Rho() const;
+        float Rho() const;
         
         /**
          * \brief Returns the true number of pile-up interactions
@@ -58,7 +58,7 @@ namespace pec
          * interactions in a bunch crossing. When used with real data, the method is expected to
          * return a zero.
          */
-        double TrueNumPU() const;
+        float TrueNumPU() const;
         
         /**
          * \brief Returns the number of pile-up interactions in the nominal bunch crossing

@@ -37,49 +37,49 @@ void Candidate::Reset()
 }
 
 
-void Candidate::SetPt(double pt_)
+void Candidate::SetPt(float pt_)
 {
     pt = pt_;
 }
 
 
-void Candidate::SetEta(double eta_)
+void Candidate::SetEta(float eta_)
 {
     eta = eta_;
 }
 
 
-void Candidate::SetPhi(double phi_)
+void Candidate::SetPhi(float phi_)
 {
     phi = phi_;
 }
 
 
-void Candidate::SetM(double mass_)
+void Candidate::SetM(float mass_)
 {
     mass = mass_;
 }
 
 
-double Candidate::Pt() const
+float Candidate::Pt() const
 {
     return pt;
 }
 
 
-double Candidate::Eta() const
+float Candidate::Eta() const
 {
     return eta;
 }
 
 
-double Candidate::Phi() const
+float Candidate::Phi() const
 {
     return phi;
 }
 
 
-double Candidate::M() const
+float Candidate::M() const
 {
     return mass;
 }

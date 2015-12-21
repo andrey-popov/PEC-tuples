@@ -35,36 +35,36 @@ namespace pec
         virtual void Reset();
         
         /// Sets transverse momentum (GeV/c)
-        void SetPt(double pt);
+        void SetPt(float pt);
         
         /// Sets pseudorapidity
-        void SetEta(double eta);
+        void SetEta(float eta);
         
         /**
          * \brief Sets azimuthal angle
          * 
          * The range is [-pi, pi).
          */
-        void SetPhi(double phi);
+        void SetPhi(float phi);
         
         /// Sets mass (GeV/c^2)
-        void SetM(double mass);
+        void SetM(float mass);
         
         /// Returns transverse momentum (GeV/c)
-        double Pt() const;
+        float Pt() const;
         
         /// Returns pseudorapidity
-        double Eta() const;
+        float Eta() const;
         
         /**
          * \brief Returns azimuthal angle
          * 
          * The range is [-pi, pi).
          */
-        double Phi() const;
+        float Phi() const;
         
         /// Returns mass (GeV/c^2)
-        double M() const;
+        float M() const;
         
     private:
         /// Transverse momentum, GeV/c

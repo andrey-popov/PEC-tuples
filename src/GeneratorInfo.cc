@@ -53,13 +53,13 @@ void GeneratorInfo::SetProcessId(int processId_)
 }
 
 
-void GeneratorInfo::AddWeight(double weight)
+void GeneratorInfo::AddWeight(float weight)
 {
     weights.emplace_back(weight);
 }
 
 
-void GeneratorInfo::SetPdfX(unsigned index, double x)
+void GeneratorInfo::SetPdfX(unsigned index, float x)
 {
     // Check the index
     if (index > 1)
@@ -77,7 +77,7 @@ void GeneratorInfo::SetPdfX(unsigned index, double x)
 }
 
 
-void GeneratorInfo::SetPdfXs(double x1, double x2)
+void GeneratorInfo::SetPdfXs(float x1, float x2)
 {
     SetPdfX(0, x1);
     SetPdfX(1, x2);
@@ -117,7 +117,7 @@ void GeneratorInfo::SetPdfIds(int id1, int id2)
 }
 
 
-void GeneratorInfo::SetPdfQScale(double scale)
+void GeneratorInfo::SetPdfQScale(float scale)
 {
     pdfQScale = scale;
 }
@@ -135,7 +135,7 @@ unsigned GeneratorInfo::NumWeights() const
 }
 
 
-double GeneratorInfo::Weight(unsigned index) const
+float GeneratorInfo::Weight(unsigned index) const
 {
     if (index >= weights.size())
         throw std::range_error("GeneratorInfo::Weight: Index given is out of range.");
@@ -144,7 +144,7 @@ double GeneratorInfo::Weight(unsigned index) const
 }
 
 
-double GeneratorInfo::PdfX(unsigned index) const
+float GeneratorInfo::PdfX(unsigned index) const
 {
     if (index > 1)
         throw std::logic_error("GeneratorInfo::PdfX: Illegal parton index.");
@@ -177,7 +177,7 @@ int GeneratorInfo::PdfId(unsigned index) const
 }
 
 
-double GeneratorInfo::PdfQScale() const
+float GeneratorInfo::PdfQScale() const
 {
     return pdfQScale;
 }

@@ -44,7 +44,7 @@ namespace pec
          * 
          * Throws an exception if the index is out of the supported range.
          */
-        void SetContinuousID(unsigned index, double mva);
+        void SetContinuousID(unsigned index, float mva);
         
         /**
          * \brief Returns decision of selected version of the cut-based ID
@@ -58,7 +58,7 @@ namespace pec
          * 
          * See documentation for the SetMvaID method.
          */
-        double ContinuousID(unsigned index) const;
+        float ContinuousID(unsigned index) const;
         
     private:
         /**

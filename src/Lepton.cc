@@ -53,13 +53,13 @@ void Lepton::SetCharge(int charge_)
 }
 
 
-void Lepton::SetRelIso(double relIso_)
+void Lepton::SetRelIso(float relIso_)
 {
     relIso = relIso_;
 }
 
 
-void Lepton::SetDB(double dB_)
+void Lepton::SetDB(float dB_)
 {
     dB = dB_;
 }
@@ -71,13 +71,13 @@ int Lepton::Charge() const
 }
 
 
-double Lepton::RelIso() const
+float Lepton::RelIso() const
 {
     return relIso;
 }
 
 
-double Lepton::DB() const
+float Lepton::DB() const
 {
     return dB;
 }

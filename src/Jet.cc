@@ -60,25 +60,25 @@ void Jet::Reset()
 }
 
 
-void Jet::SetJECFactor(double jecFactor_)
+void Jet::SetJECFactor(float jecFactor_)
 {
     jecFactor = jecFactor_;
 }
 
 
-void Jet::SetJECUncertainty(double jecUncertainty_)
+void Jet::SetJECUncertainty(float jecUncertainty_)
 {
     jecUncertainty = jecUncertainty_;
 }
 
 
-void Jet::SetBTagCSV(double bTag)
+void Jet::SetBTagCSV(float bTag)
 {
     bTagCSV = bTag;
 }
 
 
-void Jet::SetSecVertexMass(double mass)
+void Jet::SetSecVertexMass(float mass)
 {
     // Usually, the mass is set to a negative value when there is no secondary vertex associated
     //with a jet. Do not to waste one bit for the sign, so reset the mass to zero in such cases
@@ -89,19 +89,19 @@ void Jet::SetSecVertexMass(double mass)
 }
 
 
-void Jet::SetArea(double area_)
+void Jet::SetArea(float area_)
 {
     area = area_;
 }
 
 
-void Jet::SetCharge(double charge_)
+void Jet::SetCharge(float charge_)
 {
     charge = charge_;
 }
 
 
-void Jet::SetPullAngle(double angle)
+void Jet::SetPullAngle(float angle)
 {
     pullAngle = angle;
 }
@@ -113,43 +113,43 @@ void Jet::SetFlavour(int flavour_)
 }
 
 
-double Jet::JECFactor() const
+float Jet::JECFactor() const
 {
     return jecFactor;
 }
 
 
-double Jet::JECUncertainty() const
+float Jet::JECUncertainty() const
 {
     return jecUncertainty;
 }
 
 
-double Jet::BTagCSV() const
+float Jet::BTagCSV() const
 {
     return bTagCSV;
 }
 
 
-double Jet::SecVertexMass() const
+float Jet::SecVertexMass() const
 {
     return secVertexMass;
 }
 
 
-double Jet::Area() const
+float Jet::Area() const
 {
     return area;
 }
 
 
-double Jet::Charge() const
+float Jet::Charge() const
 {
     return charge;
 }
 
 
-double Jet::PullAngle() const
+float Jet::PullAngle() const
 {
     return pullAngle;
 }

@@ -36,10 +36,10 @@ namespace pec
         void SetCharge(int charge);
         
         /// Sets relative isolation
-        void SetRelIso(double relIso);
+        void SetRelIso(float relIso);
         
         /// Sets transverse impact parameter (cm)
-        void SetDB(double dB);
+        void SetDB(float dB);
         
         /**
          * \brief Returns electric charge of the lepton
@@ -49,14 +49,14 @@ namespace pec
         int Charge() const;
         
         /// Returns relative isolation
-        double RelIso() const;
+        float RelIso() const;
         
         /**
          * \brief Returns transverse impact parameter (cm)
          * 
          * The returned value is always positive.
          */
-        double DB() const;
+        float DB() const;
         
     private:
         /**

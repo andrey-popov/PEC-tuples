@@ -35,21 +35,21 @@ namespace pec
         void SetProcessId(int processID);
         
         /// Adds generator-level event weight
-        void AddWeight(double weight);
+        void AddWeight(float weight);
         
         /**
          * \brief Sets momentum fraction carried by an initial parton
          * 
          * Throws an exception if the given index is large than or the fraction is illegal.
          */
-        void SetPdfX(unsigned index, double x);
+        void SetPdfX(unsigned index, float x);
         
         /**
          * \brief Sets momentum fractions for both initial partons simultaneously
          * 
          * Internally, calls to SetPdfX, check documentation for this method.
          */
-        void SetPdfXs(double x1, double x2);
+        void SetPdfXs(float x1, float x2);
         
         /**
          * \brief Sets ID of an initial parton
@@ -67,7 +67,7 @@ namespace pec
         void SetPdfIds(int id1, int id2);
         
         /// Sets energy scale used to evaluate PDF, GeV
-        void SetPdfQScale(double scale);
+        void SetPdfQScale(float scale);
         
         /**
          * \brief Returns process ID
@@ -86,14 +86,14 @@ namespace pec
          * Throws an exception if the index is out of range. Note that the weight might be negative
          * for some generators, e.g. in aMC@NLO.
          */
-        double Weight(unsigned index) const;
+        float Weight(unsigned index) const;
         
         /**
          * \brief Returns momentum fraction carried by an initial parton
          * 
          * Throws an exception if the index is larger than 1.
          */
-        double PdfX(unsigned index) const;
+        float PdfX(unsigned index) const;
         
         /**
          * \brief Returns ID of an initial parton
@@ -104,7 +104,7 @@ namespace pec
         int PdfId(unsigned index) const;
         
         /// Returns energy scale used to evaluate PDF, GeV
-        double PdfQScale() const;
+        float PdfQScale() const;
         
     private:
         /// Process ID as was set during generation of the sample

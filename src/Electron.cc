@@ -61,7 +61,7 @@ void Electron::SetBooleanID(unsigned bitIndex, bool value /*= true*/)
 }
 
 
-void Electron::SetContinuousID(unsigned index, double mva)
+void Electron::SetContinuousID(unsigned index, float mva)
 {
     if (index >= contIdSize)
         throw std::runtime_error("pec::Electron::SetContinuousID: Given index exceeds the maximal "
@@ -81,7 +81,7 @@ bool Electron::BooleanID(unsigned bitIndex) const
 }
 
 
-double Electron::ContinuousID(unsigned index) const
+float Electron::ContinuousID(unsigned index) const
 {
     if (index >= contIdSize)
         throw std::runtime_error("pec::Electron::SetMvaId: Given index exceeds the maximal allowed "

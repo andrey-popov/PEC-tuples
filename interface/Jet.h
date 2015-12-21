@@ -31,33 +31,33 @@ namespace pec
         virtual void Reset();
         
         /// Sets full jet energy correction factor
-        void SetJECFactor(double jecFactor);
+        void SetJECFactor(float jecFactor);
         
         /// Sets relative uncertainty of the full jet energy correction factor
-        void SetJECUncertainty(double jecUncertainty);
+        void SetJECUncertainty(float jecUncertainty);
         
         /// Sets the value of the CSV b-tagging discriminator
-        void SetBTagCSV(double bTag);
+        void SetBTagCSV(float bTag);
         
         /// Sets mass of the secondary vertex associated with the jet
-        void SetSecVertexMass(double mass);
+        void SetSecVertexMass(float mass);
         
         /// Sets jet area
-        void SetArea(double area);
+        void SetArea(float area);
         
         /**
          * \brief Sets electric charge of the jet
          * 
          * See documentation for the method Charge for a description of this quantity.
          */
-        void SetCharge(double charge);
+        void SetCharge(float charge);
         
         /**
          * \brief Sets the pull angle
          * 
          * See documentation of the method PullAngle for a description of this quantity.
          */
-        void SetPullAngle(double angle);
+        void SetPullAngle(float angle);
         
         /**
          * \brief Sets jet flavour
@@ -75,7 +75,7 @@ namespace pec
          * returned value might be zero if only raw momentum is saved and the correction must be
          * applied by the user.
          */
-        double JECFactor() const;
+        float JECFactor() const;
         
         /**
          * \brief Returns relative uncertainty of the jet energy correction factor
@@ -84,20 +84,20 @@ namespace pec
          * obtained as P4() * JECFactor() * (1 +/- JECUncertainty()). If only raw momentum has been
          * stored and the correction is to be applied by the user, the method returns zero.
          */
-        double JECUncertainty() const;
+        float JECUncertainty() const;
         
         /// Returns the value of the CSV b-tagging discriminator
-        double BTagCSV() const;
+        float BTagCSV() const;
         
         /**
          * \brief Returns mass of the secondary vertex associated with the jet
          * 
          * When there is no secondary vertex associated with the jet, the method returns 0.
          */
-        double SecVertexMass() const;
+        float SecVertexMass() const;
         
         /// Returns jet area
-        double Area() const;
+        float Area() const;
         
         /**
          * \brief Returns electric charge of the jet
@@ -108,7 +108,7 @@ namespace pec
          * [1] http://arxiv.org/abs/1209.2421
          * [2] https://hypernews.cern.ch/HyperNews/CMS/get/JetMET/1425.html
          */
-        double Charge() const;
+        float Charge() const;
         
         /**
          * \brief Returns jet pull angle
@@ -117,7 +117,7 @@ namespace pec
          * vector and the rapidity axis. The range is [-pi, pi).
          * [1] http://arxiv.org/abs/1010.3698
          */
-        double PullAngle() const;
+        float PullAngle() const;
         
         /**
          * \brief Returns jet flavour
