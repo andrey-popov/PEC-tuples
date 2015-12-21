@@ -3,23 +3,20 @@
 #include <stdexcept>
 
 
-using namespace pec;
-
-
-GenParticle::GenParticle():
+pec::GenParticle::GenParticle():
     pdgId(0),
     firstMotherIndex(0), lastMotherIndex(0)
 {}
 
 
-GenParticle::GenParticle(GenParticle const &src):
+pec::GenParticle::GenParticle(GenParticle const &src):
     Candidate(src),
     pdgId(src.pdgId),
     firstMotherIndex(src.firstMotherIndex), lastMotherIndex(src.lastMotherIndex)
 {}
 
 
-GenParticle &GenParticle::operator=(GenParticle const &src)
+pec::GenParticle &pec::GenParticle::operator=(GenParticle const &src)
 {
     Candidate::operator=(src);
     
@@ -31,7 +28,7 @@ GenParticle &GenParticle::operator=(GenParticle const &src)
 }
 
 
-void GenParticle::Reset()
+void pec::GenParticle::Reset()
 {
     Candidate::Reset();
     
@@ -40,7 +37,7 @@ void GenParticle::Reset()
 }
 
 
-void GenParticle::SetPdgId(long pdgId_)
+void pec::GenParticle::SetPdgId(long pdgId_)
 {
     if (pdgId_ > 127 or pdgId_ < -128)
         throw std::runtime_error("GenParticle::SetPdgId: Current implementation allows only one "
@@ -50,7 +47,7 @@ void GenParticle::SetPdgId(long pdgId_)
 }
 
 
-void GenParticle::SetFirstMotherIndex(int index)
+void pec::GenParticle::SetFirstMotherIndex(int index)
 {
     if (index < -1)
         throw std::runtime_error("GenParticle::SetFirstMotherIndex: Illegal index.");
@@ -59,7 +56,7 @@ void GenParticle::SetFirstMotherIndex(int index)
 }
 
 
-void GenParticle::SetLastMotherIndex(int index)
+void pec::GenParticle::SetLastMotherIndex(int index)
 {
     if (index < -1)
         throw std::runtime_error("GenParticle::SetFirstMotherIndex: Illegal index.");
@@ -68,19 +65,19 @@ void GenParticle::SetLastMotherIndex(int index)
 }
 
 
-long GenParticle::PdgId() const
+long pec::GenParticle::PdgId() const
 {
     return pdgId;
 }
 
 
-int GenParticle::FirstMotherIndex() const
+int pec::GenParticle::FirstMotherIndex() const
 {
     return firstMotherIndex - 1;
 }
 
 
-int GenParticle::LastMotherIndex() const
+int pec::GenParticle::LastMotherIndex() const
 {
     return lastMotherIndex - 1;
 }

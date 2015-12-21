@@ -4,10 +4,7 @@
 #include <stdexcept>
 
 
-using namespace pec;
-
-
-GeneratorInfo::GeneratorInfo():
+pec::GeneratorInfo::GeneratorInfo():
     processId(0),
     pdfX(),  // the array is zeroed according to the C++03 standard
     pdfId(0),
@@ -15,7 +12,7 @@ GeneratorInfo::GeneratorInfo():
 {}
 
 
-GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
+pec::GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
     processId(src.processId),
     weights(src.weights),
     pdfId(src.pdfId),
@@ -25,7 +22,7 @@ GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
 }
 
 
-GeneratorInfo &GeneratorInfo::operator=(GeneratorInfo const &src)
+pec::GeneratorInfo &pec::GeneratorInfo::operator=(GeneratorInfo const &src)
 {
     processId = src.processId;
     weights = src.weights;
@@ -37,7 +34,7 @@ GeneratorInfo &GeneratorInfo::operator=(GeneratorInfo const &src)
 }
 
 
-void GeneratorInfo::Reset()
+void pec::GeneratorInfo::Reset()
 {
     processId = 0;
     weights.clear();
@@ -47,19 +44,19 @@ void GeneratorInfo::Reset()
 }
 
 
-void GeneratorInfo::SetProcessId(int processId_)
+void pec::GeneratorInfo::SetProcessId(int processId_)
 {
     processId = processId_;
 }
 
 
-void GeneratorInfo::AddWeight(float weight)
+void pec::GeneratorInfo::AddWeight(float weight)
 {
     weights.emplace_back(weight);
 }
 
 
-void GeneratorInfo::SetPdfX(unsigned index, float x)
+void pec::GeneratorInfo::SetPdfX(unsigned index, float x)
 {
     // Check the index
     if (index > 1)
@@ -77,14 +74,14 @@ void GeneratorInfo::SetPdfX(unsigned index, float x)
 }
 
 
-void GeneratorInfo::SetPdfXs(float x1, float x2)
+void pec::GeneratorInfo::SetPdfXs(float x1, float x2)
 {
     SetPdfX(0, x1);
     SetPdfX(1, x2);
 }
 
 
-void GeneratorInfo::SetPdfId(unsigned index, int id)
+void pec::GeneratorInfo::SetPdfId(unsigned index, int id)
 {
     // Check the index
     if (index > 1)
@@ -110,32 +107,32 @@ void GeneratorInfo::SetPdfId(unsigned index, int id)
 }
 
 
-void GeneratorInfo::SetPdfIds(int id1, int id2)
+void pec::GeneratorInfo::SetPdfIds(int id1, int id2)
 {
     SetPdfId(0, id1);
     SetPdfId(1, id2);
 }
 
 
-void GeneratorInfo::SetPdfQScale(float scale)
+void pec::GeneratorInfo::SetPdfQScale(float scale)
 {
     pdfQScale = scale;
 }
 
 
-int GeneratorInfo::ProcessId() const
+int pec::GeneratorInfo::ProcessId() const
 {
     return processId;
 }
 
 
-unsigned GeneratorInfo::NumWeights() const
+unsigned pec::GeneratorInfo::NumWeights() const
 {
     return weights.size();
 }
 
 
-float GeneratorInfo::Weight(unsigned index) const
+float pec::GeneratorInfo::Weight(unsigned index) const
 {
     if (index >= weights.size())
         throw std::range_error("GeneratorInfo::Weight: Index given is out of range.");
@@ -144,7 +141,7 @@ float GeneratorInfo::Weight(unsigned index) const
 }
 
 
-float GeneratorInfo::PdfX(unsigned index) const
+float pec::GeneratorInfo::PdfX(unsigned index) const
 {
     if (index > 1)
         throw std::logic_error("GeneratorInfo::PdfX: Illegal parton index.");
@@ -153,7 +150,7 @@ float GeneratorInfo::PdfX(unsigned index) const
 }
 
 
-int GeneratorInfo::PdfId(unsigned index) const
+int pec::GeneratorInfo::PdfId(unsigned index) const
 {
     if (index > 1)
         throw std::logic_error("GeneratorInfo::PdfId: Illegal parton index.");
@@ -177,7 +174,7 @@ int GeneratorInfo::PdfId(unsigned index) const
 }
 
 
-float GeneratorInfo::PdfQScale() const
+float pec::GeneratorInfo::PdfQScale() const
 {
     return pdfQScale;
 }

@@ -1,24 +1,21 @@
 #include <Analysis/PECTuples/interface/EventID.h>
 
 
-using namespace pec;
-
-
-EventID::EventID():
+pec::EventID::EventID():
     run(0),
     lumi(0),
     event(0)
 {}
 
 
-EventID::EventID(EventID const &src):
+pec::EventID::EventID(EventID const &src):
     run(src.run),
     lumi(src.lumi),
     event(src.event)
 {}
 
 
-EventID &EventID::operator=(EventID const &src)
+pec::EventID &pec::EventID::operator=(EventID const &src)
 {
     run = src.run;
     lumi = src.lumi;
@@ -28,7 +25,7 @@ EventID &EventID::operator=(EventID const &src)
 }
 
 
-void EventID::Reset()
+void pec::EventID::Reset()
 {
     run = 0;
     lumi = 0;
@@ -36,37 +33,37 @@ void EventID::Reset()
 }
 
 
-void EventID::SetRunNumber(unsigned long long run_)
+void pec::EventID::SetRunNumber(unsigned long long run_)
 {
     run = run_;
 }
 
 
-void EventID::SetLumiSectionNumber(unsigned long long lumi_)
+void pec::EventID::SetLumiSectionNumber(unsigned long long lumi_)
 {
     lumi = lumi_;
 }
 
 
-void EventID::SetEventNumber(unsigned long long event_)
+void pec::EventID::SetEventNumber(unsigned long long event_)
 {
     event = event_;
 }
 
 
-unsigned long long EventID::RunNumber() const
+unsigned long long pec::EventID::RunNumber() const
 {
     return run;
 }
 
 
-unsigned long long EventID::LumiSectionNumber() const
+unsigned long long pec::EventID::LumiSectionNumber() const
 {
     return lumi;
 }
 
 
-unsigned long long EventID::EventNumber() const
+unsigned long long pec::EventID::EventNumber() const
 {
     return event;
 }

@@ -1,20 +1,17 @@
 #include <Analysis/PECTuples/interface/Muon.h>
 
 
-using namespace pec;
-
-
-Muon::Muon():
+pec::Muon::Muon():
     Lepton()
 {}
 
 
-Muon::Muon(Muon const &src):
+pec::Muon::Muon(Muon const &src):
     Lepton(src)
 {}
 
 
-Muon &Muon::operator=(Muon const &src)
+pec::Muon &pec::Muon::operator=(Muon const &src)
 {
     Lepton::operator=(src);
     
@@ -22,7 +19,7 @@ Muon &Muon::operator=(Muon const &src)
 }
 
 
-void Muon::Reset()
+void pec::Muon::Reset()
 {
     Lepton::Reset();
 }

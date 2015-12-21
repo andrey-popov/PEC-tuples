@@ -3,22 +3,19 @@
 #include <stdexcept>
 
 
-using namespace pec;
-
-
-Lepton::Lepton():
+pec::Lepton::Lepton():
     CandidateWithID(),
     charge(false), relIso(0), dB(0)
 {}
 
 
-Lepton::Lepton(Lepton const &src):
+pec::Lepton::Lepton(Lepton const &src):
     CandidateWithID(src),
     charge(src.charge), relIso(src.relIso), dB(src.dB)
 {}
 
 
-Lepton &Lepton::operator=(Lepton const &src)
+pec::Lepton &pec::Lepton::operator=(Lepton const &src)
 {
     CandidateWithID::operator=(src);
     
@@ -30,11 +27,11 @@ Lepton &Lepton::operator=(Lepton const &src)
 }
 
 
-Lepton::~Lepton()
+pec::Lepton::~Lepton()
 {}
 
 
-void Lepton::Reset()
+void pec::Lepton::Reset()
 {
     CandidateWithID::Reset();
     
@@ -44,7 +41,7 @@ void Lepton::Reset()
 }
 
 
-void Lepton::SetCharge(int charge_)
+void pec::Lepton::SetCharge(int charge_)
 {
     if (charge_ == 0)
         throw std::logic_error("Lepton::SetCharge: The class is meant for charged leptons only.");
@@ -53,31 +50,31 @@ void Lepton::SetCharge(int charge_)
 }
 
 
-void Lepton::SetRelIso(float relIso_)
+void pec::Lepton::SetRelIso(float relIso_)
 {
     relIso = relIso_;
 }
 
 
-void Lepton::SetDB(float dB_)
+void pec::Lepton::SetDB(float dB_)
 {
     dB = dB_;
 }
 
 
-int Lepton::Charge() const
+int pec::Lepton::Charge() const
 {
     return ((charge) ? -1 : 1);
 }
 
 
-float Lepton::RelIso() const
+float pec::Lepton::RelIso() const
 {
     return relIso;
 }
 
 
-float Lepton::DB() const
+float pec::Lepton::DB() const
 {
     return dB;
 }

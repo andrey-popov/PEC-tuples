@@ -1,10 +1,7 @@
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
 
 
-using namespace pec;
-
-
-PileUpInfo::PileUpInfo():
+pec::PileUpInfo::PileUpInfo():
     numPV(0),
     rho(0),
     trueNumPU(0),
@@ -12,7 +9,7 @@ PileUpInfo::PileUpInfo():
 {}
 
 
-PileUpInfo::PileUpInfo(PileUpInfo const &src):
+pec::PileUpInfo::PileUpInfo(PileUpInfo const &src):
     numPV(src.numPV),
     rho(src.rho),
     trueNumPU(src.trueNumPU),
@@ -20,7 +17,7 @@ PileUpInfo::PileUpInfo(PileUpInfo const &src):
 {}
 
 
-PileUpInfo &PileUpInfo::operator=(PileUpInfo const &src)
+pec::PileUpInfo &pec::PileUpInfo::operator=(PileUpInfo const &src)
 {
     numPV = src.numPV;
     rho = src.rho;
@@ -31,7 +28,7 @@ PileUpInfo &PileUpInfo::operator=(PileUpInfo const &src)
 }
 
 
-void PileUpInfo::Reset()
+void pec::PileUpInfo::Reset()
 {
     numPV = 0;
     rho = 0;
@@ -40,49 +37,49 @@ void PileUpInfo::Reset()
 }
 
 
-void PileUpInfo::SetNumPV(unsigned numPV_)
+void pec::PileUpInfo::SetNumPV(unsigned numPV_)
 {
     numPV = numPV_;
 }
 
 
-void PileUpInfo::SetRho(float rho_)
+void pec::PileUpInfo::SetRho(float rho_)
 {
     rho = rho_;
 }
 
 
-void PileUpInfo::SetTrueNumPU(float lambda)
+void pec::PileUpInfo::SetTrueNumPU(float lambda)
 {
     trueNumPU = lambda;
 }
 
 
-void PileUpInfo::SetInTimePU(unsigned n)
+void pec::PileUpInfo::SetInTimePU(unsigned n)
 {
     inTimeNumPU = n;
 }
 
 
-unsigned PileUpInfo::NumPV() const
+unsigned pec::PileUpInfo::NumPV() const
 {
     return numPV;
 }
 
 
-float PileUpInfo::Rho() const
+float pec::PileUpInfo::Rho() const
 {
     return rho;
 }
 
 
-float PileUpInfo::TrueNumPU() const
+float pec::PileUpInfo::TrueNumPU() const
 {
     return trueNumPU;
 }
 
 
-unsigned PileUpInfo::InTimePU() const
+unsigned pec::PileUpInfo::InTimePU() const
 {
     return inTimeNumPU;
 }

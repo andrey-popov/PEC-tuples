@@ -3,10 +3,7 @@
 #include <stdexcept>
 
 
-using namespace pec;
-
-
-Jet::Jet():
+pec::Jet::Jet():
     CandidateWithID(),
     jecFactor(0), jecUncertainty(0),
     bTagCSV(0), secVertexMass(0),
@@ -17,7 +14,7 @@ Jet::Jet():
 {}
 
 
-Jet::Jet(Jet const &src):
+pec::Jet::Jet(Jet const &src):
     CandidateWithID(src),
     jecFactor(src.jecFactor), jecUncertainty(src.jecUncertainty),
     bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
@@ -28,7 +25,7 @@ Jet::Jet(Jet const &src):
 {}
 
 
-Jet &Jet::operator=(Jet const &src)
+pec::Jet &pec::Jet::operator=(Jet const &src)
 {
     CandidateWithID::operator=(src);
     
@@ -45,7 +42,7 @@ Jet &Jet::operator=(Jet const &src)
 }
 
 
-void Jet::Reset()
+void pec::Jet::Reset()
 {
     CandidateWithID::Reset();
     
@@ -60,25 +57,25 @@ void Jet::Reset()
 }
 
 
-void Jet::SetJECFactor(float jecFactor_)
+void pec::Jet::SetJECFactor(float jecFactor_)
 {
     jecFactor = jecFactor_;
 }
 
 
-void Jet::SetJECUncertainty(float jecUncertainty_)
+void pec::Jet::SetJECUncertainty(float jecUncertainty_)
 {
     jecUncertainty = jecUncertainty_;
 }
 
 
-void Jet::SetBTagCSV(float bTag)
+void pec::Jet::SetBTagCSV(float bTag)
 {
     bTagCSV = bTag;
 }
 
 
-void Jet::SetSecVertexMass(float mass)
+void pec::Jet::SetSecVertexMass(float mass)
 {
     // Usually, the mass is set to a negative value when there is no secondary vertex associated
     //with a jet. Do not to waste one bit for the sign, so reset the mass to zero in such cases
@@ -89,73 +86,73 @@ void Jet::SetSecVertexMass(float mass)
 }
 
 
-void Jet::SetArea(float area_)
+void pec::Jet::SetArea(float area_)
 {
     area = area_;
 }
 
 
-void Jet::SetCharge(float charge_)
+void pec::Jet::SetCharge(float charge_)
 {
     charge = charge_;
 }
 
 
-void Jet::SetPullAngle(float angle)
+void pec::Jet::SetPullAngle(float angle)
 {
     pullAngle = angle;
 }
 
 
-void Jet::SetFlavour(int flavour_)
+void pec::Jet::SetFlavour(int flavour_)
 {
     flavour = flavour_;
 }
 
 
-float Jet::JECFactor() const
+float pec::Jet::JECFactor() const
 {
     return jecFactor;
 }
 
 
-float Jet::JECUncertainty() const
+float pec::Jet::JECUncertainty() const
 {
     return jecUncertainty;
 }
 
 
-float Jet::BTagCSV() const
+float pec::Jet::BTagCSV() const
 {
     return bTagCSV;
 }
 
 
-float Jet::SecVertexMass() const
+float pec::Jet::SecVertexMass() const
 {
     return secVertexMass;
 }
 
 
-float Jet::Area() const
+float pec::Jet::Area() const
 {
     return area;
 }
 
 
-float Jet::Charge() const
+float pec::Jet::Charge() const
 {
     return charge;
 }
 
 
-float Jet::PullAngle() const
+float pec::Jet::PullAngle() const
 {
     return pullAngle;
 }
 
 
-int Jet::Flavour() const
+int pec::Jet::Flavour() const
 {
     return flavour;
 }

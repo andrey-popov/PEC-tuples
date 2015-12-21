@@ -1,22 +1,19 @@
 #include <Analysis/PECTuples/interface/GenJet.h>
 
 
-using namespace pec;
-
-
-GenJet::GenJet():
+pec::GenJet::GenJet():
     Candidate(),
     bcMult(0)
 {}
 
 
-GenJet::GenJet(GenJet const &src):
+pec::GenJet::GenJet(GenJet const &src):
     Candidate(src),
     bcMult(src.bcMult)
 {}
 
 
-GenJet &GenJet::operator=(GenJet const &src)
+pec::GenJet &pec::GenJet::operator=(GenJet const &src)
 {
     Candidate::operator=(src);
     
@@ -26,7 +23,7 @@ GenJet &GenJet::operator=(GenJet const &src)
 }
 
 
-void GenJet::Reset()
+void pec::GenJet::Reset()
 {
     Candidate::Reset();
     
@@ -34,7 +31,7 @@ void GenJet::Reset()
 }
 
 
-void GenJet::SetBottomMult(unsigned mult)
+void pec::GenJet::SetBottomMult(unsigned mult)
 {
     if (mult > 15)
         mult = 15;
@@ -43,7 +40,7 @@ void GenJet::SetBottomMult(unsigned mult)
 }
 
 
-void GenJet::SetCharmMult(unsigned mult)
+void pec::GenJet::SetCharmMult(unsigned mult)
 {
     if (mult > 15)
         mult = 15;
@@ -52,13 +49,13 @@ void GenJet::SetCharmMult(unsigned mult)
 }
 
 
-unsigned GenJet::BottomMult() const
+unsigned pec::GenJet::BottomMult() const
 {
     return bcMult / 16;
 }
 
 
-unsigned GenJet::CharmMult() const
+unsigned pec::GenJet::CharmMult() const
 {
     return bcMult % 16;
 }

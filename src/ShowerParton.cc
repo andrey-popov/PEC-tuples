@@ -3,24 +3,21 @@
 #include <stdexcept>
 
 
-using namespace pec;
-
-
-ShowerParton::ShowerParton():
+pec::ShowerParton::ShowerParton():
     Candidate(),
     pdgId(0),
     origin(0)
 {}
 
 
-ShowerParton::ShowerParton(ShowerParton const &src):
+pec::ShowerParton::ShowerParton(ShowerParton const &src):
     Candidate(src),
     pdgId(src.pdgId),
     origin(src.origin)
 {}
 
 
-ShowerParton &ShowerParton::operator=(ShowerParton const &src)
+pec::ShowerParton &pec::ShowerParton::operator=(ShowerParton const &src)
 {
     Candidate::operator=(src);
     
@@ -31,7 +28,7 @@ ShowerParton &ShowerParton::operator=(ShowerParton const &src)
 }
 
 
-void ShowerParton::Reset()
+void pec::ShowerParton::Reset()
 {
     Candidate::Reset();
     
@@ -40,7 +37,7 @@ void ShowerParton::Reset()
 }
 
 
-void ShowerParton::SetPdgId(int pdgId_)
+void pec::ShowerParton::SetPdgId(int pdgId_)
 {
     if (pdgId_ > 127 or pdgId_ < -128)
         throw std::runtime_error("ShowerParton::SetPdgId: Current implementation allows only one "
@@ -50,19 +47,19 @@ void ShowerParton::SetPdgId(int pdgId_)
 }
 
 
-void ShowerParton::SetOrigin(Origin origin_)
+void pec::ShowerParton::SetOrigin(Origin origin_)
 {
     origin = UChar_t(origin_);
 }
 
 
-int ShowerParton::PdgId() const
+int pec::ShowerParton::PdgId() const
 {
     return pdgId;
 }
 
 
-ShowerParton::Origin ShowerParton::GetOrigin() const
+pec::ShowerParton::Origin pec::ShowerParton::GetOrigin() const
 {
     return Origin(origin);
 }

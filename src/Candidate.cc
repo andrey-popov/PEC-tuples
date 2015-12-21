@@ -1,19 +1,17 @@
 #include <Analysis/PECTuples/interface/Candidate.h>
 
-using namespace pec;
 
-
-Candidate::Candidate():
+pec::Candidate::Candidate():
     pt(0), eta(0), phi(0), mass(0)
 {}
 
 
-Candidate::Candidate(Candidate const &src):
+pec::Candidate::Candidate(Candidate const &src):
     pt(src.pt), eta(src.eta), phi(src.phi), mass(src.mass)
 {}
 
 
-Candidate &Candidate::operator=(Candidate const &src)
+pec::Candidate &pec::Candidate::operator=(Candidate const &src)
 {
     pt = src.pt;
     eta = src.eta;
@@ -24,11 +22,11 @@ Candidate &Candidate::operator=(Candidate const &src)
 }
 
 
-Candidate::~Candidate()
+pec::Candidate::~Candidate()
 {}
 
 
-void Candidate::Reset()
+void pec::Candidate::Reset()
 {
     pt = 0;
     eta = 0;
@@ -37,49 +35,49 @@ void Candidate::Reset()
 }
 
 
-void Candidate::SetPt(float pt_)
+void pec::Candidate::SetPt(float pt_)
 {
     pt = pt_;
 }
 
 
-void Candidate::SetEta(float eta_)
+void pec::Candidate::SetEta(float eta_)
 {
     eta = eta_;
 }
 
 
-void Candidate::SetPhi(float phi_)
+void pec::Candidate::SetPhi(float phi_)
 {
     phi = phi_;
 }
 
 
-void Candidate::SetM(float mass_)
+void pec::Candidate::SetM(float mass_)
 {
     mass = mass_;
 }
 
 
-float Candidate::Pt() const
+float pec::Candidate::Pt() const
 {
     return pt;
 }
 
 
-float Candidate::Eta() const
+float pec::Candidate::Eta() const
 {
     return eta;
 }
 
 
-float Candidate::Phi() const
+float pec::Candidate::Phi() const
 {
     return phi;
 }
 
 
-float Candidate::M() const
+float pec::Candidate::M() const
 {
     return mass;
 }

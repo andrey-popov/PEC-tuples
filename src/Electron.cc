@@ -6,13 +6,10 @@
 #include <type_traits>
 
 
-using namespace pec;
+unsigned const pec::Electron::contIdSize;
 
 
-unsigned const Electron::contIdSize;
-
-
-Electron::Electron():
+pec::Electron::Electron():
     Lepton(),
     cutBasedId(0)
 {
@@ -20,7 +17,7 @@ Electron::Electron():
 }
 
 
-Electron::Electron(Electron const &src):
+pec::Electron::Electron(Electron const &src):
     Lepton(src),
     cutBasedId(src.cutBasedId)
 {
@@ -28,7 +25,7 @@ Electron::Electron(Electron const &src):
 }
 
 
-Electron &Electron::operator=(Electron const &src)
+pec::Electron &pec::Electron::operator=(Electron const &src)
 {
     Lepton::operator=(src);
     
@@ -39,7 +36,7 @@ Electron &Electron::operator=(Electron const &src)
 }
 
 
-void Electron::Reset()
+void pec::Electron::Reset()
 {
     Lepton::Reset();
     
@@ -48,7 +45,7 @@ void Electron::Reset()
 }
 
 
-void Electron::SetBooleanID(unsigned bitIndex, bool value /*= true*/)
+void pec::Electron::SetBooleanID(unsigned bitIndex, bool value /*= true*/)
 {
     if (bitIndex >= 8)
         throw std::runtime_error("pec::Electron::SetBooleanID: Given index exceeds the maximal "
@@ -61,7 +58,7 @@ void Electron::SetBooleanID(unsigned bitIndex, bool value /*= true*/)
 }
 
 
-void Electron::SetContinuousID(unsigned index, float mva)
+void pec::Electron::SetContinuousID(unsigned index, float mva)
 {
     if (index >= contIdSize)
         throw std::runtime_error("pec::Electron::SetContinuousID: Given index exceeds the maximal "
@@ -71,7 +68,7 @@ void Electron::SetContinuousID(unsigned index, float mva)
 }
 
 
-bool Electron::BooleanID(unsigned bitIndex) const
+bool pec::Electron::BooleanID(unsigned bitIndex) const
 {
     if (bitIndex >= 8)
         throw std::runtime_error("pec::Electron::CutBasedId: Given index exceeds the maximal "
@@ -81,7 +78,7 @@ bool Electron::BooleanID(unsigned bitIndex) const
 }
 
 
-float Electron::ContinuousID(unsigned index) const
+float pec::Electron::ContinuousID(unsigned index) const
 {
     if (index >= contIdSize)
         throw std::runtime_error("pec::Electron::SetMvaId: Given index exceeds the maximal allowed "

@@ -3,22 +3,19 @@
 #include <stdexcept>
 
 
-using namespace pec;
-
-
-CandidateWithID::CandidateWithID():
+pec::CandidateWithID::CandidateWithID():
     Candidate(),
     id(0)
 {}
 
 
-CandidateWithID::CandidateWithID(CandidateWithID const &src):
+pec::CandidateWithID::CandidateWithID(CandidateWithID const &src):
     Candidate(src),
     id(src.id)
 {}
 
 
-CandidateWithID &CandidateWithID::operator=(CandidateWithID const &src)
+pec::CandidateWithID &pec::CandidateWithID::operator=(CandidateWithID const &src)
 {
     Candidate::operator=(src);
     id = src.id;
@@ -27,11 +24,11 @@ CandidateWithID &CandidateWithID::operator=(CandidateWithID const &src)
 }
 
 
-CandidateWithID::~CandidateWithID()
+pec::CandidateWithID::~CandidateWithID()
 {}
 
 
-void CandidateWithID::Reset()
+void pec::CandidateWithID::Reset()
 {
     Candidate::Reset();
     
@@ -39,7 +36,7 @@ void CandidateWithID::Reset()
 }
 
 
-void CandidateWithID::SetBit(unsigned index, bool value /*= true*/)
+void pec::CandidateWithID::SetBit(unsigned index, bool value /*= true*/)
 {
     if (index >= 8)
         throw std::runtime_error("CandidateWithID::SetBit: Given index exceeds the maximal allowed "
@@ -52,7 +49,7 @@ void CandidateWithID::SetBit(unsigned index, bool value /*= true*/)
 }
 
 
-bool CandidateWithID::TestBit(unsigned index) const
+bool pec::CandidateWithID::TestBit(unsigned index) const
 {
     if (index >= 8)
         throw std::runtime_error("CandidateWithID::TestBit: Given index exceeds the maximal "
