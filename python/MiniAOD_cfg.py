@@ -59,7 +59,7 @@ options.register('saveHeavyFlavours', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Saves information about heavy-flavour quarks in parton shower')
 options.register('saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Save information about generator-level jets')
-options.register('sourceFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+options.register('inputFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'The name of the source file')
 options.register('runOnFastSim', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Indicates whether FastSim is processed')
@@ -106,8 +106,8 @@ print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThr
 # Define the input files
 process.source = cms.Source('PoolSource')
 
-if len(options.sourceFile) > 0:
-    process.source.fileNames = cms.untracked.vstring(options.sourceFile)
+if len(options.inputFile) > 0:
+    process.source.fileNames = cms.untracked.vstring(options.inputFile)
 else:
     # Default input files for testing
     if runOnData:
