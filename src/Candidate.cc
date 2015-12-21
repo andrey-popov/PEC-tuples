@@ -39,47 +39,47 @@ void Candidate::Reset()
 
 void Candidate::SetPt(double pt_)
 {
-    pt = minifloat::encodeGeneric<false, 12, 1>(pt_);
+    pt = pt_;
 }
 
 
 void Candidate::SetEta(double eta_)
 {
-    eta = minifloat::encodeGeneric<true, 13, -1>(eta_);
+    eta = eta_;
 }
 
 
 void Candidate::SetPhi(double phi_)
 {
-    phi = minifloat::encodeAngle(phi_);
+    phi = phi_;
 }
 
 
 void Candidate::SetM(double mass_)
 {
-    mass = minifloat::encodeGeneric<false, 12, 2>(mass_);
+    mass = mass_;
 }
 
 
 double Candidate::Pt() const
 {
-    return minifloat::decodeGeneric<false, 12, 1>(pt);
+    return pt;
 }
 
 
 double Candidate::Eta() const
 {
-    return minifloat::decodeGeneric<true, 13, -1>(eta);
+    return eta;
 }
 
 
 double Candidate::Phi() const
 {
-    return minifloat::decodeAngle(phi);
+    return phi;
 }
 
 
 double Candidate::M() const
 {
-    return minifloat::decodeGeneric<false, 12, 2>(mass);
+    return mass;
 }

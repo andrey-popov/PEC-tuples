@@ -55,14 +55,13 @@ void Lepton::SetCharge(int charge_)
 
 void Lepton::SetRelIso(double relIso_)
 {
-    relIso = minifloat::encodeGeneric<false, 13, 1>(relIso_);
+    relIso = relIso_;
 }
 
 
 void Lepton::SetDB(double dB_)
 {
-    // The impact parameter is encoded as an unsigned number. Make sure it is not negate
-    dB = minifloat::encodeGeneric<false, 13, 1>(fabs(dB_));
+    dB = dB_;
 }
 
 
@@ -74,11 +73,11 @@ int Lepton::Charge() const
 
 double Lepton::RelIso() const
 {
-    return minifloat::decodeGeneric<false, 13, 1>(relIso);
+    return relIso;
 }
 
 
 double Lepton::DB() const
 {
-    return minifloat::decodeGeneric<false, 13, 1>(dB);
+    return dB;
 }

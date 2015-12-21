@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/minifloats.h>
 #include <Analysis/PECTuples/interface/CandidateWithID.h>
 
 
@@ -67,20 +66,10 @@ namespace pec
          */
         Bool_t charge;
         
-        /**
-         * \brief Relative isolation
-         * 
-         * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
-         * with normal numbers is [0.5, 64).
-         */
-        minifloat::Repr_t relIso;
+        /// Relative isolation
+        Float_t relIso;
         
-        /**
-         * \brief Transverse impact parameter
-         * 
-         * Encoded as a generic minifloat with parameters (false, 13, 1), the range representable
-         * with normal numbers is [0.5, 64).
-         */
-        minifloat::Repr_t dB;
+        /// Transverse impact parameter, cm
+        Float_t dB;
     };
 }

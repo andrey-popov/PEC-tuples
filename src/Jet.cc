@@ -74,7 +74,7 @@ void Jet::SetJECUncertainty(double jecUncertainty_)
 
 void Jet::SetBTagCSV(double bTag)
 {
-    bTagCSV = minifloat::encodeGeneric<true, 12, 1>(bTag);
+    bTagCSV = bTag;
 }
 
 
@@ -85,25 +85,25 @@ void Jet::SetSecVertexMass(double mass)
     if (mass < 0.)
         mass = 0.;
     
-    secVertexMass = minifloat::encodeGeneric<false, 12, 2>(mass);
+    secVertexMass = mass;
 }
 
 
 void Jet::SetArea(double area_)
 {
-    area = minifloat::encodeGeneric<false, 14, 0>(area_);
+    area = area_;
 }
 
 
 void Jet::SetCharge(double charge_)
 {
-    charge = minifloat::encodeRange(-1., 1., charge_);
+    charge = charge_;
 }
 
 
 void Jet::SetPullAngle(double angle)
 {
-    pullAngle = minifloat::encodeAngle(angle);
+    pullAngle = angle;
 }
 
 
@@ -127,31 +127,31 @@ double Jet::JECUncertainty() const
 
 double Jet::BTagCSV() const
 {
-    return minifloat::decodeGeneric<true, 12, 1>(bTagCSV);
+    return bTagCSV;
 }
 
 
 double Jet::SecVertexMass() const
 {
-    return minifloat::decodeGeneric<false, 12, 2>(secVertexMass);
+    return secVertexMass;
 }
 
 
 double Jet::Area() const
 {
-    return minifloat::decodeGeneric<false, 14, 0>(area);
+    return area;
 }
 
 
 double Jet::Charge() const
 {
-    return minifloat::decodeRange(-1., 1., charge);
+    return charge;
 }
 
 
 double Jet::PullAngle() const
 {
-    return minifloat::decodeAngle(pullAngle);
+    return pullAngle;
 }
 
 

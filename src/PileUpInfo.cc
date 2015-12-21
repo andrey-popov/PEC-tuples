@@ -48,13 +48,13 @@ void PileUpInfo::SetNumPV(unsigned numPV_)
 
 void PileUpInfo::SetRho(double rho_)
 {
-    rho = minifloat::encodeGeneric<false, 13, 1>(rho_);
+    rho = rho_;
 }
 
 
 void PileUpInfo::SetTrueNumPU(double lambda)
 {
-    trueNumPU = minifloat::encodeGeneric<false, 13, -1>(lambda);
+    trueNumPU = lambda;
 }
 
 
@@ -72,13 +72,13 @@ unsigned PileUpInfo::NumPV() const
 
 double PileUpInfo::Rho() const
 {
-    return minifloat::decodeGeneric<false, 13, 1>(rho);
+    return rho;
 }
 
 
 double PileUpInfo::TrueNumPU() const
 {
-    return minifloat::decodeGeneric<false, 13, -1>(trueNumPU);
+    return trueNumPU;
 }
 
 

@@ -1,5 +1,4 @@
 #include <Analysis/PECTuples/interface/GeneratorInfo.h>
-#include <Analysis/PECTuples/interface/minifloats.h>
 
 #include <algorithm>
 #include <stdexcept>
@@ -54,9 +53,9 @@ void GeneratorInfo::SetProcessId(int processId_)
 }
 
 
-void GeneratorInfo::AddWeight(double weight_)
+void GeneratorInfo::AddWeight(double weight)
 {
-    weights.emplace_back(minifloat::encodeGeneric<true, 10, 14>(weight_));
+    weights.emplace_back(weight);
 }
 
 
@@ -74,7 +73,7 @@ void GeneratorInfo::SetPdfX(unsigned index, double x)
     
     
     // Set the fraction
-    pdfX[index] = minifloat::encodeGeneric<false, 13, 7>(x);
+    pdfX[index] = x;
 }
 
 
@@ -120,7 +119,7 @@ void GeneratorInfo::SetPdfIds(int id1, int id2)
 
 void GeneratorInfo::SetPdfQScale(double scale)
 {
-    pdfQScale = minifloat::encodeGeneric<false, 12, 0>(scale);
+    pdfQScale = scale;
 }
 
 
@@ -141,7 +140,7 @@ double GeneratorInfo::Weight(unsigned index) const
     if (index >= weights.size())
         throw std::range_error("GeneratorInfo::Weight: Index given is out of range.");
     
-    return minifloat::decodeGeneric<true, 10, 14>(weights.at(index));
+    return weights.at(index);
 }
 
 
@@ -150,7 +149,7 @@ double GeneratorInfo::PdfX(unsigned index) const
     if (index > 1)
         throw std::logic_error("GeneratorInfo::PdfX: Illegal parton index.");
     
-    return minifloat::decodeGeneric<false, 13, 7>(pdfX[index]);
+    return pdfX[index];
 }
 
 
@@ -180,5 +179,5 @@ int GeneratorInfo::PdfId(unsigned index) const
 
 double GeneratorInfo::PdfQScale() const
 {
-    return minifloat::decodeGeneric<false, 12, 0>(pdfQScale);
+    return pdfQScale;
 }

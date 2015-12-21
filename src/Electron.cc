@@ -67,7 +67,7 @@ void Electron::SetContinuousID(unsigned index, double mva)
         throw std::runtime_error("pec::Electron::SetContinuousID: Given index exceeds the maximal "
          "allowed value. Consider increasing constant pec::Electron::contIdSize.");
     
-    mvaId[index] = minifloat::encodeRange(-1., 1., mva);
+    mvaId[index] = mva;
 }
 
 
@@ -87,5 +87,5 @@ double Electron::ContinuousID(unsigned index) const
         throw std::runtime_error("pec::Electron::SetMvaId: Given index exceeds the maximal allowed "
          "value.");
     
-    return minifloat::decodeRange(-1., 1., mvaId[index]);
+    return mvaId[index];
 }

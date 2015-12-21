@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/minifloats.h>
+#include <Rtypes.h>
 
 
 namespace pec
@@ -67,35 +67,16 @@ namespace pec
         double M() const;
         
     private:
-        /**
-         * \brief Transverse momentum, GeV/c
-         * 
-         * Encoded as a generic minifloat with parameters (false, 12, 1), the range representable
-         * with normal numbers is [0.5, 16k).
-         */
-        minifloat::Repr_t pt;
+        /// Transverse momentum, GeV/c
+        Float_t pt;
         
-        /**
-         * \brief Pseudorapidity
-         * 
-         * Encoded as a generic minifloat with parameters (true, 13, -1), the range representable
-         * with normal numbers is [2, 16).
-         */
-        minifloat::Repr_t eta;
+        /// Pseudorapidity
+        Float_t eta;
         
-        /**
-         * \brief Azimuthal angle, [-pi, pi)
-         * 
-         * Encoded with a uniform minifloat at a range (-pi, pi).
-         */
-        minifloat::Repr_t phi;
+        /// Azimuthal angle, [-pi, pi)
+        Float_t phi;
         
-        /**
-         * \brief Mass, GeV/c^2
-         * 
-         * Encoded as a generic minifloat with parameters (false, 12, 2), the range representable
-         * with normal numbers is [0.25, 8k).
-         */
-        minifloat::Repr_t mass;
+        /// Mass, GeV/c^2
+        Float_t mass;
     };
 }

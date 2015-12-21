@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/minifloats.h>
-
 #include <Rtypes.h>
 
 #include <vector>
@@ -112,21 +110,11 @@ namespace pec
         /// Process ID as was set during generation of the sample
         Short_t processId;
         
-        /**
-         * \brief Generator-level weights
-         * 
-         * Encoded as a generic minifloat with parameters (true, 10, 14), the range representable
-         * with normal numbers is [6.1e-5, 1.3e5).
-         */
-        std::vector<minifloat::Repr_t> weights;
+        /// Generator-level weights
+        std::vector<Float_t> weights;
         
-        /**
-         * \brief Momenta fractions carried by initial-state partons
-         * 
-         * Encoded as a generic minifloat with parameters (false, 13, 7), the range representable
-         * with normal numbers is [7.8e-3, 1).
-         */
-        minifloat::Repr_t pdfX[2];
+        /// Momenta fractions carried by initial-state partons
+        Float_t pdfX[2];
         
         /**
          * \brief ID of initial-state partons
@@ -136,12 +124,7 @@ namespace pec
          */
         UChar_t pdfId;
         
-        /**
-         * \brief Energy scale to evaluate PDF, GeV
-         * 
-         * Encoded as a generic minifloat with parameters (false, 12, 0), the range representable
-         * with normal numbers is [1, 32k).
-         */
-        minifloat::Repr_t pdfQScale;
+        /// Energy scale to evaluate PDF, GeV
+        Float_t pdfQScale;
     };
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/minifloats.h>
 #include <Analysis/PECTuples/interface/Lepton.h>
 
 
@@ -76,9 +75,8 @@ namespace pec
         /**
          * \brief Continuous ID decisions
          * 
-         * See documentation for the SetContinuousId method. Encoded with a minifloat on a range
-         * [-1, 1].
+         * See documentation for the SetContinuousId method.
          */
-        minifloat::Repr_t mvaId[contIdSize];
+        Float_t mvaId[contIdSize];
     };
 }

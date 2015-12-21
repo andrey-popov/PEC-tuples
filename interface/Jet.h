@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Analysis/PECTuples/interface/minifloats.h>
 #include <Analysis/PECTuples/interface/CandidateWithID.h>
 
 
@@ -143,45 +142,28 @@ namespace pec
          */
         Float_t jecUncertainty;
         
-        /**
-         * \brief Value of b-tagging discriminator
-         * 
-         * Encoded as a generic minifloat with parameters (true, 12, 1), the range representable
-         * with normal numbers is [0.5, 64).
-         */
-        minifloat::Repr_t bTagCSV;
+        /// Value of b-tagging discriminator
+        Float_t bTagCSV;
         
-        /**
-         * \brief Mass of the secondary vertex associated to the jet (if any)
-         * 
-         * Encoded as a generic minifloat with parameters (false, 12, 2), the range representable
-         * with normal numbers is [0.25, 8k).
-         */
-        minifloat::Repr_t secVertexMass;
+        /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
+        Float_t secVertexMass;
         
-        /**
-         * \brief Jet area
-         * 
-         * Encoded as a generic minifloat with parameters (false, 14, 0), the range representable
-         * with normal numbers is [1, 8).
-         */
-        minifloat::Repr_t area;
+        /// Jet area
+        Float_t area;
         
         /**
          * \brief Electric charge of the jet
          * 
-         * See documentation for the method Charge. Encoded with a uniform minifloat at a
-         * range [-1, 1].
+         * See documentation for the method Charge.
          */
-        minifloat::Repr_t charge;
+        Float_t charge;
         
         /**
-         * \brief Jet pull angle
+         * \brief Jet pull angle, [-pi, pi)
          * 
-         * See documentation for the method PullAngle. Encoded with a uniform minifloat at a
-         * range (-pi, pi).
+         * See documentation for the method PullAngle.
          */
-        minifloat::Repr_t pullAngle;
+        Float_t pullAngle;
         
         /// Jet flavour
         Char_t flavour;
