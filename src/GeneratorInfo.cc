@@ -141,7 +141,7 @@ double GeneratorInfo::Weight(unsigned index) const
     if (index >= weights.size())
         throw std::range_error("GeneratorInfo::Weight: Index given is out of range.");
     
-    return minifloat::decodeGeneric<true, 10, 14>(weights.front());
+    return minifloat::decodeGeneric<true, 10, 14>(weights.at(index));
 }
 
 
