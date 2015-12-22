@@ -5,6 +5,7 @@
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
+#include <fstream>
 #include <iostream>
 #include <iomanip>
 
@@ -20,6 +21,7 @@ LHEEventWeights::LHEEventWeights(ParameterSet const &cfg):
     weightsHeaderTag(cfg.getParameter<string>("weightsHeaderTag")),
     computeMeanWeights(cfg.getParameter<bool>("computeMeanWeights")),
     storeWeights(cfg.getParameter<bool>("storeWeights")),
+    printToFiles(cfg.getParameter<bool>("printToFiles")),
     nEventsProcessed(0)
 {
     // Register required input data
@@ -44,6 +46,8 @@ void LHEEventWeights::fillDescriptions(ConfigurationDescriptions &descriptions)
      setComment("Indicates whether mean values of all weights should be computed.");
     desc.add<bool>("storeWeights", false)->
      setComment("Indicates whether event weights should be stored in a ROOT tree.");
+    desc.add<bool>("printToFiles", false)->
+     setComment("Indicates whether the output should be stored in text files or printed to cout.");
     
     descriptions.add("lheEventWeights", desc);
 }
@@ -121,6 +125,22 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
 
 void LHEEventWeights::endRun(Run const &run, EventSetup const &)
 {
+    // Create the output stream. Depending on the value of the printToFiles flag, it is either the
+    //standard output or a file
+    std::streambuf *buf;
+    std::ofstream outFile;
+    
+    if (printToFiles)
+    {
+        outFile.open("weightsInfo.txt");
+        buf = outFile.rdbuf();
+    }
+    else
+        buf = std::cout.rdbuf();
+    
+    std::ostream out(buf);
+    
+    
     // Read LHE header
     Handle<LHERunInfoProduct> lheRunInfo;
     run.getByLabel("externalLHEProducer", lheRunInfo);
@@ -134,26 +154,43 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
         if (header->tag() != weightsHeaderTag)
             continue;
         
-        // Print out the header
+        // Print the header to the selected output stream
         for (auto const &l: header->lines())
-            cout << l;
+            out << l;
     }
 }
 
 
 void LHEEventWeights::endJob()
 {
-    cout << "Mean values of event weights:\n index   ID   mean\n\n";
-    cout.precision(10);
-    cout << "   -   nominal   " << meanWeights.front().second << "\n\n";
+    // Create the output stream. Depending on the value of the printToFiles flag, it is either the
+    //standard output or a file
+    std::streambuf *buf;
+    std::ofstream outFile;
+    
+    if (printToFiles)
+    {
+        outFile.open("meanWeights.txt");
+        buf = outFile.rdbuf();
+    }
+    else
+        buf = std::cout.rdbuf();
+    
+    std::ostream out(buf);
+    
+    
+    // Print mean values of weights into the selected output stream
+    out << "Mean values of event weights:\n index   ID   mean\n\n";
+    out.precision(10);
+    out << "   -   nominal   " << meanWeights.front().second << "\n\n";
     
     for (unsigned i = 1; i < meanWeights.size(); ++i)
     {
         auto const &w = meanWeights.at(i);
-        cout << " " << setw(3) << i - 1 << "   " << w.first << "   " << w.second << '\n';
+        out << " " << setw(3) << i - 1 << "   " << w.first << "   " << w.second << '\n';
     }
     
-    cout << endl;
+    out << endl;
 }
 
 

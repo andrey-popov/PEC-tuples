@@ -80,6 +80,9 @@ private:
     /// Indicates whether event weights should be stored in a ROOT tree
     bool storeWeights;
     
+    /// Indicates if the output should be directed to files instead of standard output
+    bool printToFiles;
+    
     
     /**
      * \brief Running means of nominal and alternative weights
