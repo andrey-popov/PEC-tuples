@@ -54,6 +54,7 @@ if options.storeWeights:
 process.lheEventWeights = cms.EDAnalyzer('LHEEventWeights',
     lheRunInfoProduct = cms.InputTag('externalLHEProducer'),
     lheEventInfoProduct = cms.InputTag('externalLHEProducer'),
+    computeMeanWeights = cms.bool(True),
     storeWeights = cms.bool(options.storeWeights))
 
 process.p = cms.Path(process.lheEventWeights)

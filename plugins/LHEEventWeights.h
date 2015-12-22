@@ -15,6 +15,8 @@
 #include <TTree.h>
 
 #include <string>
+#include <vector>
+#include <utility>
 
 
 /**
@@ -37,7 +39,7 @@ public:
     /// Verifies configuration of the plugin
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
-    /// 
+    /// Creates the output tree if requested
     virtual void beginJob() override;
     
     /// 
@@ -45,6 +47,17 @@ public:
     
     /// 
     virtual void endRun(edm::Run const &run, edm::EventSetup const &) override;
+    
+    /// Prints out mean values of the nominal and alternative weights
+    virtual void endJob() override;
+    
+private:
+    /**
+     * \brief Sets up running means of nominal and alternative weights while processing first event
+     * 
+     * IDs of alternative weights are read from the given vector.
+     */
+    void SetupWeightMeans(std::vector<gen::WeightsInfo> const &altWeights);
     
 private:
     /// Token to access per-run LHE information
@@ -61,8 +74,28 @@ private:
      */
     std::string weightsHeaderTag;
     
+    /// Indicates whether mean values of all weights should be calculated
+    bool computeMeanWeights;
+    
     /// Indicates whether event weights should be stored in a ROOT tree
     bool storeWeights;
+    
+    
+    /**
+     * \brief Running means of nominal and alternative weights
+     * 
+     * Pairs stored in this vector consist of text IDs of weights and their current mean values,
+     * which are updated with every new event. The first element of the vector corresponds to the
+     * nominal weight. It is followed by pairs for alternative weights, keeping their ordering.
+     */
+    std::vector<std::pair<std::string, double>> meanWeights;
+    
+    /**
+     * \brief Total number of events processed
+     * 
+     * This counter is needed to update mean values of weights.
+     */
+    unsigned long long nEventsProcessed;
     
     
     /// An object to handle the output ROOT file
