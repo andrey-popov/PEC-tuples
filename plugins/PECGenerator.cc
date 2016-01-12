@@ -10,12 +10,12 @@ using namespace std;
 
 
 PECGenerator::PECGenerator(ParameterSet const &cfg):
-    externalLHE(cfg.getParameter<bool>("externalLHE"))
+    saveLHEWeightVars(cfg.getParameter<bool>("saveLHEWeightVars"))
 {
     // Register required input data
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     
-    if (externalLHE)
+    if (saveLHEWeightVars)
     {
         lheEventInfoToken =
          consumes<LHEEventProduct>(cfg.getParameter<InputTag>("lheEventInfoProduct"));
@@ -28,8 +28,8 @@ void PECGenerator::fillDescriptions(ConfigurationDescriptions &descriptions)
     ParameterSetDescription desc;
     desc.add<InputTag>("generator", InputTag("generator"))->
      setComment("Generator-level event information.");
-    desc.add<bool>("externalLHE", true)->
-     setComment("Indicates whether an external LHE generator was used.");
+    desc.add<bool>("saveLHEWeightVars", true)->
+     setComment("Indicates whether LHE-level variations of event weights should be stored.");
     desc.add<InputTag>("lheEventInfoProduct")->
      setComment("Tag to access per-event LHE information. Ignored if externalLHE is False.");
     
@@ -62,25 +62,27 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
     
     
     // Event weights
-    if (externalLHE)
+    generatorInfo.SetNominalWeight(generator->weight());
+    
+    if (saveLHEWeightVars)
     {
         // Read the LHE information
         Handle<LHEEventProduct> lheEventInfo;
         event.getByToken(lheEventInfoToken, lheEventInfo);
         
         
-        // Read the weights
-        generatorInfo.SetNominalWeight(lheEventInfo->originalXWGTUP());
+        // Alternative LHE weights will be rescaled by the ratio between the nominal weight above
+        //and the nominal LHE weight, as instructed here [1]
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW?rev=7#How_to_use_weights
+        double const factor = generator->weight() / lheEventInfo->originalXWGTUP();
+        
+        
+        // Save the alternative weights
         vector<gen::WeightsInfo> const &altWeights = lheEventInfo->weights();
         
         for (auto const &altWeight: altWeights)
-            generatorInfo.AddAltWeight(altWeight.wgt);
+            generatorInfo.AddAltWeight(altWeight.wgt * factor);
     }
-    else
-        generatorInfo.SetNominalWeight(generator->weight());
-    
-    // At the moment event weights are only applied at the LHE level, and thus the nominal weight
-    //should be the same in the both cases. However, this might change in future
         
     
     // PDF information

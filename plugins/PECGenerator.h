@@ -24,7 +24,10 @@
  * \class PECGenerator
  * \brief Stores global generator-level information
  * 
- * Saves generator-level weights, PDF information, etc. This plugin must be only run on simulation.
+ * Saves generator-level weights, PDF information, etc. If the plugin is requested to store
+ * LHE-level variations of event weights, they are corrected for the ratio of the nominal weights
+ * from GenEventInfoProduct and LHEEventProduct (see the code), which might be different from unity.
+ * This plugin must be only run on simulation.
  */
 class PECGenerator: public edm::EDAnalyzer
 {
@@ -54,8 +57,8 @@ private:
      */
     edm::EDGetTokenT<LHEEventProduct> lheEventInfoToken;
     
-    /// Flag indicating whether an external LHE generator has been used
-    bool externalLHE;
+    /// Flag indicating whether LHE-level variations of event weights should be stored
+    bool saveLHEWeightVars;
     
     
     /// An object to handle the output ROOT file

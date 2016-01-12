@@ -17,6 +17,7 @@ using namespace std;
 
 LHEEventWeights::LHEEventWeights(ParameterSet const &cfg):
     weightsHeaderTag(cfg.getParameter<string>("weightsHeaderTag")),
+    rescaleLHEWeights(cfg.getParameter<bool>("rescaleLHEWeights")),
     computeMeanWeights(cfg.getParameter<bool>("computeMeanWeights")),
     storeWeights(cfg.getParameter<bool>("storeWeights")),
     printToFiles(cfg.getParameter<bool>("printToFiles")),
@@ -30,6 +31,9 @@ LHEEventWeights::LHEEventWeights(ParameterSet const &cfg):
     //[1] https://hypernews.cern.ch/HyperNews/CMS/get/edmFramework/3583/1.html
     lheEventInfoToken =
      consumes<LHEEventProduct>(cfg.getParameter<InputTag>("lheEventInfoProduct"));
+    
+    if (rescaleLHEWeights)
+        generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
 }
 
 
@@ -47,6 +51,11 @@ void LHEEventWeights::fillDescriptions(ConfigurationDescriptions &descriptions)
      setComment("Tag to identify LHE header with description of event weights.");
     desc.add<InputTag>("lheEventInfoProduct")->
      setComment("Tag to access per-event LHE information.");
+    desc.add<InputTag>("generator", InputTag("generator"))->
+     setComment("Tag to access general generator-level event information.");
+    desc.add<bool>("rescaleLHEWeights", true)->
+     setComment("Requires that LHE weights are rescaled taking into account the weight from "
+     "GenEventInfoProduct.");
     desc.add<bool>("computeMeanWeights", true)->
      setComment("Indicates whether mean values of all weights should be computed.");
     desc.add<bool>("storeWeights", false)->
@@ -64,25 +73,48 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
     Handle<LHEEventProduct> lheEventInfo;
     event.getByToken(lheEventInfoToken, lheEventInfo);
     
-    
-    // The nominal weight
-    double const nominalWeight = lheEventInfo->originalXWGTUP();
-    
-    // Vector of alternative weights (e.g. systematic variations)
-    vector<gen::WeightsInfo> const &altWeights = lheEventInfo->weights();
+    vector<gen::WeightsInfo> const &altWeightObjects = lheEventInfo->weights();
     
     
     // Perform initialization when processing the first event
     if (nEventsProcessed == 0)
     {
+        altWeights.reserve(altWeightObjects.size());
+        
         if (computeMeanWeights)
-            SetupWeightMeans(altWeights);
+            SetupWeightMeans(altWeightObjects);
         
         if (storeWeights)
-            SetupWeightTree(altWeights.size());
+            SetupWeightTree(altWeightObjects.size());
     }
     
     
+    // Scale factor for weights
+    double factor = 1.;
+    
+    if (rescaleLHEWeights)
+    {
+        Handle<GenEventInfoProduct> generator;
+        event.getByToken(generatorToken, generator);
+        
+        factor = generator->weight() / lheEventInfo->originalXWGTUP();
+        //^ This rescaling is included in the instruction in [1]
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW?rev=7#How_to_use_weights
+    }
+    
+    
+    // The nominal weight
+    double const nominalWeight = lheEventInfo->originalXWGTUP() * factor;
+    
+    
+    // Alternative weights
+    altWeights.clear();
+    
+    for (gen::WeightsInfo const &weight: altWeightObjects)
+        altWeights.push_back(weight.wgt * factor);
+    
+    
+        
     // Update means if requested
     if (computeMeanWeights)
     {
@@ -94,7 +126,7 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
         for (unsigned i = 0; i < altWeights.size(); ++i)
         {
             meanWeights.at(i + 1).second +=
-             (altWeights.at(i).wgt - meanWeights.at(i + 1).second) / (nEventsProcessed + 1);
+             (altWeights.at(i) - meanWeights.at(i + 1).second) / (nEventsProcessed + 1);
         }
     }
     
@@ -106,7 +138,7 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
         bfNumAltWeights = altWeights.size();
         
         for (unsigned i = 0; i < altWeights.size(); ++i)
-            bfAltWeights[i] = altWeights.at(i).wgt;
+            bfAltWeights[i] = altWeights.at(i);
         
         
         outTree->Fill();

@@ -44,8 +44,9 @@ options.register('runOnData', False, VarParsing.multiplicity.singleton,
 options.register('isPromptReco', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
     'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation')
-options.register('externalLHE', True, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Indicates whether an external LHE generator has been used')
+options.register('saveLHEWeightVars', True, VarParsing.multiplicity.singleton,
+    VarParsing.varType.bool,
+    'Indicates whether LHE-level variations of event weights should be stored')
 options.register('globalTag', '', VarParsing.multiplicity.singleton,
     VarParsing.varType.string, 'The relevant global tag')
 # The outputName is postfixed with ".root" automatically
@@ -267,7 +268,7 @@ paths.append(process.pecTrigger, process.pecEventID, process.pecElectrons, proce
 if not runOnData:
     process.pecGenerator = cms.EDAnalyzer('PECGenerator',
         generator = cms.InputTag('generator'),
-        externalLHE = cms.bool(options.externalLHE),
+        saveLHEWeightVars = cms.bool(options.saveLHEWeightVars),
         lheEventInfoProduct = cms.InputTag('externalLHEProducer'))
     paths.append(process.pecGenerator)
 

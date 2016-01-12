@@ -54,7 +54,9 @@ if options.storeWeights:
 process.lheEventWeights = cms.EDAnalyzer('LHEEventWeights',
     lheRunInfoProduct = cms.InputTag('externalLHEProducer'),
     lheEventInfoProduct = cms.InputTag('externalLHEProducer'),
+    generator = cms.InputTag('generator'),
     weightsHeaderTag = cms.string('initrwgt'),
+    rescaleLHEWeights = cms.bool(True),
     computeMeanWeights = cms.bool(True),
     storeWeights = cms.bool(options.storeWeights),
     printToFiles = cms.bool(True))

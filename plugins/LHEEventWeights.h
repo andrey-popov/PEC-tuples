@@ -8,6 +8,7 @@
 
 #include <SimDataFormats/GeneratorProducts/interface/LHERunInfoProduct.h>
 #include <SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h>
+#include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -80,12 +81,28 @@ private:
     edm::EDGetTokenT<LHEEventProduct> lheEventInfoToken;
     
     /**
+     * \brief Token to access global generator information
+     * 
+     * Only read if flag rescaleLHEWeights is set to true.
+     */
+    edm::EDGetTokenT<GenEventInfoProduct> generatorToken;
+    
+    /**
      * \brief Tag of the LHE header with information about weights
      * 
      * This string is used to identify a particular "header" among those provided by
      * LHERunInfoProduct.
      */
     std::string weightsHeaderTag;
+    
+    /**
+     * \brief Indicates whether varied LHE weights should be rescaled to the weight given by
+     * GenEventInfoProduct
+     * 
+     * Such rescaling is included in the instruction in [1].
+     * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW?rev=7#How_to_use_weights
+     */
+    bool rescaleLHEWeights;
     
     /// Indicates whether mean values of all weights should be calculated
     bool computeMeanWeights;
@@ -96,6 +113,9 @@ private:
     /// Indicates if the output should be directed to files instead of standard output
     bool printToFiles;
     
+    
+    /// Buffer to keep (possibly rescaled) alternative LHE weights
+    std::vector<double> altWeights;
     
     /**
      * \brief Running means of nominal and alternative weights
