@@ -21,9 +21,13 @@
 
 /**
  * \class LHEEventWeights
- * \brief 
+ * \brief This plugin reads LHE event weights and extracts their descriptions
  * 
- * 
+ * The plugin reads the LHE header and reports the list of computed alternative weights, including
+ * their IDs and brief descriptions provided in the header. If requested, it computes average values
+ * of all weights in the current job. The output is either printed to the standard output or
+ * directed to text files, depending on the configuration. User can also configure the plugin to
+ * store weights in all events in a ROOT file.
  */
 class LHEEventWeights: public edm::EDAnalyzer
 {
@@ -31,7 +35,7 @@ public:
     /**
      * \brief Constructor
      * 
-     * 
+     * Reads parameters from the configuration.
      */
     LHEEventWeights(edm::ParameterSet const &cfg);
     
@@ -42,10 +46,16 @@ public:
     /// Verifies configuration of the plugin
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
-    /// 
+    /// Stores weights and updates their mean values (if requested)
     virtual void analyze(edm::Event const &event, edm::EventSetup const &) override;
     
-    /// 
+    /**
+     * \brief Prints out description of alternative weights as provided in the LHE header
+     * 
+     * It would be more natural to read the LHE header in beginRun, but this cannot be done because
+     * of technical limitations, see e.g. here [1].
+     * [1] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/3437.html
+     */
     virtual void endRun(edm::Run const &run, edm::EventSetup const &) override;
     
     /// Prints out mean values of the nominal and alternative weights
