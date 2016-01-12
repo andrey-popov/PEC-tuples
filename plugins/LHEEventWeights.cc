@@ -1,7 +1,5 @@
 #include "LHEEventWeights.h"
 
-#include "LHEEventWeights.h"
-
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
@@ -14,15 +12,13 @@ using namespace edm;
 using namespace std;
 
 
-unsigned const LHEEventWeights::maxNumAltWeights;
-
-
 LHEEventWeights::LHEEventWeights(ParameterSet const &cfg):
     weightsHeaderTag(cfg.getParameter<string>("weightsHeaderTag")),
     computeMeanWeights(cfg.getParameter<bool>("computeMeanWeights")),
     storeWeights(cfg.getParameter<bool>("storeWeights")),
     printToFiles(cfg.getParameter<bool>("printToFiles")),
-    nEventsProcessed(0)
+    nEventsProcessed(0),
+    bfAltWeights(nullptr)
 {
     // Register required input data
     lheRunInfoToken =
@@ -31,6 +27,12 @@ LHEEventWeights::LHEEventWeights(ParameterSet const &cfg):
     //[1] https://hypernews.cern.ch/HyperNews/CMS/get/edmFramework/3583/1.html
     lheEventInfoToken =
      consumes<LHEEventProduct>(cfg.getParameter<InputTag>("lheEventInfoProduct"));
+}
+
+
+LHEEventWeights::~LHEEventWeights()
+{
+    delete [] bfAltWeights;
 }
 
 
@@ -53,19 +55,6 @@ void LHEEventWeights::fillDescriptions(ConfigurationDescriptions &descriptions)
 }
 
 
-void LHEEventWeights::beginJob()
-{
-    if (storeWeights)
-    {
-        outTree = fileService->make<TTree>("EventWeights", "Generator-level event weights");
-        
-        outTree->Branch("nominalWeight", &bfNominalWeight);
-        outTree->Branch("numAltWeights", &bfNumAltWeights);
-        outTree->Branch("altWeights", bfAltWeights, "altWeights[numAltWeights]/F");
-    }
-}
-
-
 void LHEEventWeights::analyze(Event const &event, EventSetup const &)
 {
     // Read LHE information for the current event
@@ -85,6 +74,9 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
     {
         if (computeMeanWeights)
             SetupWeightMeans(altWeights);
+        
+        if (storeWeights)
+            SetupWeightTree(altWeights.size());
     }
     
     
@@ -110,7 +102,7 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
         bfNominalWeight = nominalWeight;
         bfNumAltWeights = altWeights.size();
         
-        for (unsigned i = 0; i < altWeights.size() and i < maxNumAltWeights; ++i)
+        for (unsigned i = 0; i < altWeights.size(); ++i)
             bfAltWeights[i] = altWeights.at(i).wgt;
         
         
@@ -204,6 +196,22 @@ void LHEEventWeights::SetupWeightMeans(vector<gen::WeightsInfo> const &altWeight
     
     for (auto const &w: altWeights)
         meanWeights.emplace_back(w.id, 0.);
+}
+
+
+void LHEEventWeights::SetupWeightTree(unsigned nAltWeights)
+{
+    // Allocate a buffer to store alternative weights
+    bfNumAltWeights = nAltWeights;
+    bfAltWeights = new Float_t[nAltWeights];
+    
+    
+    // Create the tree and setup its branches
+    outTree = fileService->make<TTree>("EventWeights", "Generator-level event weights");
+    
+    outTree->Branch("nominalWeight", &bfNominalWeight);
+    outTree->Branch("numAltWeights", &bfNumAltWeights);
+    outTree->Branch("altWeights", bfAltWeights, "altWeights[numAltWeights]/F");
 }
 
 

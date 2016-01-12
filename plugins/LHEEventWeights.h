@@ -35,12 +35,12 @@ public:
      */
     LHEEventWeights(edm::ParameterSet const &cfg);
     
+    /// Destructor
+    ~LHEEventWeights();
+    
 public:
     /// Verifies configuration of the plugin
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
-    
-    /// Creates the output tree if requested
-    virtual void beginJob() override;
     
     /// 
     virtual void analyze(edm::Event const &event, edm::EventSetup const &) override;
@@ -58,6 +58,9 @@ private:
      * IDs of alternative weights are read from the given vector.
      */
     void SetupWeightMeans(std::vector<gen::WeightsInfo> const &altWeights);
+    
+    /// Sets up the tree to store event weights
+    void SetupWeightTree(unsigned nAltWeights);
     
 private:
     /// Token to access per-run LHE information
@@ -115,13 +118,6 @@ private:
     Float_t bfNominalWeight;
     
     /**
-     * \brief Maximal supported number of alternative weights
-     * 
-     * Used to preallocate arrays.
-     */
-    static unsigned const maxNumAltWeights = 512;
-    
-    /**
      * \brief Actual number of alternative weights
      * 
      * Since this variable will be used as the length of arrays, ROOT only allows it to be of type
@@ -129,6 +125,10 @@ private:
      */
     Int_t bfNumAltWeights;
     
-    /// Alternative weights
-    Float_t bfAltWeights[maxNumAltWeights];
+    /**
+     * \brief Alternative weights
+     * 
+     * Pointer to a dynamically allocated array. The array is owned by this.
+     */
+    Float_t *bfAltWeights;
 };
