@@ -1,7 +1,10 @@
 #include "LHEEventWeights.h"
 
 #include <FWCore/Utilities/interface/InputTag.h>
+#include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
+
+#include <boost/regex.hpp>
 
 #include <fstream>
 #include <iostream>
@@ -117,6 +120,8 @@ void LHEEventWeights::analyze(Event const &event, EventSetup const &)
 
 void LHEEventWeights::endRun(Run const &run, EventSetup const &)
 {
+    // Print description of LHE weights from the LHE header
+    
     // Create the output stream. Depending on the value of the printToFiles flag, it is either the
     //standard output or a file
     std::streambuf *buf;
@@ -133,6 +138,19 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
     std::ostream out(buf);
     
     
+    // Print information about the output format
+    out << "Destription of LHE weights:\n index   ID   description\n\n";
+    
+    
+    // Create regular expressions to parse the the part of the header containing event weights
+    boost::regex weightRegex("^<weight\\s+id=\"(\\w+)\">\\s*(\\S.*\\S)\\s*</weight>\n?$",
+     boost::regex::extended);
+    //^ The first group is the weight ID, the second group is the description
+    boost::regex groupStartRegex("^<weightgroup\\s+(.*)>\n?$", boost::regex::extended);
+    boost::regex groupEndRegex("^</weightgroup>\n?$", boost::regex::extended);
+    boost::regex emptyLineRegex("^\\s*\n?$", boost::regex::extended);
+    
+    
     // Read LHE header
     Handle<LHERunInfoProduct> lheRunInfo;
     run.getByToken(lheRunInfoToken, lheRunInfo);
@@ -146,15 +164,55 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
         if (header->tag() != weightsHeaderTag)
             continue;
         
-        // Print the header to the selected output stream
-        for (auto const &l: header->lines())
-            out << l;
+        
+        // Parse the current header and print formatted results
+        boost::smatch matchResults;
+        unsigned nWeightsFound = 0;
+        
+        for (auto const &line: header->lines())
+        {
+            // Skip empty lines
+            if (boost::regex_match(line, matchResults, emptyLineRegex))
+                continue;
+            
+            // If a new group is started, mention this in the print out
+            if (boost::regex_match(line, matchResults, groupStartRegex))
+            {
+                out << "Weight group: " << matchResults[1] << "\n\n";
+                continue;
+            }
+            
+            // If a group is finished, insert empty lines
+            if (boost::regex_match(line, matchResults, groupEndRegex))
+            {
+                out << "\n\n";
+                continue;
+            }
+            
+            // If a weight desription is found, print it as well as the index of the weight
+            if (boost::regex_match(line, matchResults, weightRegex))
+            {
+                out << " " << setw(3) << nWeightsFound << "   " << matchResults[1] << "   " <<
+                 matchResults[2] << '\n';
+                ++nWeightsFound;
+                continue;
+            }
+            
+            
+            // If control reaches this point, the current line could not be parsed
+            Exception excp(errors::LogicError);
+            excp << "Failed to parse line\n  \"" << line << "\"\nin the header \"" <<
+             weightsHeaderTag << "\".";
+            excp.raise();
+        }
     }
 }
 
 
 void LHEEventWeights::endJob()
 {
+    // Print mean values of all weights
+    
     // Create the output stream. Depending on the value of the printToFiles flag, it is either the
     //standard output or a file
     std::streambuf *buf;
