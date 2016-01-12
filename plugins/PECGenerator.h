@@ -9,6 +9,7 @@
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
 #include <SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h>
+#include <SimDataFormats/GeneratorProducts/interface/LHEEventProduct.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
@@ -44,6 +45,17 @@ public:
 private:
     /// Token to access global generator information
     edm::EDGetTokenT<GenEventInfoProduct> generatorToken;
+    
+    /**
+     * \brief Token to access per-event LHE weights
+     * 
+     * The plugin attempts to read these data only in events generated with an external LHE
+     * generator. This is not available for pure Pythia samples, for instance.
+     */
+    edm::EDGetTokenT<LHEEventProduct> lheEventInfoToken;
+    
+    /// Flag indicating whether an external LHE generator has been used
+    bool externalLHE;
     
     
     /// An object to handle the output ROOT file

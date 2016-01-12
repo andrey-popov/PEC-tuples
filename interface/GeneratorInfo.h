@@ -34,8 +34,11 @@ public:
      */
     void SetProcessId(int processID);
     
-    /// Adds generator-level event weight
-    void AddWeight(float weight);
+    /// Sets the nominal generator-level weight
+    void SetNominalWeight(float weight);
+    
+    /// Adds an alternative generator-level event weight to the end of the collection
+    void AddAltWeight(float weight);
     
     /**
      * \brief Sets momentum fraction carried by an initial parton
@@ -77,16 +80,11 @@ public:
      */
     int ProcessId() const;
     
-    /// Returns the number of generator-level weights stored
-    unsigned NumWeights() const;
+    /// Returns the nominal generator-level weight
+    float NominalWeight() const;
     
-    /**
-     * \brief Returns generator-level event weight with the given index
-     * 
-     * Throws an exception if the index is out of range. Note that the weight might be negative for
-     * some generators, e.g. in aMC@NLO.
-     */
-    float Weight(unsigned index) const;
+    /// Returns alternative weights
+    std::vector<Float_t> const &AltWeights() const;
     
     /**
      * \brief Returns momentum fraction carried by an initial parton
@@ -110,8 +108,11 @@ private:
     /// Process ID as was set during generation of the sample
     Short_t processId;
     
-    /// Generator-level weights
-    std::vector<Float_t> weights;
+    /// Nominal generator-level weight
+    Float_t nominalWeight;
+    
+    /// Alternative generator-level weights
+    std::vector<Float_t> altWeights;
     
     /// Momenta fractions carried by initial-state partons
     Float_t pdfX[2];

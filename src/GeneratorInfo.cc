@@ -6,6 +6,7 @@
 
 pec::GeneratorInfo::GeneratorInfo():
     processId(0),
+    nominalWeight(0),
     pdfX(),  // the array is zeroed according to the C++03 standard
     pdfId(0),
     pdfQScale(0)
@@ -14,7 +15,8 @@ pec::GeneratorInfo::GeneratorInfo():
 
 pec::GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
     processId(src.processId),
-    weights(src.weights),
+    nominalWeight(src.nominalWeight),
+    altWeights(src.altWeights),
     pdfId(src.pdfId),
     pdfQScale(src.pdfQScale)
 {
@@ -25,7 +27,8 @@ pec::GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
 pec::GeneratorInfo &pec::GeneratorInfo::operator=(GeneratorInfo const &src)
 {
     processId = src.processId;
-    weights = src.weights;
+    nominalWeight = src.nominalWeight;
+    altWeights = src.altWeights;
     std::copy(src.pdfX, src.pdfX + 2, pdfX);
     pdfId = src.pdfId;
     pdfQScale = src.pdfQScale;
@@ -37,7 +40,8 @@ pec::GeneratorInfo &pec::GeneratorInfo::operator=(GeneratorInfo const &src)
 void pec::GeneratorInfo::Reset()
 {
     processId = 0;
-    weights.clear();
+    nominalWeight = 0;
+    altWeights.clear();
     pdfId = 0;
     pdfX[0] = pdfX[1] = 0;
     pdfQScale = 0;
@@ -50,9 +54,15 @@ void pec::GeneratorInfo::SetProcessId(int processId_)
 }
 
 
-void pec::GeneratorInfo::AddWeight(float weight)
+void pec::GeneratorInfo::SetNominalWeight(float weight)
 {
-    weights.emplace_back(weight);
+    nominalWeight = weight;
+}
+
+
+void pec::GeneratorInfo::AddAltWeight(float weight)
+{
+    altWeights.emplace_back(weight);
 }
 
 
@@ -126,18 +136,15 @@ int pec::GeneratorInfo::ProcessId() const
 }
 
 
-unsigned pec::GeneratorInfo::NumWeights() const
+float pec::GeneratorInfo::NominalWeight() const
 {
-    return weights.size();
+    return nominalWeight;
 }
 
 
-float pec::GeneratorInfo::Weight(unsigned index) const
+std::vector<Float_t> const &pec::GeneratorInfo::AltWeights() const
 {
-    if (index >= weights.size())
-        throw std::range_error("GeneratorInfo::Weight: Index given is out of range.");
-    
-    return weights.at(index);
+    return altWeights;
 }
 
 
