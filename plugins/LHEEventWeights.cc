@@ -135,7 +135,7 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
     
     // Read LHE header
     Handle<LHERunInfoProduct> lheRunInfo;
-    run.getByLabel("externalLHEProducer", lheRunInfo);
+    run.getByToken(lheRunInfoToken, lheRunInfo);
     
     
     // The header is split in LHERunInfoProduct into several blocks also called "headers". Loop over
