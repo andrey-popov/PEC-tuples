@@ -158,11 +158,15 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
     
     // The header is split in LHERunInfoProduct into several blocks also called "headers". Loop over
     //them and find the one that contains descriptions of event weights
+    bool headerFound = false;
+    
     for (auto header = lheRunInfo->headers_begin(); header != lheRunInfo->headers_end(); ++header)
     {
         // Skip all "headers" except for the sought-for one
         if (header->tag() != weightsHeaderTag)
             continue;
+        
+        headerFound = true;
         
         
         // Parse the current header and print formatted results
@@ -205,6 +209,15 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
              weightsHeaderTag << "\".";
             excp.raise();
         }
+    }
+    
+    
+    // Make sure that the requested header has been found
+    if (not headerFound)
+    {
+        Exception excp(errors::LogicError);
+        excp << "Failed to found header \"" << weightsHeaderTag << "\" in LHE run info.";
+        excp.raise();
     }
 }
 
