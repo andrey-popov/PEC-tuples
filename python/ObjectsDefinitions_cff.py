@@ -247,14 +247,6 @@ def DefineMETs(process, runOnData = False, jetCollection = ''):
     process.metcalo.correctionLevel = 'rawCalo'
     
     
-    # In several places residual corrections are mistakenly applied regardless of whether data or
-    # simulation are processed
-    if not runOnData:
-        process.shiftedPatJetEnUp.addResidualJES = False
-        process.shiftedPatJetEnDown.addResidualJES = False
-        process.patPFMetT1T2Corr.isMC = True
-    
-    
     # Update the type of JEC uncertainties used (total instead of 'SubTotalMC') as recommended
     # in [1-2]
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETRun2Corrections?rev=35#type_1_PF_MET_recommended
