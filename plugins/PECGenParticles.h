@@ -21,18 +21,18 @@
 
 /**
  * \class PECGenParticles
- * \brief Stores particles from the hard interaction in a ROOT file
+ * \brief Stores particles from the hard(est) interaction and other selected ones in a ROOT file
  * 
- * Stores particles from the final and initial states of the hard(est) interaction. However, in
- * Pythia 8 gluons in the initial state are not kept in miniAOD and therefore are not available.
+ * Stores particles from the final and initial states of the hard(est) interaction.
  * 
- * In addition, can store extra particles according to a list of PDG ID codes provided by the user
- * (only those with abs(PDG ID) < 80 and status > 2 are considered). In Pythia 8 same particle can
- * be written many times in the event record, as it proceeds through various steps of simulation and
- * undergoes radiation. The plugin stores only the oldest ancestor (of the same PDG ID). It also
- * saves daughers of the youngest descendant.
+ * In addition, can store extra particles according to a list of PDG ID codes provided by the user.
+ * Same particle can be written many times in the event record, as it proceeds through various steps
+ * of simulation and undergoes radiation. The plugin stores only the oldest ancestor (of the same
+ * PDG ID). It also saves daughers of the youngest descendant. Note that in MiniAOD these daughters
+ * are not always available (for instance, this happens often for J/psi).
  * 
- * The plugin can handle samples produced with Pythia 6 or 8.
+ * The plugin is designed for samples produced with Pythia 6 or 8 (possibly, with an external LHE
+ * generator). It might not work properly with other showering and hadronization programs.
  */
 class PECGenParticles: public edm::EDAnalyzer
 {

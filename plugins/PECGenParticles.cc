@@ -143,16 +143,8 @@ void PECGenParticles::analyze(edm::Event const &event, edm::EventSetup const &se
         int const absPdgId = abs(p.pdgId());
         
         
-        // Skip hadrons and artificial objects like string or clusters
-        if (absPdgId > 80)
-            continue;
-        //^ This also rejects exotics like SUSY, technicolour, etc., but they are not used in the
-        //analysis
-        
-        
-        // Skip particles after hadronisation. The protection is mostly needed to exclude W from
-        //tau decays in Pythia 6
-        if (p.status() <= 2)
+        // Skip artificial objects like string or clusters
+        if (absPdgId >= 81 and absPdgId <= 100)
             continue;
         
         
@@ -240,7 +232,7 @@ void PECGenParticles::analyze(edm::Event const &event, edm::EventSetup const &se
     {
         // The oldest ancestor (the "root") found before
         BookParticle(root);
-        
+                
         
         // Move along descendants of the root until the youngest descendant of the same type is
         //found. It then decays to other particles
