@@ -309,13 +309,20 @@ void PECGenParticles::analyze(edm::Event const &event, edm::EventSetup const &se
     {
         auto const &p = bookedParticles.at(iPart);
         
+        
+        // First check mothers that were suggested when the particle was booked
+        bool motherFound = false;
+        
         // Set first mother (if any)
         if (p.NumberOfMothers() > 0)
         {
             auto res = particleToIndex.find(p.Mother(0));
             
             if (res != particleToIndex.end())
+            {
                 storeParticles.at(iPart).SetFirstMotherIndex(res->second);
+                motherFound = true;
+            }
         }
         
         // Set last mother (if more than one)
@@ -324,7 +331,31 @@ void PECGenParticles::analyze(edm::Event const &event, edm::EventSetup const &se
             auto res = particleToIndex.find(p.Mother(-1));
             
             if (res != particleToIndex.end())
+            {
                 storeParticles.at(iPart).SetLastMotherIndex(res->second);
+                motherFound = true;
+            }
+        }
+        
+        
+        // If the suggested mothers are not among the list of particles to be stored, perform a deep
+        //search among all ancestors. This can happen only for some "root" particles but not for the
+        //saved daughters
+        if (not motherFound)
+        {
+            reco::Candidate const *mother = p.Get();
+            
+            while (mother->numberOfMothers() > 0)
+            {
+                mother = mother->mother(0);
+                auto res = particleToIndex.find(mother);
+                
+                if (res != particleToIndex.end())
+                {
+                    storeParticles.at(iPart).SetFirstMotherIndex(res->second);
+                    break;
+                }
+            }
         }
     }
     

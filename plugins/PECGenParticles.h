@@ -31,6 +31,12 @@
  * PDG ID). It also saves daughers of the youngest descendant. Note that in MiniAOD these daughters
  * are not always available (for instance, this happens often for J/psi).
  * 
+ * Mother-daughter relationships among selected particles are reconstructed. If the direct mother
+ * of a particle is not selected to be stored, its older ancestors are checked. For instance, if
+ * user configured the plugin to store top quarks and J/psi, and in an event there is a J/psi
+ * originating from t -> b -> ... -> B0 -> J/psi, the b quark (which is stored because its a
+ * daughter of the top quark) will be listed as the mother of the J/psi in the stored collection.
+ * 
  * The plugin is designed for samples produced with Pythia 6 or 8 (possibly, with an external LHE
  * generator). It might not work properly with other showering and hadronization programs.
  */
