@@ -39,9 +39,9 @@ void pec::GenParticle::Reset()
 
 void pec::GenParticle::SetPdgId(long pdgId_)
 {
-    if (pdgId_ > 127 or pdgId_ < -128)
-        throw std::runtime_error("GenParticle::SetPdgId: Current implementation allows only one "
-         "byte for the PDG ID.");
+    if (pdgId_ > 32767 or pdgId_ < -32768)
+        throw std::runtime_error("GenParticle::SetPdgId: Current implementation allows only two "
+         "bytes for the PDG ID.");
     
     pdgId = pdgId_;
 }

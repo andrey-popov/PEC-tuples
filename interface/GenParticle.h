@@ -9,10 +9,9 @@ namespace pec
  * \class GenParticle
  * \brief Minimalistic discription of a generator-level particle
  * 
- * The PDG ID is stored in a one-byte variable, thus the class is suitable only to store fundamental
- * particles and cannot accommodate, e.g., for all possible hadrons. The user is expected to use a
- * small filtered collection of particles; the mother indices correspond to positions in this
- * filtered collection.
+ * The PDG ID is encoded with two bytes, thus not all possible particles can be reprecented by the
+ * class. The user is expected to use a small filtered collection of particles; the mother indices
+ * correspond to positions in this filtered collection.
  */
 class GenParticle: public Candidate
 {
@@ -33,7 +32,7 @@ public:
     /**
      * \brief Sets PDG ID
      * 
-     * If the given ID cannot be stored in Char_t, an exception is thrown.
+     * If the given ID cannot be stored in Short_t, an exception is thrown.
      */
     void SetPdgId(long pdgId);
     
@@ -75,17 +74,17 @@ public:
     
 private:
     /// PDG ID
-    Char_t pdgId;
+    Short_t pdgId;
     
     /**
      * \brief Indices of the first and the last mother of the particle
      * 
-     * Normally, one would use a collection of generator-level particles. These indices correspond
-     * to position in this collection, not in the orignal collection genParticles in an EDM event.
-     * Indices start from 1, and 0 is reserved to indicate thate the stored collection does not
-     * contain the mother (but the getter subtracts 1, so that normal indices start from zero, and
-     * the special value is assigned to (-1)). The lastMotherIndex is non-zero if only the particle
-     * has more that one mother.
+     * Normally, one would use a filtered collection of generator-level particles. These indices
+     * correspond to positions in this collection, not in the orignal collection genParticles in an
+     * EDM event. Indices start from 1, and 0 is reserved to indicate that the stored collection
+     * does not contain the mother (but the getter subtracts 1, so that normal indices start from
+     * zero, and the special value is assigned to (-1)). The lastMotherIndex is non-zero if only the
+     * particle has more that one mother.
      */
     UChar_t firstMotherIndex, lastMotherIndex;
 };
