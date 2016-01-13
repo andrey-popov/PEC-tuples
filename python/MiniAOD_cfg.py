@@ -55,9 +55,9 @@ options.register('outputName', 'sample', VarParsing.multiplicity.singleton,
 # The leptonic channels to be processed. 'e' stands for electron, 'm' -- for muon
 options.register('channels', 'em', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'The leptonic channels to process')
-options.register('saveHardInteraction', False, VarParsing.multiplicity.singleton,
+options.register('saveGenParticles', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool,
-    'Save information about the status 3 particles, except for the initial section')
+    'Save information about the hard(est) interaction and selected particles')
 options.register('saveHeavyFlavours', False, VarParsing.multiplicity.singleton,
     VarParsing.varType.bool, 'Saves information about heavy-flavour quarks in parton shower')
 options.register('saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
@@ -273,12 +273,12 @@ if not runOnData:
     paths.append(process.pecGenerator)
 
 
-# Save information about the hard interaction
-if options.saveHardInteraction:
-    process.pecHardInteraction = cms.EDAnalyzer('HardInteractionInfo',
+# Save information about the hard interaction and selected particles
+if not runOnData and options.saveGenParticles:
+    process.pecGenParticles = cms.EDAnalyzer('PECGenParticles',
         genParticles = cms.InputTag('prunedGenParticles'),
         saveExtraParticles = cms.vuint32(6, 23, 24, 25))
-    paths.append(process.pecHardInteraction)
+    paths.append(process.pecGenParticles)
 
 
 # Save information on heavy-flavour quarks

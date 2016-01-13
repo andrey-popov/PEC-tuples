@@ -20,7 +20,7 @@
 
 
 /**
- * \class HardInteractionInfo
+ * \class PECGenParticles
  * \brief Stores particles from the hard interaction in a ROOT file
  * 
  * Stores particles from the final and initial states of the hard(est) interaction. However, in
@@ -34,7 +34,7 @@
  * 
  * The plugin can handle samples produced with Pythia 6 or 8.
  */
-class HardInteractionInfo: public edm::EDAnalyzer
+class PECGenParticles: public edm::EDAnalyzer
 {
 private:
     /**
@@ -101,7 +101,7 @@ private:
     
 public:
     /// Constructor
-    HardInteractionInfo(edm::ParameterSet const &cfg);
+    PECGenParticles(edm::ParameterSet const &cfg);
     
 public:
     /// A method to verify plugin's configuration

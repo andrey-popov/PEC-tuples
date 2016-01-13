@@ -1,4 +1,4 @@
-#include "HardInteractionInfo.h"
+#include "PECGenParticles.h"
 
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Utilities/interface/EDMException.h>
@@ -12,44 +12,44 @@ using namespace std;
 using namespace edm;
 
 
-HardInteractionInfo::ParticleWithMother::ParticleWithMother():
+PECGenParticles::ParticleWithMother::ParticleWithMother():
     particle(nullptr),
     mother(nullptr)
 {}
 
 
-HardInteractionInfo::ParticleWithMother::ParticleWithMother(reco::Candidate const *particle_,
+PECGenParticles::ParticleWithMother::ParticleWithMother(reco::Candidate const *particle_,
  reco::Candidate const *mother_ /*= nullptr*/):
     particle(particle_),
     mother(mother_)
 {}
 
 
-reco::Candidate const *HardInteractionInfo::ParticleWithMother::operator->() const
+reco::Candidate const *PECGenParticles::ParticleWithMother::operator->() const
 {
     return particle;
 }
 
 
-bool HardInteractionInfo::ParticleWithMother::operator==(reco::Candidate const *rhs) const
+bool PECGenParticles::ParticleWithMother::operator==(reco::Candidate const *rhs) const
 {
     return (particle == rhs);
 }
 
 
-reco::Candidate const *HardInteractionInfo::ParticleWithMother::Get() const
+reco::Candidate const *PECGenParticles::ParticleWithMother::Get() const
 {
     return particle;
 }
 
 
-void HardInteractionInfo::ParticleWithMother::ResetMother(reco::Candidate const *mother_)
+void PECGenParticles::ParticleWithMother::ResetMother(reco::Candidate const *mother_)
 {
     mother = mother_;
 }
 
 
-unsigned HardInteractionInfo::ParticleWithMother::NumberOfMothers() const
+unsigned PECGenParticles::ParticleWithMother::NumberOfMothers() const
 {
     if (mother)
         return 1;
@@ -58,7 +58,7 @@ unsigned HardInteractionInfo::ParticleWithMother::NumberOfMothers() const
 }
 
 
-reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index) const
+reco::Candidate const *PECGenParticles::ParticleWithMother::Mother(int index) const
 {
     if (mother)
     {
@@ -84,7 +84,7 @@ reco::Candidate const *HardInteractionInfo::ParticleWithMother::Mother(int index
 }
 
 
-HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg)
+PECGenParticles::PECGenParticles(ParameterSet const &cfg)
 {
     genParticlesToken =
      consumes<View<reco::GenParticle>>(cfg.getParameter<InputTag>("genParticles"));
@@ -94,7 +94,7 @@ HardInteractionInfo::HardInteractionInfo(ParameterSet const &cfg)
 }
 
 
-void HardInteractionInfo::fillDescriptions(ConfigurationDescriptions &descriptions)
+void PECGenParticles::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
     ParameterSetDescription desc;
     desc.add<InputTag>("genParticles", InputTag("genParticles"))->
@@ -102,11 +102,11 @@ void HardInteractionInfo::fillDescriptions(ConfigurationDescriptions &descriptio
     desc.add<vector<unsigned>>("saveExtraParticles", {6, 23, 24, 25})->
      setComment("(Absolute) PDG IDs of additional particles to be stored.");
     
-    descriptions.add("hardInteraction", desc);
+    descriptions.add("pecGenParticles", desc);
 }
 
 
-void HardInteractionInfo::beginJob()
+void PECGenParticles::beginJob()
 {
     outTree = fileService->make<TTree>("HardInteraction",
      "Tree contrains generator-level particles from the hard interaction");
@@ -116,7 +116,7 @@ void HardInteractionInfo::beginJob()
 }
 
 
-void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const &setup)
+void PECGenParticles::analyze(edm::Event const &event, edm::EventSetup const &setup)
 {
     #ifdef DEBUG
     cout << "\033[1;34mEvent: " << event.id().run() << ":" << event.id().event() << "\033[0m\n\n";
@@ -357,7 +357,7 @@ void HardInteractionInfo::analyze(edm::Event const &event, edm::EventSetup const
 }
 
 
-bool HardInteractionInfo::BookParticle(reco::Candidate const *p,
+bool PECGenParticles::BookParticle(reco::Candidate const *p,
  reco::Candidate const *mother /*= nullptr*/)
 {
     // Check if the given particle has already been booked for storing
@@ -383,4 +383,4 @@ bool HardInteractionInfo::BookParticle(reco::Candidate const *p,
 }
 
 
-DEFINE_FWK_MODULE(HardInteractionInfo);
+DEFINE_FWK_MODULE(PECGenParticles);
