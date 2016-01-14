@@ -1,23 +1,27 @@
 #! /bin/env python
 
-"""
-The script merges output ROOT files produced by a CRAB task.
+"""Script to merge output ROOT files produced by a CRAB task.
 
-The current directory is seached for *.root files (user can provide a mask to tighten selection of
-the files). They are merged into a small number of larger files (called "parts") that match
-approximately provided file size. The script exploits the hadd utility from ROOT distribution.
-Because the utility does not cope well with a large number of input files (~500 or more), each part
-is not merged in one go but splitted into several blocks, each of a sufficiently small number of
-source files. Files in blocks are merged first, and then the blocks are merged into parts. The
-merging is performed in several threads; their number can be adjusted by user. Produced final files
-(as well as temporary ones) are placed in a newly created temporary directory; user can specify a
-parent directory in which the temporary one is created.
+The current directory is seached for *.root files (though user can
+provide a mask to tighten selection of files).  They are merged into a
+small number of larger files (called "parts") that match approximately
+provided file size.  The script exploits the hadd utility from ROOT
+distribution. Because the utility does not cope well with a large number
+of input files (~500 or more), each part is not merged in one go but
+instead split into several blocks, each containing a sufficiently small
+number of source files.  Files in blocks are merged first, and then the
+blocks are merged into parts.  The merging is performed in several
+threads; their number can be adjusted by user.  Produced final files
+(as well as temporary ones) are placed in a newly created temporary
+directory; user can specify a parent directory in which the temporary
+one is created.
 
-After source files are merged, the script calculates the total number of events in them. It is done
-by counting entries in a specified tree.
+After source files are merged, the script calculates the total number of
+events in them.  It is done by counting entries in a specified tree.
 
-The script runs with python 2.7 or newer 2.X and requires pyROOT to be configured properly. In a
-clean session of lxplus the installation can be performed with the following example commands:
+The script runs with python 2.7 or newer 2.X and requires pyROOT to be
+configured properly.  In a clean session of lxplus the installation can
+be performed with the following example commands:
   export PATH=/afs/cern.ch/sw/lcg/external/Python/2.7.3/x86_64-slc5-gcc47-opt/bin/:$PATH
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/cern.ch/sw/lcg/external/Python/2.7.3/x86_64-slc5-gcc47-opt/lib/
   source /afs/cern.ch/sw/lcg/app/releases/ROOT/5.34.11/x86_64-slc5-gcc46-opt/root/bin/thisroot.sh
@@ -36,9 +40,10 @@ import ROOT
 
 
 class SourceFileName:
-    """
-    A class to store the name of a source file. It extracts the job number from the name and stores
-    it as a number for an easy access.
+    """Stores name of a source file together with the job index.
+    
+    A class to store the name of a source file.  It extracts the job
+    number from the name and stores it as a number for an easy access.
     """
     
     # A static regular expression to parse the name of a source file
@@ -49,41 +54,47 @@ class SourceFileName:
         
         res = SourceFileName.nameRegex.match(fileName)
         if res is None:
-            raise RuntimeError('File name "' + fileName + '" does not seem as an output ROOT file '\
-                'delivered by CRAB.')
+            raise RuntimeError('File name "' + fileName + '" does not seem as an output ROOT '\
+                'file delivered by CRAB.')
         
         self.jobIndex = int(res.group(1))
 
 
 class FileNameBlock:
-    """
-    The class lists all files in a single block within a part. It is an auxiliary data type needed
-    to merge results of a CRAB task. In a general case results of individual jobs are merged into
-    a small number of files called parts instead of a single large file. Jobs within a single part
-    are splitted among several blocks. Jobs in each block are merged in one go; then produced files
-    for all blocks within a part are merged.
+    """Keeps track of files within a single block.
+    
+    The class lists all files in a single block within a part.  It is an
+    auxiliary data type needed to merge results of a CRAB task.  In a
+    general case results of individual jobs are merged into a small
+    number of files called parts instead of a single large file.  Jobs
+    within a single part are splitted among several blocks.  Jobs in
+    each block are merged in one go; then produced files for all blocks
+    within a part are merged.
     """
     
     def __init__(self, partNumber_, blockNumber_):
+        """Initialize with indices of a part and a block.
+        
+        Create a new instance providing indices of a part and a block
+        with the part.  The indices start from zero.
         """
-        Initialised with indices of a part and a block within the part. Both indices start from
-        zero.
-        """
+        
         self.partNumber = partNumber_
         self.blockNumber = blockNumber_
         self.fileNames = []
     
     def add_file(self, fileName):
-        """
-        Adds a new file name to the list
-        """
+        """Add name of a new source file to the list."""
+        
         self.fileNames.append(fileName)
 
 
 def merge_files(outputFileName, sourceFiles):
+    """Merge provided ROOT files.
+    
+    Perform the task by calling the hadd program from ROOT distribution.
     """
-    Merges provided ROOT files. The function calls hadd program from ROOT distribution.
-    """
+    
     # Make sure there is more than one source file
     if len(sourceFiles) > 1:
         devnull = open('/dev/null', 'w')
@@ -132,15 +143,15 @@ if __name__ == '__main__':
     # Parse the arguments and options
     args = optionParser.parse_args()
 
-    # The current directory only will be searched for the input files. For this reason, the mask
-    # must not contain a slash
+    # The current directory only will be searched for the input files.
+    # For this reason, the mask must not contain a slash.
     if args.mask.find('/') != -1:
         print 'Error. The mask to choose input files must not contain a slash.'
         sys.exit(1)
 
 
-    # Identify source files in the current directory. Save their names and calculate their total
-    # size
+    # Identify source files in the current directory.  Save their names
+    # and calculate their total size.
     maskRegex = re.compile(args.mask)
     sourceFiles = []
     totalSize = 0  # in bytes
@@ -156,7 +167,7 @@ if __name__ == '__main__':
     sourceFiles.sort(key = lambda fileName: fileName.jobIndex)
 
 
-    # Find out the number of parts into which the output should be splitted
+    # Find out the number of parts into which the output should be split
     nParts = int(totalSize / float(args.max_size * 1024**3))
 
     if nParts == 0:
@@ -165,9 +176,11 @@ if __name__ == '__main__':
     nFilesPerPart = int(math.ceil(len(sourceFiles) / float(nParts)))
 
 
-    # Specify explicitly what files are assigned to what part. Files for one part will not be merged
-    # all in one go; instead, they will be splitted into blocks of size maxFilesToMerge (defined
-    # below), and each block will be merged independently. Files are separated by part and by block
+    # Specify explicitly what files are assigned to what part.  Files
+    # for one part will not be merged all in one go; instead, they will
+    # be split into blocks of size maxFilesToMerge (defined below), and
+    # each block will be merged independently.  Files are separated by
+    # part and by block.
     maxFilesToMerge = 256
     blocks = []
 
@@ -182,7 +195,8 @@ if __name__ == '__main__':
         
         # Check if a new block is started
         if (iJob % nFilesPerPart) % maxFilesToMerge == 0:
-        #^ If the part number has just increased, this condition is also true
+        # ^If the part number has just increased, this condition is also
+        # true
             iBlock += 1
             
             blocks.append(FileNameBlock(iPart, iBlock))
@@ -191,7 +205,8 @@ if __name__ == '__main__':
         blocks[-1].add_file(sourceFiles[iJob].name)
     
     
-    # Prepare to merge files within the blocks. First create a temporary output directory
+    # Prepare to merge files within the blocks.  First create a
+    # temporary output directory.
     if not os.path.exists(args.out_dir):
         os.makedirs(args.out_dir)
     outputDir = tempfile.mkdtemp(dir = args.out_dir)
@@ -200,13 +215,14 @@ if __name__ == '__main__':
     print 'Starting merging the files. Results will be placed in directory', outputDir + '.'
     
 
-    # Deduce the base name of output ROOT files: everything before the job number. It is used to name
-    # output files
+    # Deduce the base name of output ROOT files: everything before the
+    # job number.  It is used to name output files.
     res = re.match(r'(.*)_\d+_\d+_[a-zA-Z0-9]{3}\.root', sourceFiles[0].name)
     basename = res.group(1)
     
     
-    # Create a thread pool to merge files within the blocks and submit jobs to it
+    # Create a thread pool to merge files within the blocks and submit
+    # jobs to it
     pool = Pool(processes = args.num_threads)
     
     for block in blocks:
@@ -219,8 +235,9 @@ if __name__ == '__main__':
     pool.join()
     
     
-    # Now merge the blocks to produce final files ("parts"). In order to do it, it is convenient to
-    # know which block are available for each part
+    # Now merge the blocks to produce final files ("parts").  In order
+    # to do it, it is convenient to know which block are available for
+    # each part.
     partToBlock = dict()
     
     for block in blocks:

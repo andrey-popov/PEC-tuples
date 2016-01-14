@@ -1,3 +1,10 @@
+"""Configuration for cmsRun to print listing of generator particles.
+
+Prints complete listing of generator particles in the specified
+simulated event.  Works with simulation produced with Pythia (possibly
+with an external LHE generator).
+"""
+
 import FWCore.ParameterSet.Config as cms
 process = cms.Process('PythiaListing')
 

@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 
-"""
-    The script loops over all files CMSSW_*.stdout in the current directory and combines trigger
-    reports in the files into a single report
+"""Script to combine trigger reports from multiple CMSSW jobs.
+
+The script loops over all files CMSSW_*.stdout in the current directory
+and combines trigger reports found in them.
 """
 
 import os

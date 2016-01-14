@@ -1,15 +1,22 @@
-""" This module defines a general configuration for analyses involving t-channel single top-quark
-    production. It performs a very loose event selection (at least one semi-tight lepton, at least
-    two jet with pt > 30 GeV/c). Necessary event cleaning (mostly recommended for MET analyses) is
-    applied and quality cuts for different physical objects are defined. Corrected MET as well as
-    all the corresponding systematics are calculated. Isolation requirements for charged leptons are
-    dropped (they are applied only for jet clustering and MET systematics due to lepton energy
-    scale).
-    
-    The results are saved with the help of dedicated EDAnalyzer's. No EDM output is produced.
-    
-    The workflow can be controlled through the VarParsing options defined in the code below.
-    """
+"""Configuration for cmsRun to produce PEC tuples from MiniAOD.
+
+The configuration uses reconstructed objects as defined in the module
+ObjectsDefinitions_cff.  They are exploited to perform a loose event
+selection requiring the presence of a loosely defined electron or muon
+and, possibly, some jets.  The selection on jets is easily configurable,
+and jet systematic uncertainties are taken into account when this
+selection is evaluated.  In addition, anomalous or otherwise problematic
+events are rejected using configuration provided in the module
+EventFilters_cff.
+
+After reconstructed objects are defined and the loose event selection is
+performed, relevant reconstructed objects as well as some
+generator-level properties are saved in a ROOT file with the help of a
+set of dedicated EDAnalyzers.  The jobs does not produce and EDM output.
+
+Behaviour can be controlled with a number of command-line options (see
+their list in the code).
+"""
 
 import sys
 import random
@@ -22,10 +29,8 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process('Analysis')
 
 
-# Enable MessageLogger
+# Enable MessageLogger and reduce its verbosity
 process.load('FWCore.MessageLogger.MessageLogger_cfi')
-
-# Reduce verbosity
 process.MessageLogger.cerr.FwkReport.reportEvery = 100
 
 
@@ -41,58 +46,52 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 options.register(
-    'runOnData', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Indicates whether it runs on the real data'
+    'inputFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'The name of the source file'
+)
+# Name of the output file.  Extention .root is appended automatically.
+options.register(
+    'outputName', 'sample', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'The name of the output ROOT file'
 )
 options.register(
-    'isPromptReco', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
+    'globalTag', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'The relevant global tag'
 )
-options.register(
-    'saveLHEWeightVars', True, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    'Indicates whether LHE-level variations of event weights should be stored'
-)
-options.register(
-    'globalTag', '', VarParsing.multiplicity.singleton,
-    VarParsing.varType.string, 'The relevant global tag'
-)
-# The outputName is postfixed with ".root" automatically
-options.register(
-    'outputName', 'sample', VarParsing.multiplicity.singleton,
-    VarParsing.varType.string, 'The name of the output ROOT file'
-)
-# The leptonic channels to be processed. 'e' stands for electron, 'm' -- for muon
+# Leptonic channels to be processed.  Here 'e' and 'm' stand for
+# electron and muon respectively.
 options.register(
     'channels', 'em', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'The leptonic channels to process'
 )
 options.register(
-    'saveGenParticles', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool,
-    'Save information about the hard(est) interaction and selected particles'
-)
-options.register(
-    'saveHeavyFlavours', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Saves information about heavy-flavour quarks in parton shower'
-)
-options.register(
-    'saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Save information about generator-level jets'
-)
-options.register(
-    'inputFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'The name of the source file'
-)
-options.register(
-    'runOnFastSim', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Indicates whether FastSim is processed'
-)
-options.register(
     'jetSel', '2j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'Selection on jets. E.g. 2j30 means that an event must contain at least 2 jets with '
     'pt > 30 GeV/c'
+)
+options.register(
+    'runOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Indicates whether it runs on the real data'
+)
+options.register(
+    'isPromptReco', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
+)
+options.register(
+    'saveLHEWeightVars', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Indicates whether LHE-level variations of event weights should be stored'
+)
+options.register(
+    'saveGenParticles', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Save information about the hard(est) interaction and selected particles'
+)
+# options.register(
+#     'saveHeavyFlavours', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+#     'Saves information about heavy-flavour quarks in parton shower'
+# )
+options.register(
+    'saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Save information about generator-level jets'
 )
 
 options.parseArguments()
@@ -104,7 +103,8 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Provide a default global tag if user has not given any. It is set as recommended for JEC
+# Provide a default global tag if user has not given any.  It is set as
+# recommended for JEC.
 # https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=98
 if len(options.globalTag) == 0:
     if runOnData:
@@ -157,13 +157,13 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
 
 
-# Define the paths. There is one path per each channel (electron or muon).
-# Note that every module is guarenteed to run only once per event despite it can be included
-# into several paths
+# Create processing paths.  There is one path per each channel (electron
+# or muon).
 process.elPath = cms.Path()
 process.muPath = cms.Path()
 
-# Make a simple class to add modules to all the paths simultaneously
+
+# A simple class to add modules to all the paths simultaneously
 class PathManager:
     
     def __init__(self, *paths):
@@ -179,8 +179,7 @@ class PathManager:
 paths = PathManager(process.elPath, process.muPath)
 
 
-# Filter on the first vertex properties. The produced vertex collection is the same as in [1]
-# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorPFnoPU2012
+# Filter on properties of the first vertex
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
     src = cms.InputTag('offlineSlimmedPrimaryVertices'),
     cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.')
@@ -190,15 +189,15 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Define basic reconstructed objects
-from Analysis.PECTuples.ObjectsDefinitions_cff import (DefineElectrons, DefineMuons, DefineJets,
-    DefineMETs)
+from Analysis.PECTuples.ObjectsDefinitions_cff import (define_electrons, define_muons, define_jets,
+    define_METs)
 
 (eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps) = \
-    DefineElectrons(process)
-muQualityCuts = DefineMuons(process)
+    define_electrons(process)
+muQualityCuts = define_muons(process)
 (recorrectedJetsLabel, jetQualityCuts) = \
-    DefineJets(process, reapplyJEC=True, runOnData=runOnData)
-DefineMETs(process, runOnData=runOnData, jetCollection=recorrectedJetsLabel)
+    define_jets(process, reapplyJEC=True, runOnData=runOnData)
+define_METs(process, runOnData=runOnData, jetCollection=recorrectedJetsLabel)
 
 
 # The loose event selection
@@ -228,15 +227,15 @@ paths.append(process.countGoodJets)
 
 
 # Apply event filters recommended for analyses involving MET
-from Analysis.PECTuples.EventFilters_cff import ApplyEventFilters
-ApplyEventFilters(
+from Analysis.PECTuples.EventFilters_cff import apply_event_filters
+apply_event_filters(
     process, paths, runOnData=runOnData,
     isPromptReco=options.isPromptReco
 )
 
 
-# Save decisions of selected triggers. The lists are aligned with menu [1] used in 25 ns MC and
-# menus deployed online
+# Save decisions of selected triggers.  The lists are aligned with
+# menu [1] used in 25 ns MC and menus deployed online.
 # [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
@@ -337,14 +336,16 @@ if not runOnData and options.saveGenParticles:
 if not runOnData and options.saveGenJets:
     process.pecGenJetMET = cms.EDAnalyzer('PECGenJetMET',
         jets = cms.InputTag('slimmedGenJets'),
-        cut = cms.string('pt > 8.'),  # the pt cut is synchronised with JME-13-005
+        cut = cms.string('pt > 8.'),
+        # ^The pt cut above is the same as in JME-13-005
         saveFlavourCounters = cms.bool(True),
         met = cms.InputTag('slimmedMETs', processName=process.name_())
     )
     paths.append(process.pecGenJetMET)
 
 
-# In case one of the channels is not requested for the processing, remove it
+# If one of possible channels has not been requested by the user, clear
+# the corresponding path
 if not elChan:
     process.elPath = cms.Path()
 if not muChan:

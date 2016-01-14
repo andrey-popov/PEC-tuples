@@ -1,5 +1,16 @@
 #! /usr/bin/env python
 
+"""Script to verify results of a CRAB job.
+
+This script is for CRAB 2 and therefore is outdated.  It needs to be
+updated significantly to work with CRAB 3, and it is not even clear if
+there is a strong need for such verification with the new version of
+CRAB.
+
+The code also needs to be updated to comply with Python coding
+standards.
+"""
+
 ##
 # This scripts checks the CRAB results for consistency. It assertains that all the necessary files
 # are present, checks the exit codes, looks for excess ROOT output files (left from previous

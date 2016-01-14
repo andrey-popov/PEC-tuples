@@ -1,29 +1,42 @@
-""" The module contains definitions of physical objects including required adjustments to the
-    reconstruction process. Functions defined here must be called after usePF2PAT, name of the
-    modules are hard-coded.
-    """
+"""Defines reconstructed physics objects.
 
+The module is exploited by cmsRun configuration MiniAOD_cfg.py.  It
+exports several functions define_* that define different reconstructed
+objects.
+"""
 
 import FWCore.ParameterSet.Config as cms
 
 
-def DefineElectrons(process):
-    """ 
-        This function adjusts electrons. The user is expected to use only the following collections
-        and objects:
-        
-        analysisPatElectrons: Collection of loose non-isolated electrons to be saved in tuples.
-        
-        patElectronsForEventSelection: Collection of electrons that pass basic kinematical cuts.
-        To be used in the loose event selection.
-        
-        eleEmbeddedCutBasedIDLabels: Labels of embedded boolean electron IDs to be stored in tuples.
-        
-        eleCutBasedIDMaps: Input tags to access maps of boolean electron IDs to be stored in tuples.
-        
-        eleMVAIDMaps: Input tags to access real-valued electron IDs to be stored in tuples.
-        
-        eleQualityCuts: Vector of quality cuts whose decisions are to be stured in tuples.
+def define_electrons(process):
+    """Define reconstructed electrons.
+    
+    Configure reconstructed electrons to be used in an analysis,
+    together with the relevant identification requirements.
+    
+    Arguments:
+        process: The process to which relevant electron producers are
+            added.
+    
+    Return value:
+        Return a tuple with the following elements:
+        eleQualityCuts: List of string-based quality selections whose
+            decisions are to be saved.
+        eleEmbeddedCutBasedIDLabels: Labels of boolean electron IDs
+            embedded in pat::Electron whose decisions are to be saved.
+        eleCutBasedIDMaps: Tags to access maps with boolean electron IDs
+            whose decisions are to be saved.
+        eleMVAIDMaps: Tags to access maps with continuous electron IDs
+            whose decisions are to be saved.
+    
+    In addition to constructing the return values, add producers that
+    create the following collections of electrons:
+        analysisPatElectrons: Collection of loosely identified
+            non-isolated electrons to be saved.
+        patElectronsForEventSelection: Collection of loosely identified
+            non-isolated electrons that pass a realistically tight
+            kinematical selection.  Exploited in the loose event
+            selection applied in the main configuration.
     """
     
     # Collection of electrons that will be stored in tuples
@@ -39,7 +52,8 @@ def DefineElectrons(process):
         for p in ['veto', 'loose', 'medium', 'tight']]
     
     
-    # Decisions of triggering MVA ID are not stored in MiniAOD2015v2 and should be calculated
+    # Decisions of triggering MVA ID are not stored in MiniAOD2015v2 and
+    # should be calculated
     # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
         setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
@@ -55,8 +69,8 @@ def DefineElectrons(process):
     process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
     
     
-    # Labels of maps with electron ID. No maps are needed for the cut-based ID since its decisions
-    # are saved in pat::Electron
+    # Labels of maps with electron ID.  No maps are needed for the
+    # cut-based ID since its decisions are embedded in pat::Electron.
     eleCutBasedIDMaps = []
     eleMVAIDMaps = [
         'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values'
@@ -80,8 +94,8 @@ def DefineElectrons(process):
     )
     
     
-    # Define electrons to be used for event selection at the Grid level. They are subjected to
-    # tighter kinematical cuts
+    # Define electrons to be used for the loose event selection in the
+    # main configuration.  Tighter kinematical cuts are applied to them.
     process.patElectronsForEventSelection = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('analysisPatElectrons'),
         cut = cms.string('pt > 22. & abs(eta) < 2.5')
@@ -93,32 +107,43 @@ def DefineElectrons(process):
 
 
 
-def DefineMuons(process):
-    """ This function adjusts muons. The following collections and variables are expected to be
-        used by the user:
-        
-        1. analysisPatMuons: collection of loose non-isolated muons to be stored in tuples.
-        
-        2. muQualityCuts: vector of quality cuts to be applied to the above collection.
-        
-        3. patMuonsForEventSelection: collection of loose non-isolated muons that pass basic
-        kinematical requirements; to be used for an event selection.
+def define_muons(process):
+    """Define reconstructed muons.
+    
+    Configure reconstructed muons to be used in an analysis, together
+    with the relevant identification requirement.
+    
+    Arguments:
+        process: The process to which relevant muon producers are added.
+    
+    Return value:
+        A list of string-based quality selections whose decisions are to
+            be saved.
+    
+    Also add producers that create the following collections of muons:
+        analysisPatMuons: Collection of loosely identified non-isolated
+            muons to be saved.
+        patMuonsForEventSelection: Collection of loosely identified
+            non-isolated muons that pass a realistically tight
+            kinematical selection.  Exploited in the loose event
+            selection applied in the main configuration.
     """
     
-    # Define a collection of muons to be used in the analysis. These muons might be non-isolated
+    # Define a collection of muons to be used in the analysis.  It
+    # includes also non-isolated muons.
     process.analysisPatMuons = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('slimmedMuons'),
         cut = cms.string('pt > 10. & abs(eta) < 2.5')
     )
     
     
-    # Specify additional selection cuts to be evaluated. They have been migrated into the source
-    # code of plugins, and the list is empty
+    # Specify additional selection cuts to be evaluated.  The list is
+    # actually empty as the selection has been moved to the C++ code.
     muQualityCuts = cms.vstring()
     
     
-    # A collection to be used for an event selection at the Grid level. It applies for tighter
-    # kinematical cuts to muons but allows a muon to be non-isolated or poorly identified
+    # A collection to be used for the loose event selection in the main
+    # configuration.  Realistically tight kinematical cuts are applied.
     process.patMuonsForEventSelection = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('analysisPatMuons'),
         cut = cms.string('pt > 17. & abs(eta) < 2.5')
@@ -129,19 +154,36 @@ def DefineMuons(process):
     return muQualityCuts
 
 
-def DefineJets(process, reapplyJEC=False, runOnData=False):
-    """ 
-        Adjusts jets. In particular, it reapplies JEC. User is expected to exploit the following
-        products only:
-        
-        analysisPatJets: Corrected jets to be used in the analysis.
-        
-        recorrectedJetsLabel: Label of collection of jets with up-to-date JEC and no selection.
-        
-        jetQualityCuts: Vector of quality cuts to be applied to the above collection.
+def define_jets(process, reapplyJEC=False, runOnData=False):
+    """Define reconstructed jets.
+    
+    Configure reconstructed jets to be used in an analysis.  In
+    particular, reapply JEC if requested.
+    
+    Arguments:
+        process: The process to which relevant jet producers are added.
+        reapplyJEC: Flag determining if JEC are to be reapplied or not.
+        runOnData: Flag to distinguish processing of data and
+            simulation.
+    
+    Return value:
+        Return a tuple with the following elements:
+        recorrectedJetsLabel: Label to access collection of jets with
+            up-to-date JEC (reapplied or not, depending on the
+            configuration) and no kinamatical or quality selection.
+        jetQualityCuts: List of string-based quality selections whose
+            decisions are to be saved.
+    
+    Create the following jet collections:
+        analysisPatJets: Jets with up-to-date JEC and a loose quality
+            selection to be used in an analysis.
+        analysisPatJetsScaleUp/Down: Collections of jets with varied JEC
+            systematic uncertainties.  To be used in the loose event
+            selection in the main configuration.
     """
     
-    # Reapply JEC if requested [1]. The corrections are read from the current global tag
+    # Reapply JEC if requested [1].  The corrections are read from the
+    # current global tag.
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#CorrPatJets
     if reapplyJEC:
         from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import (patJetCorrFactorsUpdated,
@@ -171,8 +213,8 @@ def DefineJets(process, reapplyJEC=False, runOnData=False):
     )
     
     
-    # Jet ID [1]. Accessors to energy fractions in pat::Jet take into account JEC, and thus there is
-    # no need to unapply the corrections
+    # Jet ID [1].  Accessors to energy fractions in pat::Jet take into
+    # account JEC, and thus there is no need to unapply the corrections
     jetLooseID = (
         # Common block of requirements for |eta| < 3
         'abs(eta) <= 3. & (chargedMultiplicity + neutralMultiplicity) > 1 & ' +
@@ -192,8 +234,9 @@ def DefineJets(process, reapplyJEC=False, runOnData=False):
     jetQualityCuts = cms.vstring(jetLooseID)
     
     
-    # When running over simulation, produce jet collections with varied systematic uncertainties.
-    # They will be used to perform the loose event selection, taking the uncertainty into account
+    # When running over simulation, produce jet collections with varied
+    # systematic uncertainties.  They will be used to perform the loose
+    # event selection, taking the uncertainty into account
     if not runOnData:
         process.analysisPatJetsScaleUp = cms.EDProducer('ShiftedPATJetProducer',
             src = cms.InputTag('analysisPatJets'),
@@ -209,30 +252,41 @@ def DefineJets(process, reapplyJEC=False, runOnData=False):
     return recorrectedJetsLabel, jetQualityCuts
 
 
-def DefineMETs(process, runOnData=False, jetCollection=''):
-    """
-        Configures recalculation of corrected MET and its systematic uncertainties. Name of the jet
-        collection exploited in the procedure is provided as an argument of the function. Only
-        type-1 corrections are applied to MET. Due to limitations of MET tools, uncertainties are
-        calculated even when runnning over data. Moreover, the uncertainties include ones
-        corresponding to variations in energies of leptons, taus, and photons, although they are not
-        used in the analysis.
-        
-        Uncertainties corresponding to JER are computed using outdated parameters. A recipe for
-        13 TeV data is still under development.
-        
-        There have been many problems with the MET PAT tool and related CMSSW plugins. Although some
-        of them are fixed here, there might be others. Thus, MET should be used with a great
-        causion.
-        
-        The user should use the following products only:
-        
-        slimmedMETs: Recomputed corrected MET with uncertainties. Overrides a namesake collection
-            in MiniAOD.
+def define_METs(process, runOnData=False, jetCollection=''):
+    """Define reconstructed MET.
+    
+    Configure recalculation of corrected MET and its systematic
+    uncertainties.  Only type-1 corrections are applied.  Due to
+    limitations of MET tools, uncertainties are calculated even when
+    running over data, while this is not needed.  Moreover, they include
+    uncertainties corresponding to variations in energies of leptons,
+    taus, and photons, although these variations are not considered in
+    targeted analyses.
+    
+    Uncertainties corresponding to JER are computed using outdated
+    parameters.  A recipe for 13 TeV data is still under development.
+    
+    There have been many problems with the MET PAT tool and related
+    CMSSW plugins.  Although some of them are fixed here, there might be
+    others.  Thus, MET should be used ith a great causion.
+    
+    Arguments:
+        process: The process to which relevant MET producers are added.
+        runOnData: Flag to distinguish processing of data and
+            simulation.
+        jetCollection: Name of jet collection to be exploited for type-1
+            corrections.  Should be the collection with up-to-date JEC.
+    
+    Return value:
+        None.
+    
+    Among other things, add to the process producer slimmedMETs, which
+    overrides the namesake collection from MiniAOD.  User must use this
+    new collection.
     """
     
-    # Recalculate MET corrections. A very poor documentation is available in [1]. There is a
-    # relevant discussion in hypernews
+    # Recalculate MET corrections.  Some poor documentation is
+    # available in [1].  There is a relevant discussion in hypernews.
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
     # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/437.html?inline=-1
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
@@ -249,11 +303,13 @@ def DefineMETs(process, runOnData=False, jetCollection=''):
         jecUncFile='Analysis/PECTuples/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt',
         postfix=''
     )
-    #^ Keyword argument repro74X in the above configuration is not documented. It should be set to
-    # True when running over a MiniAOD dataset produced in a 7_4_X release with X <= 12.
-    # Use default collections of leptons, taus, and photons. Could have switched off calculation of
-    # the corresponding variations of MET by setting collection names to '', but PATMETSlimmer
-    # requires these variations [1].
+    # ^Keyword argument repro74X in the above configuration is not
+    # documented.  It should be set to True when running over a MiniAOD
+    # dataset produced in a 7_4_X release with X <= 12.  Use default
+    # collections of leptons, taus, and photons.  Could have switched
+    # off calculation of the corresponding variations of MET by setting
+    # collection names to '', but PATMETSlimmer requires these
+    # variations [1].
     # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_4_15_patch1/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
     
     
@@ -262,15 +318,16 @@ def DefineMETs(process, runOnData=False, jetCollection=''):
     process.metcalo.correctionLevel = 'rawCalo'
     
     
-    # Update the type of JEC uncertainties used (total instead of 'SubTotalMC') as recommended
-    # in [1-2]
+    # Update the type of JEC uncertainties used (total instead of
+    # 'SubTotalMC') as recommended in [1-2]
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETRun2Corrections?rev=35#type_1_PF_MET_recommended
     # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/425/1/1/1/1/1.html
     for module in ['shiftedPatJetEnUp', 'shiftedPatJetEnDown']:
         getattr(process, module).jetCorrUncertaintyTag = ''
     
     
-    # Drop corrections for phi modulation since they are not recommended at the moment [1]
+    # Drop corrections for phi modulation since they are not recommended
+    # at the moment [1]
     # [1] https://hypernews.cern.ch/HyperNews/CMS/get/met/422/1/1/1.html
     del(process.slimmedMETs.tXYUncForRaw)
     del(process.slimmedMETs.tXYUncForT1)

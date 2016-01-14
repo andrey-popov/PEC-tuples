@@ -1,4 +1,17 @@
-"""
+"""Configuration for cmsRun to inspect generator-level event weights.
+
+When an extenral LHE generator is used, several event weights can be
+evaluated for each event, and the nominal weight can differ from unity.
+This configuration checks what weights are available and calculates
+average values (per job) of weight of each type. If requested, it can
+also store all weights in a ROOT file.
+
+LHE weights are not reported directly but instead they are rescaled by
+the ratio of nominal weights as available from GenEventInfoProduct and
+LHEEventProduct.  This ratio might or might not be unit.
+
+Behaviour can be controlled with a number of command-line options (see
+their list in the code).
 """
 
 import random, string
