@@ -25,7 +25,9 @@ import re
 import optparse
 
 
-class jobInfo:
+class JobInfo:
+    
+    
     def __init__(self, index):
         self.jobIndex = index
         self.rootOutputName = ""
@@ -84,7 +86,7 @@ class jobInfo:
         
 
 
-class fileCorrupted(Exception):
+class FileCorrupted(Exception):
     pass
 
 
@@ -146,7 +148,7 @@ crabFjrIndices.sort()
 
 
 # List of jobs info
-jobs = [jobInfo(i + 1) for i in range(max(stdoutIndices[-1], stderrIndices[-1], crabFjrIndices[-1]))]
+jobs = [JobInfo(i + 1) for i in range(max(stdoutIndices[-1], stderrIndices[-1], crabFjrIndices[-1]))]
 
 curStdoutIndex = 0
 curStderrIndex = 0
@@ -167,7 +169,7 @@ for i in range(len(jobs)):
             while line != "TrigReport ---------- Event  Summary ------------\n":
                 line = fp.readline()
                 if line == "":
-                    raise fileCorrupted()
+                    raise FileCorrupted()
             
             words = fp.readline().split()
             jobs[i].nRead = int(words[4])
@@ -179,7 +181,7 @@ for i in range(len(jobs)):
                 line = fp.readline()
                 if line == "":
                     print 'File is corrupted'
-                    raise fileCorrupted()
+                    raise FileCorrupted()
             
             if line.startswith("tarring file "):  # old style of the output
                 jobs[i].rootOutputName = line.split()[2]
@@ -195,14 +197,14 @@ for i in range(len(jobs)):
             while not line.startswith("ExeExitCode="):
                 line = fp.readline()
                 if line == "":
-                    raise fileCorrupted()
+                    raise FileCorrupted()
             
             jobs[i].exeExitCode = int(line[12:])
             
             while not (line.startswith("JOB_EXIT_STATUS = ") or line.startswith('JobExitCode=')):
                 line = fp.readline()
                 if line == "":
-                    raise fileCorrupted()
+                    raise FileCorrupted()
             
             if line.startswith('JOB_EXIT_STATUS = '):  # old style
                 jobs[i].jobExitCode = int(line[len('JOB_EXIT_STATUS = '):])
@@ -211,7 +213,7 @@ for i in range(len(jobs)):
             
             fp.close()
             
-        except fileCorrupted:
+        except FileCorrupted:
             jobs[i].isStdoutCorrupted = True
         else:
             jobs[i].isStdoutCorrupted = False
@@ -247,12 +249,12 @@ for i in range(len(jobs)):
                 line = fp.readline()
                 match = crabStatusRegex.search(line)
                 if line == "":
-                    raise fileCorrupted()
+                    raise FileCorrupted()
             
             jobs[i].fjrExitCode = int(match.group(1))
             fp.close()
         
-        except fileCorrupted:
+        except FileCorrupted:
             jobs[i].isCrabFjrCorrupted = True
         else:
             jobs[i].isCrabFjrCorrupted = False

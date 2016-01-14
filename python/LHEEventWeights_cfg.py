@@ -18,12 +18,18 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 100
 from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
-options.register('inputFile', '', VarParsing.multiplicity.singleton,
-    VarParsing.varType.string, 'Name of the input file')
-options.register('storeWeights', False, VarParsing.multiplicity.singleton,
-    VarParsing.varType.bool, 'Enables storing of event weights in a ROOT tree.')
-options.register('outputName', 'eventWeights', VarParsing.multiplicity.singleton,
-    VarParsing.varType.string, 'Name of the output ROOT file.')
+options.register(
+    'inputFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'Name of the input file'
+)
+options.register(
+    'storeWeights', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Enables storing of event weights in a ROOT tree.'
+)
+options.register(
+    'outputName', 'eventWeights', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'Name of the output ROOT file.'
+)
 
 options.parseArguments()
 
@@ -59,6 +65,7 @@ process.lheEventWeights = cms.EDAnalyzer('LHEEventWeights',
     rescaleLHEWeights = cms.bool(True),
     computeMeanWeights = cms.bool(True),
     storeWeights = cms.bool(options.storeWeights),
-    printToFiles = cms.bool(True))
+    printToFiles = cms.bool(True)
+)
 
 process.p = cms.Path(process.lheEventWeights)

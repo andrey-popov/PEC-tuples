@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
+def ApplyEventFilters(process, paths, runOnData=False, isPromptReco=False):
     """ 
         (Documentation is to be added.)
     """
@@ -19,14 +19,18 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
     
     process.ApplyBaselineHBHENoiseFilter = cms.EDFilter('BooleanFlagFilter',
         inputLabel = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHENoiseFilterResult'),
-        reverseDecision = cms.bool(False))
+        reverseDecision = cms.bool(False)
+    )
 
     process.ApplyBaselineHBHEIsoNoiseFilter = cms.EDFilter('BooleanFlagFilter',
         inputLabel = cms.InputTag('HBHENoiseFilterResultProducer', 'HBHEIsoNoiseFilterResult'),
-        reverseDecision = cms.bool(False))
+        reverseDecision = cms.bool(False)
+    )
     
-    paths.append(process.ApplyBaselineHBHENoiseFilter,
-        process.ApplyBaselineHBHEIsoNoiseFilter)
+    paths.append(
+        process.ApplyBaselineHBHENoiseFilter,
+        process.ApplyBaselineHBHEIsoNoiseFilter
+    )
     
     
     # Apply filters whose decisions are stored in MiniAOD. The corresponding trigger results are
@@ -36,8 +40,11 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
         HLTPaths = cms.vstring('Flag_eeBadScFilter'),
         andOr = cms.bool(False),  # AND mode
         throw = cms.bool(True),
-        TriggerResultsTag = cms.InputTag('TriggerResults', '',
-            'RECO' if runOnData and isPromptReco else 'PAT'))
+        TriggerResultsTag = cms.InputTag(
+            'TriggerResults', '',
+            'RECO' if runOnData and isPromptReco else 'PAT'
+        )
+    )
     
     paths.append(process.applyEmulatedMETFilters)
     
@@ -48,7 +55,8 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
         # trigger bits saved in MiniAOD
         process.newEEBadSC = cms.EDFilter('EventIDFilter',
             eventListFile = cms.FileInPath('Analysis/PECTuples/data/ecalscn1043093_Dec01.txt'),
-            rejectKnownEvents = cms.bool(True))
+            rejectKnownEvents = cms.bool(True)
+        )
         
         paths.append(process.newEEBadSC)
         
@@ -57,7 +65,8 @@ def ApplyEventFilters(process, paths, runOnData = False, isPromptReco = False):
         # event IDs instead of a text one because of the large number of events
         process.cscBeamHalo = cms.EDFilter('EventIDFilter',
             eventListFile = cms.FileInPath('Analysis/PECTuples/data/csc2015_Dec01.root'),
-            rejectKnownEvents = cms.bool(True))
+            rejectKnownEvents = cms.bool(True)
+        )
         
         paths.append(process.cscBeamHalo)
     

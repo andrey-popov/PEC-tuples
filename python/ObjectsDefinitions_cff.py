@@ -29,24 +29,28 @@ def DefineElectrons(process):
     # Collection of electrons that will be stored in tuples
     process.analysisPatElectrons = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('slimmedElectrons'),
-        cut = cms.string('pt > 20. & abs(eta) < 2.5'))
+        cut = cms.string('pt > 20. & abs(eta) < 2.5')
+    )
     
     
     # Labels to access embedded cut-based ID
     # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27
-    eleEmbeddedCutBasedIDLabels = ['cutBasedElectronID-Spring15-25ns-V1-standalone-' + p \
-     for p in ['veto', 'loose', 'medium', 'tight']]
+    eleEmbeddedCutBasedIDLabels = ['cutBasedElectronID-Spring15-25ns-V1-standalone-' + p
+        for p in ['veto', 'loose', 'medium', 'tight']]
     
     
     # Decisions of triggering MVA ID are not stored in MiniAOD2015v2 and should be calculated
     # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import switchOnVIDElectronIdProducer, \
-     setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
+        setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     
     for idModule in ['mvaElectronID_Spring15_25ns_Trig_V1_cff']:
-        setupAllVIDIdsInModule(process, 'RecoEgamma.ElectronIdentification.Identification.' + \
-         idModule, setupVIDElectronSelection)
+        setupAllVIDIdsInModule(
+            process,
+            'RecoEgamma.ElectronIdentification.Identification.' +
+            idModule, setupVIDElectronSelection
+        )
     
     process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
     
@@ -55,7 +59,8 @@ def DefineElectrons(process):
     # are saved in pat::Electron
     eleCutBasedIDMaps = []
     eleMVAIDMaps = [
-        'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values']
+        'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values'
+    ]
     
     
     # Additional selections to be evaluated
@@ -71,14 +76,16 @@ def DefineElectrons(process):
           abs(deltaEtaSuperClusterTrackAtVtx) < 0.0095 & \
           abs(deltaPhiSuperClusterTrackAtVtx) < 0.065) | \
          (abs(superCluster.eta) > 1.5660 & full5x5_sigmaIetaIeta < 0.033 & hcalOverEcal < 0.09 & \
-          ecalPFClusterIso / pt < 0.45 & hcalPFClusterIso / pt < 0.28 & dr03TkSumPt / pt < 0.18))')
+          ecalPFClusterIso / pt < 0.45 & hcalPFClusterIso / pt < 0.28 & dr03TkSumPt / pt < 0.18))'
+    )
     
     
     # Define electrons to be used for event selection at the Grid level. They are subjected to
     # tighter kinematical cuts
     process.patElectronsForEventSelection = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('analysisPatElectrons'),
-        cut = cms.string('pt > 22. & abs(eta) < 2.5'))
+        cut = cms.string('pt > 22. & abs(eta) < 2.5')
+    )
     
     
     # Return values
@@ -101,7 +108,8 @@ def DefineMuons(process):
     # Define a collection of muons to be used in the analysis. These muons might be non-isolated
     process.analysisPatMuons = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('slimmedMuons'),
-        cut = cms.string('pt > 10. & abs(eta) < 2.5'))
+        cut = cms.string('pt > 10. & abs(eta) < 2.5')
+    )
     
     
     # Specify additional selection cuts to be evaluated. They have been migrated into the source
@@ -113,14 +121,15 @@ def DefineMuons(process):
     # kinematical cuts to muons but allows a muon to be non-isolated or poorly identified
     process.patMuonsForEventSelection = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('analysisPatMuons'),
-        cut = cms.string('pt > 17. & abs(eta) < 2.5'))
+        cut = cms.string('pt > 17. & abs(eta) < 2.5')
+    )
     
     
     # Return values
     return muQualityCuts
 
 
-def DefineJets(process, reapplyJEC = False, runOnData = False):
+def DefineJets(process, reapplyJEC=False, runOnData=False):
     """ 
         Adjusts jets. In particular, it reapplies JEC. User is expected to exploit the following
         products only:
@@ -135,20 +144,22 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
     # Reapply JEC if requested [1]. The corrections are read from the current global tag
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#CorrPatJets
     if reapplyJEC:
-        from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import \
-            patJetCorrFactorsUpdated, patJetsUpdated
+        from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import (patJetCorrFactorsUpdated,
+            patJetsUpdated)
         
         process.jetCorrectionFactorsReapplyJEC = patJetCorrFactorsUpdated.clone(
             src = cms.InputTag('slimmedJets'),
             levels = ['L1FastJet', 'L2Relative', 'L3Absolute'],
-            payload = 'AK4PFchs')
+            payload = 'AK4PFchs'
+        )
         
         if runOnData:
             process.jetCorrectionFactorsReapplyJEC.levels.append('L2L3Residual')
         
         process.recorrectedSlimmedJets = patJetsUpdated.clone(
             jetSource = cms.InputTag('slimmedJets'),
-            jetCorrFactorsSource = cms.VInputTag(cms.InputTag('jetCorrectionFactorsReapplyJEC')))
+            jetCorrFactorsSource = cms.VInputTag(cms.InputTag('jetCorrectionFactorsReapplyJEC'))
+        )
     
     recorrectedJetsLabel = ('recorrectedSlimmedJets' if reapplyJEC else 'slimmedJets')
     
@@ -156,7 +167,8 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
     # Define analysis-level jets by applying a very loose selection
     process.analysisPatJets = cms.EDFilter('PATJetSelector',
         src = cms.InputTag(recorrectedJetsLabel),
-        cut = cms.string('pt > 10. & abs(eta) < 5.'))
+        cut = cms.string('pt > 10. & abs(eta) < 5.')
+    )
     
     
     # Jet ID [1]. Accessors to energy fractions in pat::Jet take into account JEC, and thus there is
@@ -173,7 +185,8 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
             'abs(eta) >= 2.4)' +
         ' | ' +
         # Requirements for the HF region
-        'abs(eta) > 3. & neutralMultiplicity > 10 & neutralEmEnergyFraction < 0.90')
+        'abs(eta) > 3. & neutralMultiplicity > 10 & neutralEmEnergyFraction < 0.90'
+    )
     
     # Specify additional selection to be evaluated
     jetQualityCuts = cms.vstring(jetLooseID)
@@ -187,7 +200,8 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
             jetCorrPayloadName = cms.string('AK4PFchs'),
             jetCorrUncertaintyTag = cms.string('Uncertainty'),
             addResidualJES = cms.bool(False),
-            shiftBy = cms.double(+1.))
+            shiftBy = cms.double(+1.)
+        )
         
         process.analysisPatJetsScaleDown = process.analysisPatJetsScaleUp.clone(shiftBy = -1.)
     
@@ -195,7 +209,7 @@ def DefineJets(process, reapplyJEC = False, runOnData = False):
     return recorrectedJetsLabel, jetQualityCuts
 
 
-def DefineMETs(process, runOnData = False, jetCollection = ''):
+def DefineMETs(process, runOnData=False, jetCollection=''):
     """
         Configures recalculation of corrected MET and its systematic uncertainties. Name of the jet
         collection exploited in the procedure is provided as an argument of the function. Only
@@ -222,18 +236,19 @@ def DefineMETs(process, runOnData = False, jetCollection = ''):
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
     # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/437.html?inline=-1
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
-     runMetCorAndUncFromMiniAOD
+        runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD(
         process,
-        metType = 'PF',
-        isData = runOnData,
-        repro74X = False,
-        # electronColl = '', muonColl = '', photonColl = '', tauColl = '',
-        jetColl = jetCollection,
-        jetCollUnskimmed = jetCollection,
-        pfCandColl = 'packedPFCandidates',
-        jecUncFile = 'Analysis/PECTuples/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt',
-        postfix = '')
+        metType='PF',
+        isData=runOnData,
+        repro74X=False,
+        # electronColl='', muonColl='', photonColl='', tauColl='',
+        jetColl=jetCollection,
+        jetCollUnskimmed=jetCollection,
+        pfCandColl='packedPFCandidates',
+        jecUncFile='Analysis/PECTuples/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt',
+        postfix=''
+    )
     #^ Keyword argument repro74X in the above configuration is not documented. It should be set to
     # True when running over a MiniAOD dataset produced in a 7_4_X release with X <= 12.
     # Use default collections of leptons, taus, and photons. Could have switched off calculation of

@@ -73,14 +73,14 @@ class FileNameBlock:
         self.blockNumber = blockNumber_
         self.fileNames = []
     
-    def AddFile(self, fileName):
+    def add_file(self, fileName):
         """
         Adds a new file name to the list
         """
         self.fileNames.append(fileName)
 
 
-def mergeFiles(outputFileName, sourceFiles):
+def merge_files(outputFileName, sourceFiles):
     """
     Merges provided ROOT files. The function calls hadd program from ROOT distribution.
     """
@@ -99,20 +99,35 @@ def mergeFiles(outputFileName, sourceFiles):
 if __name__ == '__main__':
     # Define supported arguments and options
     optionParser = argparse.ArgumentParser(description = __doc__)
-    optionParser.add_argument('-m', '--mask',
-        help = 'POSIX regular expression to specify input files', default = '.*\.root')
-    optionParser.add_argument('-s', '--max-size', help = 'Maximal size of an output file (GiB). '\
-        'The output is splitted into several files if needed', type = float, default = 2.,
-        dest = 'max_size')
-    optionParser.add_argument('-o', '--out-dir', help = 'Directory to store output. If it does '\
-        'not exist, it is created. All output is placed in a temporary directory created within '\
-        'the specified one', default = '/tmp/', dest = 'out_dir')
-    optionParser.add_argument('-n', '--num-threads', help = 'Number of threads to be used',
-        default = 6, type = int, dest = 'num_threads')
-    optionParser.add_argument('-t', '--tree-name', help = 'Name of a tree to count events',
-        default = 'eventContent/BasicInfo', dest = 'tree_name')
-    optionParser.add_argument('-d', '--keep-tmp-files', help = 'Do not delete temporary files',
-        action = 'store_true', dest = 'keep_tmp_files')
+    optionParser.add_argument(
+        '-m', '--mask',
+        help = 'POSIX regular expression to specify input files', default = '.*\.root'
+    )
+    optionParser.add_argument(
+        '-s', '--max-size',
+        help = 'Maximal size of an output file (GiB). The output is splitted into several files '\
+            'if needed',
+        type = float, default = 2.,
+        dest = 'max_size'
+    )
+    optionParser.add_argument(
+        '-o', '--out-dir',
+        help = 'Directory to store output. If it does not exist, it is created. All output is '\
+            'placed in a temporary directory created within the specified one',
+        default = '/tmp/', dest = 'out_dir'
+    )
+    optionParser.add_argument(
+        '-n', '--num-threads', help = 'Number of threads to be used',
+        default = 6, type = int, dest = 'num_threads'
+    )
+    optionParser.add_argument(
+        '-t', '--tree-name', help = 'Name of a tree to count events',
+        default = 'eventContent/BasicInfo', dest = 'tree_name'
+    )
+    optionParser.add_argument(
+        '-d', '--keep-tmp-files', help = 'Do not delete temporary files',
+        action = 'store_true', dest = 'keep_tmp_files'
+    )
 
     # Parse the arguments and options
     args = optionParser.parse_args()
@@ -173,7 +188,7 @@ if __name__ == '__main__':
             blocks.append(FileNameBlock(iPart, iBlock))
         
         # Add file name to the current block
-        blocks[-1].AddFile(sourceFiles[iJob].name)
+        blocks[-1].add_file(sourceFiles[iJob].name)
     
     
     # Prepare to merge files within the blocks. First create a temporary output directory
@@ -197,7 +212,7 @@ if __name__ == '__main__':
     for block in blocks:
         outputName = outputDir + basename + '_p' + str(block.partNumber + 1) + \
             '_' + str(block.blockNumber + 1) + '.root'
-        pool.apply_async(mergeFiles, (outputName, block.fileNames))
+        pool.apply_async(merge_files, (outputName, block.fileNames))
     
     # Wait until the jobs are done
     pool.close()
@@ -233,7 +248,7 @@ if __name__ == '__main__':
         for blockNumber in partToBlock[partNumber]:
             sourceFiles.append(nameFragment + '_' + str(blockNumber + 1) + '.root')
         
-        pool.apply_async(mergeFiles, (outputName, sourceFiles))
+        pool.apply_async(merge_files, (outputName, sourceFiles))
     
     # Wait for the jobs to finish
     pool.close()
@@ -273,19 +288,3 @@ if __name__ == '__main__':
         finalFile.Close()
     
     print 'Total number of events in these files:', nTotalEvents
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

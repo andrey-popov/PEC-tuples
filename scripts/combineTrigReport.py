@@ -24,7 +24,7 @@ class Module:
         # Number of events passed this module
         self.passed = 0
     
-    def Update(self, visited, passed):
+    def update(self, visited, passed):
         self.visited += visited
         self.passed += passed
 
@@ -40,12 +40,12 @@ class Path:
         # Ordered list of modules
         self.modules = []
     
-    def UpdateModule(self, index, visited, passed):
-        self.modules[index].Update(visited, passed)
+    def update_module(self, index, visited, passed):
+        self.modules[index].update(visited, passed)
     
-    def AddModule(self, moduleName, visited, passed):
+    def add_module(self, moduleName, visited, passed):
         self.modules.append(Module(moduleName))
-        self.UpdateModule(len(self.modules) - 1, visited, passed)
+        self.update_module(len(self.modules) - 1, visited, passed)
 
 
 if __name__ == '__main__':
@@ -140,9 +140,9 @@ if __name__ == '__main__':
                 nPassed = int(matchRes.group(2))
                 
                 if firstLogFile:
-                    curPath.AddModule(moduleName, nVisited, nPassed)
+                    curPath.add_module(moduleName, nVisited, nPassed)
                 else:
-                    curPath.UpdateModule(moduleIndex, nVisited, nPassed)
+                    curPath.update_module(moduleIndex, nVisited, nPassed)
                 
                 moduleIndex += 1
                 line = logFile.readline()
