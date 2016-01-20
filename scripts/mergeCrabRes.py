@@ -47,7 +47,7 @@ class SourceFileName:
     """
     
     # A static regular expression to parse the name of a source file
-    nameRegex = re.compile(r'.*_(\d+)_\d+_[a-zA-Z0-9]{3}\.root')
+    nameRegex = re.compile(r'.*_(\d+)\.root')
     
     def __init__(self, fileName):
         self.name = fileName
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     )
     optionParser.add_argument(
         '-t', '--tree-name', help = 'Name of a tree to count events',
-        default = 'eventContent/BasicInfo', dest = 'tree_name'
+        default = 'pecEventID/EventID', dest = 'tree_name'
     )
     optionParser.add_argument(
         '-d', '--keep-tmp-files', help = 'Do not delete temporary files',
@@ -212,12 +212,12 @@ if __name__ == '__main__':
     outputDir = tempfile.mkdtemp(dir = args.out_dir)
     outputDir += '/'
     
-    print 'Starting merging the files. Results will be placed in directory', outputDir + '.'
+    print 'Start merging of input files. Results will be placed in directory', outputDir + '.'
     
 
     # Deduce the base name of output ROOT files: everything before the
     # job number.  It is used to name output files.
-    res = re.match(r'(.*)_\d+_\d+_[a-zA-Z0-9]{3}\.root', sourceFiles[0].name)
+    res = re.match(r'(.*)_\d+\.root', sourceFiles[0].name)
     basename = res.group(1)
     
     
