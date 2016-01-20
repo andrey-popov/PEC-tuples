@@ -235,7 +235,9 @@ apply_event_filters(
 
 
 # Save decisions of selected triggers.  The lists are aligned with
-# menu [1] used in 25 ns MC and menus deployed online.
+# menu [1] used in 25 ns MC and menus deployed online.  When processing
+# data, reject event that do not fire any of the listed triggers since
+# they cannot be used in an analysis anyway.
 # [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
@@ -244,7 +246,7 @@ if runOnData:
             'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
             'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf'
         ),
-        filter = cms.bool(False),
+        filter = cms.bool(True),
         savePrescales = cms.bool(True),
         triggerBits = cms.InputTag('TriggerResults', processName='HLT'),
         triggerPrescales = cms.InputTag('patTrigger')
