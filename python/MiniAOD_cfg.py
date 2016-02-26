@@ -82,6 +82,10 @@ options.register(
     'Indicates whether LHE-level variations of event weights should be stored'
 )
 options.register(
+    'labelLHEEventProduct', 'externalLHEProducer', VarParsing.multiplicity.singleton,
+    VarParsing.varType.string, 'Label to access LHEEventProduct'
+)
+options.register(
     'saveGenParticles', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Save information about the hard(est) interaction and selected particles'
 )
@@ -311,7 +315,7 @@ if not runOnData:
     process.pecGenerator = cms.EDAnalyzer('PECGenerator',
         generator = cms.InputTag('generator'),
         saveLHEWeightVars = cms.bool(options.saveLHEWeightVars),
-        lheEventInfoProduct = cms.InputTag('externalLHEProducer')
+        lheEventInfoProduct = cms.InputTag(options.labelLHEEventProduct)
     )
     paths.append(process.pecGenerator)
 
