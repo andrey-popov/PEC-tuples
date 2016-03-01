@@ -181,6 +181,7 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
     boost::regex groupStartRegex("^\\s*<weightgroup\\s+(.*)>\\s*\n?$", boost::regex::extended);
     boost::regex groupEndRegex("^\\s*</weightgroup>\\s*\n?$", boost::regex::extended);
     boost::regex emptyLineRegex("^\\s*\n?$", boost::regex::extended);
+    boost::regex tagRegex("^\\s*<.+>\\s*\n?$", boost::regex::extended);
     
     
     // Read LHE header
@@ -236,10 +237,19 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
             
             
             // If control reaches this point, the current line could not be parsed
-            Exception excp(errors::LogicError);
-            excp << "Failed to parse line\n  \"" << line << "\"\nin the header \"" <<
-             weightsHeaderTag << "\".";
-            excp.raise();
+            if (not boost::regex_match(line, matchResults, tagRegex))
+            {
+                cerr << "ERROR in LHEEventWeights: Failed to parse line\n  \"" << line <<
+                  "\"\nin the header \"" << weightsHeaderTag << "\". This line is not a valid " <<
+                  "XML tag. Will try to ignore it and continue." << endl;
+            }
+            else
+            {
+                Exception excp(errors::LogicError);
+                excp << "Unexpected XML tag found in line\n  \"" << line <<
+                  "\"\nin the header \"" << weightsHeaderTag << "\".";
+                excp.raise();
+            }
         }
     }
     
