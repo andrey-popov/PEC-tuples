@@ -54,11 +54,7 @@ if len(options.inputFile) == 0:
 process.source = cms.Source('PoolSource',
     fileNames = cms.untracked.vstring(options.inputFile.split(',')))
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
-
-if not options.storeWeights:
-    # There is no need to read any events
-    process.maxEvents.input = 1
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
 # Service to handle the output file
