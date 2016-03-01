@@ -33,7 +33,7 @@ options = VarParsing('python')
 
 options.register(
     'inputFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'Name of the input file'
+    'Name of the input file (comma-separared list is also allowed)'
 )
 options.register(
     'storeWeights', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
@@ -52,7 +52,7 @@ if len(options.inputFile) == 0:
     raise RuntimeError, 'No input file is provided'
 
 process.source = cms.Source('PoolSource',
-    fileNames = cms.untracked.vstring(options.inputFile))
+    fileNames = cms.untracked.vstring(options.inputFile.split(',')))
 
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(1000))
 
