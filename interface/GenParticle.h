@@ -32,7 +32,8 @@ public:
     /**
      * \brief Sets PDG ID
      * 
-     * If the given ID cannot be stored in Short_t, an exception is thrown.
+     * If the absolute value of the given ID is larger than 30'000, it is converted to
+     * sign(pdgId) * 30'000 + pdgId % 1'000 to avoid overflow.
      */
     void SetPdgId(long pdgId);
     

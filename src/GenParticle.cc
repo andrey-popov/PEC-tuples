@@ -1,6 +1,7 @@
 #include <Analysis/PECTuples/interface/GenParticle.h>
 
 #include <stdexcept>
+/**/#include <iostream>
 
 
 pec::GenParticle::GenParticle():
@@ -39,11 +40,13 @@ void pec::GenParticle::Reset()
 
 void pec::GenParticle::SetPdgId(long pdgId_)
 {
-    if (pdgId_ > 32767 or pdgId_ < -32768)
-        throw std::runtime_error("GenParticle::SetPdgId: Current implementation allows only two "
-         "bytes for the PDG ID.");
-    
-    pdgId = pdgId_;
+    if (std::abs(pdgId_) > 30000)
+    {
+        // Protect against overflow
+        pdgId = ((pdgId_ > 0) ? 30000 : -30000) + pdgId_ % 1000;
+    }
+    else
+        pdgId = pdgId_;
 }
 
 
