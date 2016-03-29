@@ -1,11 +1,14 @@
 #!/bin/bash
 
-# The latest release in the 74X series
-release="CMSSW_7_4_15_patch1"
+# The latest release in the 76X series
+release="CMSSW_7_6_4"
 scramv1 project CMSSW $release  # cmsrel alias expanded
 
 cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
+
+exit 0
+# Code below has not been updated
 
 
 # Cut-based electron ID
