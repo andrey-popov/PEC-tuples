@@ -200,7 +200,7 @@ from Analysis.PECTuples.ObjectsDefinitions_cff import (define_electrons, define_
 muQualityCuts = define_muons(process)
 (recorrectedJetsLabel, jetQualityCuts) = \
     define_jets(process, reapplyJEC=True, runOnData=runOnData)
-define_METs(process, runOnData=runOnData, jetCollection=recorrectedJetsLabel)
+# define_METs(process, runOnData=runOnData, jetCollection=recorrectedJetsLabel)
 
 
 # The loose event selection
@@ -295,7 +295,8 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     jecPayload = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
     jetSelection = jetQualityCuts,
-    met = cms.InputTag('slimmedMETs', processName=process.name_())
+    # met = cms.InputTag('slimmedMETs', processName=process.name_())
+    met = cms.InputTag('slimmedMETs')
 )
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',
