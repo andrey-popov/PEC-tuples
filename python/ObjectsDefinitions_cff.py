@@ -215,6 +215,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     
     # Jet ID [1].  Accessors to energy fractions in pat::Jet take into
     # account JEC, and thus there is no need to unapply the corrections
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID?rev=93#Recommendations_for_13_TeV_data
     jetLooseID = (
         # Common block of requirements for |eta| < 3
         'abs(eta) <= 3. & (chargedMultiplicity + neutralMultiplicity) > 1 & ' +
