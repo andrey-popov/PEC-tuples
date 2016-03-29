@@ -296,22 +296,18 @@ def define_METs(process, runOnData=False, jetCollection=''):
         process,
         metType='PF',
         isData=runOnData,
-        repro74X=False,
         # electronColl='', muonColl='', photonColl='', tauColl='',
         jetColl=jetCollection,
         jetCollUnskimmed=jetCollection,
         pfCandColl='packedPFCandidates',
-        jecUncFile='Analysis/PECTuples/data/Summer15_25nsV6_MC_Uncertainty_AK4PFchs.txt',
+        jecUncFile='Analysis/PECTuples/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt',
         postfix=''
     )
-    # ^Keyword argument repro74X in the above configuration is not
-    # documented.  It should be set to True when running over a MiniAOD
-    # dataset produced in a 7_4_X release with X <= 12.  Use default
-    # collections of leptons, taus, and photons.  Could have switched
-    # off calculation of the corresponding variations of MET by setting
-    # collection names to '', but PATMETSlimmer requires these
-    # variations [1].
-    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_4_15_patch1/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
+    # ^Use default collections of leptons, taus, and photons.  Could
+    # have switched off calculation of the corresponding variations of
+    # MET by setting collection names to '', but PATMETSlimmer requires
+    # these variations [1].
+    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_6_4/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
     
     
     # Wrong correction level specified in the default configuration [1]
