@@ -245,9 +245,15 @@ apply_event_filters(
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
         triggers = cms.vstring(
+            # Single-lepton paths
             'Mu45_eta2p1', 'Mu50',
             'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
-            'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf'
+            'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf',
+            # Dilepton paths
+            'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+            'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+            'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+            'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ'
         ),
         filter = cms.bool(True),
         savePrescales = cms.bool(True),
@@ -257,9 +263,15 @@ if runOnData:
 else:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
         triggers = cms.vstring(
+            # Single-lepton paths
             'Mu45_eta2p1', 'Mu50',
-            'IsoMu17_eta2p1', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
-            'Ele22_eta2p1_WP75_Gsf', 'Ele27_eta2p1_WP75_Gsf'
+            'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
+            'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf',
+            # Dilepton paths
+            'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+            'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
+            'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
+            'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ'
         ),
         filter = cms.bool(False),
         savePrescales = cms.bool(False),
