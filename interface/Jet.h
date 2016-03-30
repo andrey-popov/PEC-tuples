@@ -36,6 +36,9 @@ public:
     /// Sets relative uncertainty of the full jet energy correction factor
     void SetJECUncertainty(float jecUncertainty);
     
+    /// Sets the value of the cMVA b-tagging discriminator
+    void SetBTagCMVA(float bTag);
+    
     /// Sets the value of the CSV b-tagging discriminator
     void SetBTagCSV(float bTag);
     
@@ -85,6 +88,9 @@ public:
      * stored and the correction is to be applied by the user, the method returns zero.
      */
     float JECUncertainty() const;
+    
+    /// Returns the value of the cMVA b-tagging discriminator
+    float BTagCMVA() const;
     
     /// Returns the value of the CSV b-tagging discriminator
     float BTagCSV() const;
@@ -142,8 +148,8 @@ private:
      */
     Float_t jecUncertainty;
     
-    /// Value of b-tagging discriminator
-    Float_t bTagCSV;
+    /// Values of b-tagging discriminators
+    Float_t bTagCMVA, bTagCSV;
     
     /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
     Float_t secVertexMass;

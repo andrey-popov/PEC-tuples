@@ -6,7 +6,7 @@
 pec::Jet::Jet():
     CandidateWithID(),
     jecFactor(0), jecUncertainty(0),
-    bTagCSV(0), secVertexMass(0),
+    bTagCMVA(0), bTagCSV(0), secVertexMass(0),
     area(0),
     charge(0),
     pullAngle(0),
@@ -17,7 +17,7 @@ pec::Jet::Jet():
 pec::Jet::Jet(Jet const &src):
     CandidateWithID(src),
     jecFactor(src.jecFactor), jecUncertainty(src.jecUncertainty),
-    bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
+    bTagCMVA(src.bTagCMVA), bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
     area(src.area),
     charge(src.charge),
     pullAngle(src.pullAngle),
@@ -31,6 +31,7 @@ pec::Jet &pec::Jet::operator=(Jet const &src)
     
     jecFactor = src.jecFactor;
     jecUncertainty = src.jecUncertainty;
+    bTagCMVA = src.bTagCMVA;
     bTagCSV = src.bTagCSV;
     secVertexMass = src.secVertexMass;
     area = src.area;
@@ -48,6 +49,7 @@ void pec::Jet::Reset()
     
     jecFactor = 0;
     jecUncertainty = 0;
+    bTagCMVA = 0;
     bTagCSV = 0;
     secVertexMass = 0;
     area = 0;
@@ -66,6 +68,12 @@ void pec::Jet::SetJECFactor(float jecFactor_)
 void pec::Jet::SetJECUncertainty(float jecUncertainty_)
 {
     jecUncertainty = jecUncertainty_;
+}
+
+
+void pec::Jet::SetBTagCMVA(float bTag)
+{
+    bTagCMVA = bTag;
 }
 
 
@@ -119,6 +127,12 @@ float pec::Jet::JECFactor() const
 float pec::Jet::JECUncertainty() const
 {
     return jecUncertainty;
+}
+
+
+float pec::Jet::BTagCMVA() const
+{
+    return bTagCMVA;
 }
 
 

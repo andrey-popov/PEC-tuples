@@ -140,6 +140,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             storeJet.SetArea(j.jetArea());
             storeJet.SetCharge(j.jetCharge());
             storeJet.SetBTagCSV(j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
+            storeJet.SetBTagCMVA(j.bDiscriminator("pfCombinedMVAV2BJetTags"));
             
             // Mass of the secondary vertex is available as userFloat [1]
             //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015?rev=92#Jets
