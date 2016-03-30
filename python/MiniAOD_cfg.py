@@ -247,7 +247,7 @@ if runOnData:
         triggers = cms.vstring(
             # Single-lepton paths
             'Mu45_eta2p1', 'Mu50',
-            'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
+            'IsoMu18', 'IsoMu20', 'IsoTkMu20',
             'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf',
             # Dilepton paths
             'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
@@ -265,7 +265,7 @@ else:
         triggers = cms.vstring(
             # Single-lepton paths
             'Mu45_eta2p1', 'Mu50',
-            'IsoMu18', 'IsoMu20', 'IsoTkMu20', 'IsoMu24_eta2p1',
+            'IsoMu18', 'IsoMu20', 'IsoTkMu20',
             'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf',
             # Dilepton paths
             'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
