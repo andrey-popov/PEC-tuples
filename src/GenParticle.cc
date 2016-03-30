@@ -1,7 +1,6 @@
 #include <Analysis/PECTuples/interface/GenParticle.h>
 
 #include <stdexcept>
-/**/#include <iostream>
 
 
 pec::GenParticle::GenParticle():
@@ -38,15 +37,9 @@ void pec::GenParticle::Reset()
 }
 
 
-void pec::GenParticle::SetPdgId(long pdgId_)
+void pec::GenParticle::SetPdgId(int pdgId_)
 {
-    if (std::abs(pdgId_) > 30000)
-    {
-        // Protect against overflow
-        pdgId = ((pdgId_ > 0) ? 30000 : -30000) + pdgId_ % 1000;
-    }
-    else
-        pdgId = pdgId_;
+    pdgId = pdgId_;
 }
 
 
@@ -68,7 +61,7 @@ void pec::GenParticle::SetLastMotherIndex(int index)
 }
 
 
-long pec::GenParticle::PdgId() const
+int pec::GenParticle::PdgId() const
 {
     return pdgId;
 }

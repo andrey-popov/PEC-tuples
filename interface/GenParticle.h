@@ -9,8 +9,7 @@ namespace pec
  * \class GenParticle
  * \brief Minimalistic discription of a generator-level particle
  * 
- * The PDG ID is encoded with two bytes, thus not all possible particles can be reprecented by the
- * class. The user is expected to use a small filtered collection of particles; the mother indices
+ * The user is expected to use a small filtered collection of particles; the mother indices
  * correspond to positions in this filtered collection.
  */
 class GenParticle: public Candidate
@@ -29,13 +28,8 @@ public:
     /// Resets the object to a state right after the default initialisation
     virtual void Reset();
     
-    /**
-     * \brief Sets PDG ID
-     * 
-     * If the absolute value of the given ID is larger than 30'000, it is converted to
-     * sign(pdgId) * 30'000 + pdgId % 1'000 to avoid overflow.
-     */
-    void SetPdgId(long pdgId);
+    /// Sets PDG ID
+    void SetPdgId(int pdgId);
     
     /**
      * \brief Sets index of the first mother
@@ -54,7 +48,7 @@ public:
     void SetLastMotherIndex(int index);
     
     /// Returns PDG ID
-    long PdgId() const;
+    int PdgId() const;
     
     /**
      * \brief Returns index of the first mother
@@ -75,7 +69,7 @@ public:
     
 private:
     /// PDG ID
-    Short_t pdgId;
+    Int_t pdgId;
     
     /**
      * \brief Indices of the first and the last mother of the particle
