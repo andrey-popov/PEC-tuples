@@ -47,14 +47,14 @@ def define_electrons(process):
     
     
     # Labels to access embedded cut-based ID
-    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=27
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=31
     eleEmbeddedCutBasedIDLabels = ['cutBasedElectronID-Spring15-25ns-V1-standalone-' + p
         for p in ['veto', 'loose', 'medium', 'tight']]
     
     
-    # Decisions of triggering MVA ID are not stored in MiniAOD2015v2 and
+    # Decisions of triggering MVA ID are not stored in MiniAOD76Xv2 and
     # should be calculated
-    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=26
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
         setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
@@ -83,7 +83,7 @@ def define_electrons(process):
         '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)',
         # Trigger-emulating preselection [1], referenced from [2]
         # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1645/2/1/1.html
-        # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=23#Recipes_for_7_4_12_Spring15_MVA
+        # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=26#Triggering_electron_MVA_details
         'pt > 15. & \
          ((abs(superCluster.eta) < 1.4442 & full5x5_sigmaIetaIeta < 0.012 & hcalOverEcal < 0.9 & \
           ecalPFClusterIso / pt < 0.37 & hcalPFClusterIso / pt < 0.25 & dr03TkSumPt / pt < 0.18 & \
