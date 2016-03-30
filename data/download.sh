@@ -12,5 +12,4 @@ if [ ! -d "$DISTRIBUTION_DIR" ]; then
 fi
 
 
-# Copy files
-cp "$DISTRIBUTION_DIR"/csc2015_Dec01.root .
+# Nothing to copy in the current set-up

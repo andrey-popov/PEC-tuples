@@ -185,7 +185,7 @@ paths = PathManager(process.elPath, process.muPath)
 # Filter on properties of the first vertex
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
     src = cms.InputTag('offlineSlimmedPrimaryVertices'),
-    cut = cms.string('!isFake & ndof >= 4. & abs(z) < 24. & position.Rho < 2.')
+    cut = cms.string('!isFake & ndof > 4. & abs(z) < 24. & position.rho < 2.')
 )
 
 paths.append(process.goodOfflinePrimaryVertices)
