@@ -184,26 +184,20 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     
     # Reapply JEC if requested [1].  The corrections are read from the
     # current global tag.
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=133#CorrPatJets
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=134#CorrPatJets
     if reapplyJEC:
-        from PhysicsTools.PatAlgos.producersLayer1.jetUpdater_cff import (updatedPatJetCorrFactors,
-            updatedPatJets)
-        
-        process.jetCorrectionFactorsReapplyJEC = updatedPatJetCorrFactors.clone(
-            src = cms.InputTag('slimmedJets'),
-            levels = ['L1FastJet', 'L2Relative', 'L3Absolute'],
-            payload = 'AK4PFchs'
-        )
-        
+        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
         if runOnData:
-            process.jetCorrectionFactorsReapplyJEC.levels.append('L2L3Residual')
+            jecLevels.append('L2L3Residual')
         
-        process.recorrectedSlimmedJets = updatedPatJets.clone(
+        from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+        updateJetCollection(
+            process, labelName = 'UpdatedJEC',
             jetSource = cms.InputTag('slimmedJets'),
-            jetCorrFactorsSource = cms.VInputTag(cms.InputTag('jetCorrectionFactorsReapplyJEC'))
+            jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None')
         )
     
-    recorrectedJetsLabel = ('recorrectedSlimmedJets' if reapplyJEC else 'slimmedJets')
+    recorrectedJetsLabel = ('updatedPatJetsUpdatedJEC' if reapplyJEC else 'slimmedJets')
     
     
     # Define analysis-level jets by applying a very loose selection
