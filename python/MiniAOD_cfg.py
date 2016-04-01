@@ -198,7 +198,7 @@ from Analysis.PECTuples.ObjectsDefinitions_cff import (define_electrons, define_
 (eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps) = \
     define_electrons(process)
 muQualityCuts = define_muons(process)
-(recorrectedJetsLabel, jetQualityCuts) = \
+(recorrectedJetsLabel, jetQualityCuts, pileUpIDMap) = \
     define_jets(process, reapplyJEC=True, runOnData=runOnData)
 # define_METs(process, runOnData=runOnData, jetCollection=recorrectedJetsLabel)
 
@@ -307,6 +307,7 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     jecPayload = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
     jetSelection = jetQualityCuts,
+    contIDMaps = cms.VInputTag(pileUpIDMap),
     # met = cms.InputTag('slimmedMETs', processName=process.name_())
     met = cms.InputTag('slimmedMETs')
 )

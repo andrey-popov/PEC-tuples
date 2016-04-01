@@ -86,7 +86,7 @@ private:
     /// Names of embedded real-valued IDs to be saved
     std::vector<std::string> embeddedContIDLabels;
     
-    /// Maps additional real-valued IDs
+    /// Maps with additional real-valued IDs
     std::vector<edm::EDGetTokenT<edm::ValueMap<float>>> contIDMapTokens;
     
     /**

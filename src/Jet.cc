@@ -7,6 +7,7 @@ pec::Jet::Jet():
     CandidateWithID(),
     jecFactor(0), jecUncertainty(0),
     bTagCMVA(0), bTagCSV(0), secVertexMass(0),
+    pileUpMVA(0),
     area(0),
     charge(0),
     pullAngle(0),
@@ -18,6 +19,7 @@ pec::Jet::Jet(Jet const &src):
     CandidateWithID(src),
     jecFactor(src.jecFactor), jecUncertainty(src.jecUncertainty),
     bTagCMVA(src.bTagCMVA), bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
+    pileUpMVA(src.pileUpMVA),
     area(src.area),
     charge(src.charge),
     pullAngle(src.pullAngle),
@@ -34,6 +36,7 @@ pec::Jet &pec::Jet::operator=(Jet const &src)
     bTagCMVA = src.bTagCMVA;
     bTagCSV = src.bTagCSV;
     secVertexMass = src.secVertexMass;
+    pileUpMVA = src.pileUpMVA;
     area = src.area;
     charge = src.charge;
     pullAngle = src.pullAngle;
@@ -52,6 +55,7 @@ void pec::Jet::Reset()
     bTagCMVA = 0;
     bTagCSV = 0;
     secVertexMass = 0;
+    pileUpMVA = 0;
     area = 0;
     charge = 0;
     pullAngle = 0;
@@ -91,6 +95,12 @@ void pec::Jet::SetSecVertexMass(float mass)
         mass = 0.;
     
     secVertexMass = mass;
+}
+
+
+void pec::Jet::SetPileUpID(float pileUpMVA_)
+{
+    pileUpMVA = pileUpMVA_;
 }
 
 
@@ -145,6 +155,12 @@ float pec::Jet::BTagCSV() const
 float pec::Jet::SecVertexMass() const
 {
     return secVertexMass;
+}
+
+
+float pec::Jet::PileUpID() const
+{
+    return pileUpMVA;
 }
 
 

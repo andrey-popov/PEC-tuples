@@ -45,6 +45,9 @@ public:
     /// Sets mass of the secondary vertex associated with the jet
     void SetSecVertexMass(float mass);
     
+    /// Sets value of the pile-up discriminator
+    void SetPileUpID(float pileUpMVA);
+    
     /// Sets jet area
     void SetArea(float area);
     
@@ -94,6 +97,9 @@ public:
     
     /// Returns the value of the CSV b-tagging discriminator
     float BTagCSV() const;
+    
+    /// Returns value of the pile-up discriminator
+    float PileUpID() const;
     
     /**
      * \brief Returns mass of the secondary vertex associated with the jet
@@ -153,6 +159,9 @@ private:
     
     /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
     Float_t secVertexMass;
+    
+    /// Value of an MVA discriminator against pile-up
+    Float_t pileUpMVA;
     
     /// Jet area
     Float_t area;

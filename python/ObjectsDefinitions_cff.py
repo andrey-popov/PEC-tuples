@@ -173,6 +173,8 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
             configuration) and no kinamatical or quality selection.
         jetQualityCuts: List of string-based quality selections whose
             decisions are to be saved.
+        pileUpIDMap: Name of a map that contains real-valued pile-up ID
+            decisions.
     
     Create the following jet collections:
         analysisPatJets: Jets with up-to-date JEC and a loose quality
@@ -229,6 +231,17 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     jetQualityCuts = cms.vstring(jetLooseID)
     
     
+    # Set up pile-up jet ID
+    process.load('RecoJets.JetProducers.PileupJetID_cfi')
+    process.pileupJetIdCustomized = process.pileupJetId.clone(
+        jets = cms.InputTag('analysisPatJets'),
+        inputIsCorrected = True,
+        applyJec = False,
+        vertexes = cms.InputTag('offlineSlimmedPrimaryVertices')
+    )
+    pileUpIDMap = 'pileupJetIdCustomized:fullDiscriminant'
+    
+    
     # When running over simulation, produce jet collections with varied
     # systematic uncertainties.  They will be used to perform the loose
     # event selection, taking the uncertainty into account
@@ -244,7 +257,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
         process.analysisPatJetsScaleDown = process.analysisPatJetsScaleUp.clone(shiftBy = -1.)
     
     
-    return recorrectedJetsLabel, jetQualityCuts
+    return recorrectedJetsLabel, jetQualityCuts, pileUpIDMap
 
 
 def define_METs(process, runOnData=False, jetCollection=''):

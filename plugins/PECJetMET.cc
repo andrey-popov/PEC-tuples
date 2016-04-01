@@ -27,6 +27,9 @@ PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
     
+    for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("contIDMaps"))
+        contIDMapTokens.emplace_back(consumes<ValueMap<float>>(tag));
+    
     
     // Construct string-based selectors
     for (string const &selection: cfg.getParameter<vector<string>>("jetSelection"))
@@ -44,6 +47,8 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "tree.");
+    desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>(0))->
+     setComment("Maps with real-valued ID decisions to be stored.");
     desc.add<double>("jetMinPt", 20.)->
      setComment("Jets with corrected pt above this threshold will be stored in the output tree.");
     desc.add<double>("jetMinRawPt", 999.)->
@@ -86,6 +91,13 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
     // Read the jet collection
     Handle<View<pat::Jet>> srcJets;
     event.getByToken(jetToken, srcJets);
+    
+    
+    // Read maps with real-valued jet ID
+    vector<Handle<ValueMap<float>>> contIDMaps(contIDMapTokens.size());
+    
+    for (unsigned i = 0; i < contIDMapTokens.size(); ++i)
+        event.getByToken(contIDMapTokens.at(i), contIDMaps.at(i));
     
     
     // Loop through the collection and store relevant properties of jets
@@ -145,6 +157,15 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             // Mass of the secondary vertex is available as userFloat [1]
             //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015?rev=92#Jets
             storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
+            
+            
+            // Save the pile-up ID if available. It should be the first ID in the dedicated
+            //collection of maps
+            if (contIDMaps.size() > 0)
+            {
+                Ptr<pat::Jet> const jetPtr(srcJets, i);
+                storeJet.SetPileUpID((*contIDMaps.at(0))[jetPtr]);
+            }
             
             
             // Calculate the jet pull angle

@@ -92,6 +92,9 @@ private:
      */
     std::vector<StringCutObjectSelector<pat::Jet>> jetSelectors;
     
+    /// Maps with real-valued IDs
+    std::vector<edm::EDGetTokenT<edm::ValueMap<float>>> contIDMapTokens;
+    
     /**
      * \brief Indicates whether an event is data or simulation
      * 
