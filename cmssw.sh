@@ -30,3 +30,8 @@ wget https://github.com/jbrands/RecoJets-JetProducers/raw/3dad903ed25d025f68be94
 wget https://github.com/jbrands/RecoJets-JetProducers/raw/3dad903ed25d025f68be94d6f781ca957d6f86ac/pileupJetId_76x_Eta2p75to3_BDT.weights.xml.gz
 wget https://github.com/jbrands/RecoJets-JetProducers/raw/3dad903ed25d025f68be94d6f781ca957d6f86ac/pileupJetId_76x_Eta3to5_BDT.weights.xml.gz
 cd ../../..
+
+
+# Fix recomputation of MET
+# [3] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=41#Instructions_for_7_6_X_Recommend
+git cms-merge-topic cms-met:metTool76X

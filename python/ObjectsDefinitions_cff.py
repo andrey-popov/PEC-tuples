@@ -260,7 +260,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     return recorrectedJetsLabel, jetQualityCuts, pileUpIDMap
 
 
-def define_METs(process, runOnData=False, jetCollection=''):
+def define_METs(process, runOnData=False):
     """Define reconstructed MET.
     
     Configure recalculation of corrected MET and its systematic
@@ -271,9 +271,6 @@ def define_METs(process, runOnData=False, jetCollection=''):
     taus, and photons, although these variations are not considered in
     targeted analyses.
     
-    Uncertainties corresponding to JER are computed using outdated
-    parameters.  A recipe for 13 TeV data is still under development.
-    
     There have been many problems with the MET PAT tool and related
     CMSSW plugins.  Although some of them are fixed here, there might be
     others.  Thus, MET should be used ith a great causion.
@@ -282,8 +279,6 @@ def define_METs(process, runOnData=False, jetCollection=''):
         process: The process to which relevant MET producers are added.
         runOnData: Flag to distinguish processing of data and
             simulation.
-        jetCollection: Name of jet collection to be exploited for type-1
-            corrections.  Should be the collection with up-to-date JEC.
     
     Return value:
         None.
@@ -291,7 +286,41 @@ def define_METs(process, runOnData=False, jetCollection=''):
     Among other things, add to the process producer slimmedMETs, which
     overrides the namesake collection from MiniAOD.  User must use this
     new collection.
+    
+    Implementation is based on instructions provided here [1].
+    [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=41#Instructions_for_7_6_X_Recommend
     """
+    
+    # Set up access to JER database.  In 76X JER factors are not
+    # available in a global tag, which is why a local file is used. The
+    # snippet is adapted from [1].  The main change is using the
+    # FileInPath extention to access the database file [2].
+    # [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
+    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/db-aligncal/58.html
+    from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+    process.jer = cms.ESSource(
+        'PoolDBESSource', CondDBSetup,
+        connect = cms.string('sqlite_fip:PhysicsTools/PatUtils/data/Fall15_25nsV2_MC.db'),
+        toGet = cms.VPSet(
+            cms.PSet(
+                record = cms.string('JetResolutionRcd'),
+                tag = cms.string('JR_Fall15_25nsV2_MC_PtResolution_AK4PFchs'),
+                label = cms.untracked.string('AK4PFchs_pt')
+            ),
+            cms.PSet(
+                record = cms.string('JetResolutionRcd'),
+                tag = cms.string('JR_Fall15_25nsV2_MC_PhiResolution_AK4PFchs'),
+                label = cms.untracked.string('AK4PFchs_phi')
+            ),
+            cms.PSet(
+                record = cms.string('JetResolutionScaleFactorRcd'),
+                tag = cms.string('JR_Fall15_25nsV2_MC_SF_AK4PFchs'),
+                label = cms.untracked.string('AK4PFchs')
+            ),
+        )
+    )
+    process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
+    
     
     # Recalculate MET corrections.  Some poor documentation is
     # available in [1].  There is a relevant discussion in hypernews.
@@ -304,10 +333,6 @@ def define_METs(process, runOnData=False, jetCollection=''):
         metType='PF',
         isData=runOnData,
         # electronColl='', muonColl='', photonColl='', tauColl='',
-        jetColl=jetCollection,
-        jetCollUnskimmed=jetCollection,
-        pfCandColl='packedPFCandidates',
-        jecUncFile='Analysis/PECTuples/data/Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt',
         postfix=''
     )
     # ^Use default collections of leptons, taus, and photons.  Could
@@ -315,23 +340,3 @@ def define_METs(process, runOnData=False, jetCollection=''):
     # MET by setting collection names to '', but PATMETSlimmer requires
     # these variations [1].
     # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_6_4/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
-    
-    
-    # Wrong correction level specified in the default configuration [1]
-    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/met/437/1/1/1.html
-    process.metcalo.correctionLevel = 'rawCalo'
-    
-    
-    # Update the type of JEC uncertainties used (total instead of
-    # 'SubTotalMC') as recommended in [1-2]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETRun2Corrections?rev=35#type_1_PF_MET_recommended
-    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/425/1/1/1/1/1.html
-    for module in ['shiftedPatJetEnUp', 'shiftedPatJetEnDown']:
-        getattr(process, module).jetCorrUncertaintyTag = ''
-    
-    
-    # Drop corrections for phi modulation since they are not recommended
-    # at the moment [1]
-    # [1] https://hypernews.cern.ch/HyperNews/CMS/get/met/422/1/1/1.html
-    del(process.slimmedMETs.tXYUncForRaw)
-    del(process.slimmedMETs.tXYUncForT1)
