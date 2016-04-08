@@ -318,8 +318,8 @@ process.pecPileUp = cms.EDAnalyzer('PECPileUp',
     puInfo = cms.InputTag('slimmedAddPileupInfo')
 )
 
-paths.append(process.pecTrigger, process.pecEventID, process.pecElectrons, process.pecMuons,
-    process.pecJetMET, process.pecPileUp)
+paths.append(process.pecEventID, process.pecElectrons, process.pecMuons, process.pecJetMET,
+    process.pecPileUp)
 
 
 # Save global generator information
