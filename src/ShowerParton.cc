@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 
-pec::ShowerParton::ShowerParton():
+pec::ShowerParton::ShowerParton() noexcept:
     Candidate(),
     pdgId(0),
     origin(0)

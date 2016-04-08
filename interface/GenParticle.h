@@ -17,17 +17,11 @@ class GenParticle: public Candidate
 {
 public:
     /// Constructor with no parameters
-    GenParticle();
-    
-    /// Default copy constructor
-    GenParticle(GenParticle const &) = default;
-    
-    /// Default assignment operator
-    GenParticle &operator=(GenParticle const &) = default;
+    GenParticle() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets PDG ID

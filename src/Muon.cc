@@ -1,7 +1,7 @@
 #include <Analysis/PECTuples/interface/Muon.h>
 
 
-pec::Muon::Muon():
+pec::Muon::Muon() noexcept:
     Lepton()
 {}
 

@@ -1,7 +1,7 @@
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
 
 
-pec::PileUpInfo::PileUpInfo():
+pec::PileUpInfo::PileUpInfo() noexcept:
     numPV(0),
     rho(0),
     trueNumPU(0),

@@ -9,7 +9,7 @@
 unsigned const pec::Electron::contIdSize;
 
 
-pec::Electron::Electron():
+pec::Electron::Electron() noexcept:
     Lepton(),
     etaSC(0.f),
     cutBasedId(0)

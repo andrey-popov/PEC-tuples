@@ -13,7 +13,7 @@ class PileUpInfo
 {
 public:
     /// Constructor without parameters
-    PileUpInfo();
+    PileUpInfo() noexcept;
     
     /// Default copy constructor
     PileUpInfo(PileUpInfo const &) = default;

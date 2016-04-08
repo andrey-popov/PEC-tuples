@@ -18,13 +18,7 @@ class Jet: public CandidateWithID
 {
 public:
     /// Constructor with no parameters
-    Jet();
-    
-    /// Default copy constructor
-    Jet(Jet const &) = default;
-    
-    /// Default assignment operator
-    Jet &operator=(Jet const &) = default;
+    Jet() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation

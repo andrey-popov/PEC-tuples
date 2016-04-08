@@ -1,7 +1,7 @@
 #include <Analysis/PECTuples/interface/EventID.h>
 
 
-pec::EventID::EventID():
+pec::EventID::EventID() noexcept:
     run(0),
     lumi(0),
     event(0)

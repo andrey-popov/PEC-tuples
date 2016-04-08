@@ -1,7 +1,7 @@
 #include <Analysis/PECTuples/interface/GenJet.h>
 
 
-pec::GenJet::GenJet():
+pec::GenJet::GenJet() noexcept:
     Candidate(),
     bcMult(0)
 {}

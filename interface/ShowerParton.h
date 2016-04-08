@@ -25,17 +25,11 @@ public:
     
 public:
     /// Constructor with no parameters
-    ShowerParton();
-    
-    /// Default copy constructor
-    ShowerParton(ShowerParton const &) = default;
-    
-    /// Default assignment operator
-    ShowerParton &operator=(ShowerParton const &) = default;
+    ShowerParton() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets PDG ID

@@ -13,7 +13,7 @@ class EventID
 {
 public:
     /// Constructor without parameters
-    EventID();
+    EventID() noexcept;
     
     /// Default copy constructor
     EventID(EventID const &) = default;

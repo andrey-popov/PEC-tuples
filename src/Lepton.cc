@@ -3,13 +3,9 @@
 #include <stdexcept>
 
 
-pec::Lepton::Lepton():
+pec::Lepton::Lepton() noexcept:
     CandidateWithID(),
     charge(false), relIso(0), dB(0)
-{}
-
-
-pec::Lepton::~Lepton()
 {}
 
 

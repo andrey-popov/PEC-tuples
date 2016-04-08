@@ -3,13 +3,9 @@
 #include <stdexcept>
 
 
-pec::CandidateWithID::CandidateWithID():
+pec::CandidateWithID::CandidateWithID() noexcept:
     Candidate(),
     id(0)
-{}
-
-
-pec::CandidateWithID::~CandidateWithID()
 {}
 
 

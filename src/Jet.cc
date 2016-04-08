@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 
-pec::Jet::Jet():
+pec::Jet::Jet() noexcept:
     CandidateWithID(),
     jecFactor(0), jecUncertainty(0),
     bTagCMVA(0), bTagCSV(0), secVertexMass(0),

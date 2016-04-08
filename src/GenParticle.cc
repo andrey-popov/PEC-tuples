@@ -4,7 +4,7 @@
 /**/#include <iostream>
 
 
-pec::GenParticle::GenParticle():
+pec::GenParticle::GenParticle() noexcept:
     pdgId(0),
     firstMotherIndex(0), lastMotherIndex(0)
 {}

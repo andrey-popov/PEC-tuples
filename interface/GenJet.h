@@ -16,17 +16,11 @@ class GenJet: public Candidate
 {
 public:
     /// Constructor with no parameters
-    GenJet();
-    
-    /// Default copy constructor
-    GenJet(GenJet const &) = default;
-    
-    /// Default assignment operator
-    GenJet &operator=(GenJet const &) = default;
+    GenJet() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets multiplicity of B hadrons

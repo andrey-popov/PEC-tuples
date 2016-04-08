@@ -4,7 +4,7 @@
 #include <stdexcept>
 
 
-pec::GeneratorInfo::GeneratorInfo():
+pec::GeneratorInfo::GeneratorInfo() noexcept:
     processId(0),
     nominalWeight(0),
     pdfX(),  // the array is zeroed according to the C++03 standard

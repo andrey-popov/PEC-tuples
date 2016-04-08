@@ -15,7 +15,7 @@ class GeneratorInfo
 {
 public:
     /// Constructor without parameters
-    GeneratorInfo();
+    GeneratorInfo() noexcept;
     
     /// Default copy constructor
     GeneratorInfo(GeneratorInfo const &) = default;

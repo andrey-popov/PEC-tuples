@@ -18,17 +18,11 @@ class Electron: public Lepton
 {
 public:
     /// Constructor with no parameters
-    Electron();
-    
-    /// Default copy constructor
-    Electron(Electron const &) = default;
-    
-    /// Default assignment operator
-    Electron &operator=(Electron const &) = default;
+    Electron() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets a decision of a cut-based ID
