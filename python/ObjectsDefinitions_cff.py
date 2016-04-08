@@ -291,37 +291,6 @@ def define_METs(process, runOnData=False):
     [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=41#Instructions_for_7_6_X_Recommend
     """
     
-    # Set up access to JER database.  In 76X JER factors are not
-    # available in a global tag, which is why a local file is used. The
-    # snippet is adapted from [1].  The main change is using the
-    # FileInPath extention to access the database file [2].
-    # [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
-    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/db-aligncal/58.html
-    from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-    process.jer = cms.ESSource(
-        'PoolDBESSource', CondDBSetup,
-        connect = cms.string('sqlite_fip:PhysicsTools/PatUtils/data/Fall15_25nsV2_MC.db'),
-        toGet = cms.VPSet(
-            cms.PSet(
-                record = cms.string('JetResolutionRcd'),
-                tag = cms.string('JR_Fall15_25nsV2_MC_PtResolution_AK4PFchs'),
-                label = cms.untracked.string('AK4PFchs_pt')
-            ),
-            cms.PSet(
-                record = cms.string('JetResolutionRcd'),
-                tag = cms.string('JR_Fall15_25nsV2_MC_PhiResolution_AK4PFchs'),
-                label = cms.untracked.string('AK4PFchs_phi')
-            ),
-            cms.PSet(
-                record = cms.string('JetResolutionScaleFactorRcd'),
-                tag = cms.string('JR_Fall15_25nsV2_MC_SF_AK4PFchs'),
-                label = cms.untracked.string('AK4PFchs')
-            ),
-        )
-    )
-    process.es_prefer_jer = cms.ESPrefer('PoolDBESSource', 'jer')
-    
-    
     # Recalculate MET corrections.  Some poor documentation is
     # available in [1].  There is a relevant discussion in hypernews.
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
