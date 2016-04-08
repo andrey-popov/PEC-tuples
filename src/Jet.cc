@@ -5,7 +5,7 @@
 
 pec::Jet::Jet() noexcept:
     CandidateWithID(),
-    jecFactor(0), jecUncertainty(0),
+    corrFactor(0), jecUncertainty(0), jerUncertainty(0),
     bTagCMVA(0), bTagCSV(0), secVertexMass(0),
     pileUpMVA(0),
     area(0),
@@ -19,10 +19,9 @@ void pec::Jet::Reset()
 {
     CandidateWithID::Reset();
     
-    jecFactor = 0;
-    jecUncertainty = 0;
-    bTagCMVA = 0;
-    bTagCSV = 0;
+    corrFactor = 0;
+    jecUncertainty = jerUncertainty = 0;
+    bTagCMVA = bTagCSV = 0;
     secVertexMass = 0;
     pileUpMVA = 0;
     area = 0;
@@ -32,15 +31,21 @@ void pec::Jet::Reset()
 }
 
 
-void pec::Jet::SetJECFactor(float jecFactor_)
+void pec::Jet::SetCorrFactor(float corrFactor_)
 {
-    jecFactor = jecFactor_;
+    corrFactor = corrFactor_;
 }
 
 
 void pec::Jet::SetJECUncertainty(float jecUncertainty_)
 {
     jecUncertainty = jecUncertainty_;
+}
+
+
+void pec::Jet::SetJERUncertainty(float jerUncertainty_)
+{
+    jerUncertainty = jerUncertainty_;
 }
 
 
@@ -58,8 +63,8 @@ void pec::Jet::SetBTagCSV(float bTag)
 
 void pec::Jet::SetSecVertexMass(float mass)
 {
-    // Usually, the mass is set to a negative value when there is no secondary vertex associated
-    //with a jet. Do not to waste one bit for the sign, so reset the mass to zero in such cases
+    // The mass is set to a negative value when there is no secondary vertex associated with the
+    //jet. In this case reset the mass to zero to allow a better compression.
     if (mass < 0.)
         mass = 0.;
     
@@ -97,15 +102,21 @@ void pec::Jet::SetFlavour(int flavour_)
 }
 
 
-float pec::Jet::JECFactor() const
+float pec::Jet::CorrFactor() const
 {
-    return jecFactor;
+    return corrFactor;
 }
 
 
 float pec::Jet::JECUncertainty() const
 {
     return jecUncertainty;
+}
+
+
+float pec::Jet::JERUncertainty() const
+{
+    return jerUncertainty;
 }
 
 

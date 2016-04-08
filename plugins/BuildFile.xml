@@ -3,6 +3,7 @@
 <use  name = "DataFormats/PatCandidates" />
 <use  name = "HLTrigger/HLTcore" />
 <use  name = "JetMETCorrections/Objects" />
+<use  name = "JetMETCorrections/Modules" />
 <use  name = "RecoEgamma/EgammaTools" />
 
 <!-- <use  name = "LHAPDF" /> -->
