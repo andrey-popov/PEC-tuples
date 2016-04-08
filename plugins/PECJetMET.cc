@@ -1,6 +1,7 @@
 #include "PECJetMET.h"
 
 #include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
+#include <JetMETCorrections/Modules/interface/JetResolution.h>
 #include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
 
 #include <FWCore/Framework/interface/EventSetup.h>
@@ -11,13 +12,17 @@
 #include <TMath.h>
 #include <Math/GenVector/VectorUtil.h>
 
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+
 
 using namespace edm;
 using namespace std;
 
 
 PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
-    jecPayloadLabel(cfg.getParameter<string>("jecPayload")),
+    jetType(cfg.getParameter<string>("jetType")),
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
     runOnData(cfg.getParameter<bool>("runOnData")),
@@ -43,7 +48,7 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
     desc.add<bool>("runOnData")->
      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
-    desc.add<string>("jecPayload")->setComment("Label of applied JEC payload.");
+    desc.add<string>("jetType")->setComment("Jet type for JES and JER corrections.");
     desc.add<vector<string>>("jetSelection", vector<string>(0))->
      setComment("User-defined selections for jets whose results will be stored in the output "
      "tree.");
@@ -79,7 +84,7 @@ void PECJetMET::beginRun(Run const &, EventSetup const &setup)
     // Construct the object to obtain JEC uncertainty [1]
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=124#JetCorUncertainties
     ESHandle<JetCorrectorParametersCollection> jecParametersCollection;
-    setup.get<JetCorrectionsRecord>().get(jecPayloadLabel, jecParametersCollection); 
+    setup.get<JetCorrectionsRecord>().get(jetType, jecParametersCollection); 
     
     JetCorrectorParameters const &jecParameters = (*jecParametersCollection)["Uncertainty"];
     jecUncProvider.reset(new JetCorrectionUncertainty(jecParameters));
@@ -100,6 +105,10 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
         event.getByToken(contIDMapTokens.at(i), contIDMaps.at(i));
     
     
+    // Object that provides JER scale factors
+    JME::JetResolutionScaleFactor jerSFProvider(JME::JetResolutionScaleFactor::get(setup, jetType));
+    
+    
     // Loop through the collection and store relevant properties of jets
     storeJets.clear();
     pec::Jet storeJet;  // will reuse this object to fill the vector
@@ -115,6 +124,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
         //Check this possibility
         double jetPtUpFluctuationFactor = 1.;
         double curJECUncertainty = 0.;
+        double jerFactorNominal = 1., jerFactorUp = 1., jerFactorDown = 1.;
         
         if (not runOnData)
         {
@@ -125,8 +135,30 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             curJECUncertainty = jecUncProvider->getUncertainty(true);
             
             
+            // Obtain JER scale factors
+            double const jerSFNominal =
+              jerSFProvider.getScaleFactor({{JME::Binning::JetEta, j.eta()}}, Variation::NOMINAL);
+            double const jerSFUp =
+              jerSFProvider.getScaleFactor({{JME::Binning::JetEta, j.eta()}}, Variation::UP);
+            double const jerSFDown =
+              jerSFProvider.getScaleFactor({{JME::Binning::JetEta, j.eta()}}, Variation::DOWN);
+            
+            
+            // Compute JER factors to rescale jet momentum. The formula is taken from [1]
+            //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L237
+            if (j.genJet())
+            {
+                double const energyFactor = (j.energy() - j.genJet()->energy()) / j.energy();
+                
+                jerFactorNominal = 1. + (jerSFNominal - 1.) * energyFactor;
+                jerFactorUp = 1. + (jerSFUp - 1.) * energyFactor;
+                jerFactorDown = 1. + (jerSFDown - 1.) * energyFactor;
+            }
+            
+            
             // Update the factor for upwards fluctuation
-            jetPtUpFluctuationFactor = 1. + fabs(curJECUncertainty);
+            jetPtUpFluctuationFactor = std::max({1. + fabs(curJECUncertainty), jerFactorNominal,
+              jerFactorUp, jerFactorDown});
         }
         
         
@@ -142,11 +174,25 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             
             if (not rawJetMomentaOnly)
             {
-                storeJet.SetJECFactor(1. / j.jecFactor("Uncorrected"));
-                //^ Raw momentum is stored, and it will need to be corrected back to current level
+                storeJet.SetCorrFactor(1. / j.jecFactor("Uncorrected") * jerFactorNominal);
+                //^ Here jecFactor("Uncorrected") returns the factor to get raw momentum starting
+                //from the corrected one. Since in fact the raw momentum is stored, the factor is
+                //inverted
                 
                 if (not runOnData)
+                {
                     storeJet.SetJECUncertainty(curJECUncertainty);
+                    
+                    // For JER the variation is not necessarily symmetric. Save the largest
+                    //variation. Information about the sign of the variation is preserved, and the
+                    //stored uncertainty is negative if "up" variation of JER decreases the smearing
+                    //factor
+                    if (std::abs(jerFactorUp - jerFactorNominal) >
+                      std::abs(jerFactorDown - jerFactorNominal))
+                        storeJet.SetJERUncertainty(jerFactorUp / jerFactorNominal - 1.);
+                    else
+                        storeJet.SetJERUncertainty(1. - jerFactorDown / jerFactorNominal);
+                }
             }
             
             storeJet.SetArea(j.jetArea());

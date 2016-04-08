@@ -31,6 +31,14 @@
  * and MET. Bit flags indicate the presence of a generator-level jet nearby and include decisions of
  * user-defined selectors. Fields with generator-level information are not filled when processing
  * data.
+ * 
+ * The plugin stores raw jet momenta. Depending on the configuration, it can also store full JEC+JER
+ * correction factor and corresponding uncertainties. In case of JER the two variations are not
+ * necessarily symmetric, and the largest one is chosen as the uncertainty to store.
+ * 
+ * In order to be saved, a jet must satisfy user-defined selection on either uncorrected or fully
+ * corrected transverse momentum. For the case of corrected momentum, the criterion is evaluated
+ * taking into account possible variations due to JEC and JER uncertainties.
  */
 class PECJetMET: public edm::EDAnalyzer
 {
@@ -68,11 +76,11 @@ private:
     edm::EDGetTokenT<edm::View<pat::MET>> metToken;
     
     /**
-     * \brief Label of the applied JEC payload
+     * \brief Label identifying jet type for JES and JER corrections
      * 
-     * Needed to access JEC uncertainties.
+     * Needed to access JEC uncertainties and jet energy resolutions and their scale factors.
      */
-    std::string const jecPayloadLabel;
+    std::string const jetType;
     
     /// Minimal corrected transverse momentum to determine which jets are stored
     double const jetMinPt;

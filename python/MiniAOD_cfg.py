@@ -124,6 +124,36 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
 
 
+# Set up access to JER database as it is not included in the global tag
+# yet.  The snippet is adapted from [1].  The main change is using the
+# FileInPath extention to access the database file [2].
+# [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
+# [2] https://hypernews.cern.ch/HyperNews/CMS/get/db-aligncal/58.html
+from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+process.jerDB = cms.ESSource(
+    'PoolDBESSource', CondDBSetup,
+    connect = cms.string('sqlite_fip:PhysicsTools/PatUtils/data/Fall15_25nsV2_MC.db'),
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('JetResolutionRcd'),
+            tag = cms.string('JR_Fall15_25nsV2_MC_PtResolution_AK4PFchs'),
+            label = cms.untracked.string('AK4PFchs_pt')
+        ),
+        cms.PSet(
+            record = cms.string('JetResolutionRcd'),
+            tag = cms.string('JR_Fall15_25nsV2_MC_PhiResolution_AK4PFchs'),
+            label = cms.untracked.string('AK4PFchs_phi')
+        ),
+        cms.PSet(
+            record = cms.string('JetResolutionScaleFactorRcd'),
+            tag = cms.string('JR_Fall15_25nsV2_MC_SF_AK4PFchs'),
+            label = cms.untracked.string('AK4PFchs')
+        ),
+    )
+)
+process.jerDBPreference = cms.ESPrefer('PoolDBESSource', 'jerDB')
+
+
 # Parse jet selection
 jetSelParsed = re.match(r'(\d+)j(\d+)', options.jetSel)
 if jetSelParsed is None:
@@ -304,7 +334,7 @@ process.pecMuons = cms.EDAnalyzer('PECMuons',
 process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
-    jecPayload = cms.string('AK4PFchs'),
+    jetType = cms.string('AK4PFchs'),
     jetMinPt = cms.double(20.),
     jetSelection = jetQualityCuts,
     contIDMaps = cms.VInputTag(pileUpIDMap),
