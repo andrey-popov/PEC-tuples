@@ -3,31 +3,9 @@
 #include <stdexcept>
 
 
-pec::Lepton::Lepton():
+pec::Lepton::Lepton() noexcept:
     CandidateWithID(),
     charge(false), relIso(0), dB(0)
-{}
-
-
-pec::Lepton::Lepton(Lepton const &src):
-    CandidateWithID(src),
-    charge(src.charge), relIso(src.relIso), dB(src.dB)
-{}
-
-
-pec::Lepton &pec::Lepton::operator=(Lepton const &src)
-{
-    CandidateWithID::operator=(src);
-    
-    charge = src.charge;
-    relIso = src.relIso;
-    dB = src.dB;
-    
-    return *this;
-}
-
-
-pec::Lepton::~Lepton()
 {}
 
 

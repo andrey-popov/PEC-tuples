@@ -13,20 +13,11 @@ class Lepton: public CandidateWithID
 {
 public:
     /// Constructor with no parameters
-    Lepton();
-    
-    /// Copy constructor
-    Lepton(Lepton const &src);
-    
-    /// Assignment operator
-    Lepton &operator=(Lepton const &src);
-    
-    /// Trivial virtual destructor
-    virtual ~Lepton();
+    Lepton() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets lepton charge

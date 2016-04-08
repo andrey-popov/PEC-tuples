@@ -3,29 +3,10 @@
 #include <stdexcept>
 
 
-pec::GenParticle::GenParticle():
+pec::GenParticle::GenParticle() noexcept:
     pdgId(0),
     firstMotherIndex(0), lastMotherIndex(0)
 {}
-
-
-pec::GenParticle::GenParticle(GenParticle const &src):
-    Candidate(src),
-    pdgId(src.pdgId),
-    firstMotherIndex(src.firstMotherIndex), lastMotherIndex(src.lastMotherIndex)
-{}
-
-
-pec::GenParticle &pec::GenParticle::operator=(GenParticle const &src)
-{
-    Candidate::operator=(src);
-    
-    pdgId = src.pdgId;
-    firstMotherIndex = src.firstMotherIndex;
-    lastMotherIndex = src.lastMotherIndex;
-    
-    return *this;
-}
 
 
 void pec::GenParticle::Reset()

@@ -3,28 +3,9 @@
 #include <stdexcept>
 
 
-pec::CandidateWithID::CandidateWithID():
+pec::CandidateWithID::CandidateWithID() noexcept:
     Candidate(),
     id(0)
-{}
-
-
-pec::CandidateWithID::CandidateWithID(CandidateWithID const &src):
-    Candidate(src),
-    id(src.id)
-{}
-
-
-pec::CandidateWithID &pec::CandidateWithID::operator=(CandidateWithID const &src)
-{
-    Candidate::operator=(src);
-    id = src.id;
-    
-    return *this;
-}
-
-
-pec::CandidateWithID::~CandidateWithID()
 {}
 
 

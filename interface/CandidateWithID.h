@@ -16,20 +16,11 @@ class CandidateWithID: public Candidate
 {
 public:
     /// Constructor with no parameters
-    CandidateWithID();
-    
-    /// Copy constructor
-    CandidateWithID(CandidateWithID const &src);
-    
-    /// Assignment operator
-    CandidateWithID &operator=(CandidateWithID const &src);
-    
-    /// Trivial virtual descructor
-    virtual ~CandidateWithID();
+    CandidateWithID() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets or unsets an ID bit

@@ -3,29 +3,11 @@
 #include <stdexcept>
 
 
-pec::ShowerParton::ShowerParton():
+pec::ShowerParton::ShowerParton() noexcept:
     Candidate(),
     pdgId(0),
     origin(0)
 {}
-
-
-pec::ShowerParton::ShowerParton(ShowerParton const &src):
-    Candidate(src),
-    pdgId(src.pdgId),
-    origin(src.origin)
-{}
-
-
-pec::ShowerParton &pec::ShowerParton::operator=(ShowerParton const &src)
-{
-    Candidate::operator=(src);
-    
-    pdgId = src.pdgId;
-    origin = src.origin;
-    
-    return *this;
-}
 
 
 void pec::ShowerParton::Reset()

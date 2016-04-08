@@ -1,26 +1,10 @@
 #include <Analysis/PECTuples/interface/GenJet.h>
 
 
-pec::GenJet::GenJet():
+pec::GenJet::GenJet() noexcept:
     Candidate(),
     bcMult(0)
 {}
-
-
-pec::GenJet::GenJet(GenJet const &src):
-    Candidate(src),
-    bcMult(src.bcMult)
-{}
-
-
-pec::GenJet &pec::GenJet::operator=(GenJet const &src)
-{
-    Candidate::operator=(src);
-    
-    bcMult = src.bcMult;
-    
-    return *this;
-}
 
 
 void pec::GenJet::Reset()

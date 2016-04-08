@@ -1,28 +1,8 @@
 #include <Analysis/PECTuples/interface/Candidate.h>
 
 
-pec::Candidate::Candidate():
+pec::Candidate::Candidate() noexcept:
     pt(0), eta(0), phi(0), mass(0)
-{}
-
-
-pec::Candidate::Candidate(Candidate const &src):
-    pt(src.pt), eta(src.eta), phi(src.phi), mass(src.mass)
-{}
-
-
-pec::Candidate &pec::Candidate::operator=(Candidate const &src)
-{
-    pt = src.pt;
-    eta = src.eta;
-    phi = src.phi;
-    mass = src.mass;
-    
-    return *this;
-}
-
-
-pec::Candidate::~Candidate()
 {}
 
 

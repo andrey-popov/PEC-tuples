@@ -110,6 +110,10 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         storeElectron.SetRelIso(CalculateRhoIsolation(el, *rho));
         
         
+        // Set pseudorapidity of the associated supercluster
+        storeElectron.SetEtaSC(el.superCluster()->eta());
+        
+        
         // Copy embedded ID decisions
         unsigned const nEmbeddedBoolIDs = embeddedBoolIDLabels.size();
         unsigned const nEmbeddedContIDs = embeddedContIDLabels.size();

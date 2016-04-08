@@ -19,16 +19,19 @@ public:
      * 
      * It must be defined in order to use the class with the ROOT i/o system.
      */
-    Candidate();
+    Candidate() noexcept;
     
-    /// Copy constructor
-    Candidate(Candidate const &src);
+    /// Default move constructor
+    Candidate(Candidate &&) = default;
     
-    /// Assignment operator
-    Candidate &operator=(Candidate const &src);
+    /// Default copy constructor
+    Candidate(Candidate const &) = default;
     
-    /// Trivial virtual destructor
-    virtual ~Candidate();
+    /// Default assignment operator
+    Candidate &operator=(Candidate const &) = default;
+    
+    /// Default virtual destructor
+    virtual ~Candidate() = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

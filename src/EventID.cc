@@ -1,28 +1,11 @@
 #include <Analysis/PECTuples/interface/EventID.h>
 
 
-pec::EventID::EventID():
+pec::EventID::EventID() noexcept:
     run(0),
     lumi(0),
     event(0)
 {}
-
-
-pec::EventID::EventID(EventID const &src):
-    run(src.run),
-    lumi(src.lumi),
-    event(src.event)
-{}
-
-
-pec::EventID &pec::EventID::operator=(EventID const &src)
-{
-    run = src.run;
-    lumi = src.lumi;
-    event = src.event;
-    
-    return *this;
-}
 
 
 void pec::EventID::Reset()

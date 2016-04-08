@@ -18,13 +18,7 @@ class Jet: public CandidateWithID
 {
 public:
     /// Constructor with no parameters
-    Jet();
-    
-    /// Copy constructor
-    Jet(Jet const &src);
-    
-    /// Assignment operator
-    Jet &operator=(Jet const &src);
+    Jet() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
@@ -36,11 +30,17 @@ public:
     /// Sets relative uncertainty of the full jet energy correction factor
     void SetJECUncertainty(float jecUncertainty);
     
+    /// Sets the value of the cMVA b-tagging discriminator
+    void SetBTagCMVA(float bTag);
+    
     /// Sets the value of the CSV b-tagging discriminator
     void SetBTagCSV(float bTag);
     
     /// Sets mass of the secondary vertex associated with the jet
     void SetSecVertexMass(float mass);
+    
+    /// Sets value of the pile-up discriminator
+    void SetPileUpID(float pileUpMVA);
     
     /// Sets jet area
     void SetArea(float area);
@@ -86,8 +86,14 @@ public:
      */
     float JECUncertainty() const;
     
+    /// Returns the value of the cMVA b-tagging discriminator
+    float BTagCMVA() const;
+    
     /// Returns the value of the CSV b-tagging discriminator
     float BTagCSV() const;
+    
+    /// Returns value of the pile-up discriminator
+    float PileUpID() const;
     
     /**
      * \brief Returns mass of the secondary vertex associated with the jet
@@ -142,11 +148,14 @@ private:
      */
     Float_t jecUncertainty;
     
-    /// Value of b-tagging discriminator
-    Float_t bTagCSV;
+    /// Values of b-tagging discriminators
+    Float_t bTagCMVA, bTagCSV;
     
     /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
     Float_t secVertexMass;
+    
+    /// Value of an MVA discriminator against pile-up
+    Float_t pileUpMVA;
     
     /// Jet area
     Float_t area;

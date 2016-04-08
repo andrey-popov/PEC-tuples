@@ -3,43 +3,16 @@
 #include <stdexcept>
 
 
-pec::Jet::Jet():
+pec::Jet::Jet() noexcept:
     CandidateWithID(),
     jecFactor(0), jecUncertainty(0),
-    bTagCSV(0), secVertexMass(0),
+    bTagCMVA(0), bTagCSV(0), secVertexMass(0),
+    pileUpMVA(0),
     area(0),
     charge(0),
     pullAngle(0),
     flavour(0)
 {}
-
-
-pec::Jet::Jet(Jet const &src):
-    CandidateWithID(src),
-    jecFactor(src.jecFactor), jecUncertainty(src.jecUncertainty),
-    bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
-    area(src.area),
-    charge(src.charge),
-    pullAngle(src.pullAngle),
-    flavour(src.flavour)
-{}
-
-
-pec::Jet &pec::Jet::operator=(Jet const &src)
-{
-    CandidateWithID::operator=(src);
-    
-    jecFactor = src.jecFactor;
-    jecUncertainty = src.jecUncertainty;
-    bTagCSV = src.bTagCSV;
-    secVertexMass = src.secVertexMass;
-    area = src.area;
-    charge = src.charge;
-    pullAngle = src.pullAngle;
-    flavour = src.flavour;
-    
-    return *this;
-}
 
 
 void pec::Jet::Reset()
@@ -48,8 +21,10 @@ void pec::Jet::Reset()
     
     jecFactor = 0;
     jecUncertainty = 0;
+    bTagCMVA = 0;
     bTagCSV = 0;
     secVertexMass = 0;
+    pileUpMVA = 0;
     area = 0;
     charge = 0;
     pullAngle = 0;
@@ -69,6 +44,12 @@ void pec::Jet::SetJECUncertainty(float jecUncertainty_)
 }
 
 
+void pec::Jet::SetBTagCMVA(float bTag)
+{
+    bTagCMVA = bTag;
+}
+
+
 void pec::Jet::SetBTagCSV(float bTag)
 {
     bTagCSV = bTag;
@@ -83,6 +64,12 @@ void pec::Jet::SetSecVertexMass(float mass)
         mass = 0.;
     
     secVertexMass = mass;
+}
+
+
+void pec::Jet::SetPileUpID(float pileUpMVA_)
+{
+    pileUpMVA = pileUpMVA_;
 }
 
 
@@ -122,6 +109,12 @@ float pec::Jet::JECUncertainty() const
 }
 
 
+float pec::Jet::BTagCMVA() const
+{
+    return bTagCMVA;
+}
+
+
 float pec::Jet::BTagCSV() const
 {
     return bTagCSV;
@@ -131,6 +124,12 @@ float pec::Jet::BTagCSV() const
 float pec::Jet::SecVertexMass() const
 {
     return secVertexMass;
+}
+
+
+float pec::Jet::PileUpID() const
+{
+    return pileUpMVA;
 }
 
 

@@ -9,30 +9,12 @@
 unsigned const pec::Electron::contIdSize;
 
 
-pec::Electron::Electron():
+pec::Electron::Electron() noexcept:
     Lepton(),
+    etaSC(0.f),
     cutBasedId(0)
 {
     std::fill(std::begin(mvaId), std::end(mvaId), 0);
-}
-
-
-pec::Electron::Electron(Electron const &src):
-    Lepton(src),
-    cutBasedId(src.cutBasedId)
-{
-    std::copy(std::begin(src.mvaId), std::end(src.mvaId), std::begin(mvaId));
-}
-
-
-pec::Electron &pec::Electron::operator=(Electron const &src)
-{
-    Lepton::operator=(src);
-    
-    cutBasedId = src.cutBasedId;
-    std::copy(std::begin(src.mvaId), std::end(src.mvaId), std::begin(mvaId));
-    
-    return *this;
 }
 
 
@@ -40,6 +22,7 @@ void pec::Electron::Reset()
 {
     Lepton::Reset();
     
+    etaSC = 0.f;
     cutBasedId = 0;
     std::fill(std::begin(mvaId), std::end(mvaId), 0);
 }
@@ -68,6 +51,12 @@ void pec::Electron::SetContinuousID(unsigned index, float mva)
 }
 
 
+void pec::Electron::SetEtaSC(float etaSC_)
+{
+    etaSC = etaSC_;
+}
+
+
 bool pec::Electron::BooleanID(unsigned bitIndex) const
 {
     if (bitIndex >= 8)
@@ -85,4 +74,10 @@ float pec::Electron::ContinuousID(unsigned index) const
          "value.");
     
     return mvaId[index];
+}
+
+
+float pec::Electron::EtaSC() const
+{
+    return etaSC;
 }

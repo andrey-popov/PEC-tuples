@@ -18,17 +18,11 @@ class Electron: public Lepton
 {
 public:
     /// Constructor with no parameters
-    Electron();
-    
-    /// Copy constructor
-    Electron(Electron const &src);
-    
-    /// Assignment operator
-    Electron &operator=(Electron const &src);
+    Electron() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
+    virtual void Reset() override;
     
     /**
      * \brief Sets a decision of a cut-based ID
@@ -45,6 +39,9 @@ public:
      */
     void SetContinuousID(unsigned index, float mva);
     
+    /// Sets pseudorapidity of the associated supercluster
+    void SetEtaSC(float etaSC);
+    
     /**
      * \brief Returns decision of selected version of the cut-based ID
      * 
@@ -59,7 +56,14 @@ public:
      */
     float ContinuousID(unsigned index) const;
     
+    /// Returns pseudorapidity of the associated supercluster
+    float EtaSC() const;
+    
 private:
+    
+    /// Pseudorapidity of the associated supercluster
+    Float_t etaSC;
+    
     /**
      * \brief Encodes flags for boolean ID decisions
      * 

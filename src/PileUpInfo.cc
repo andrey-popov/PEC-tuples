@@ -1,31 +1,12 @@
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
 
 
-pec::PileUpInfo::PileUpInfo():
+pec::PileUpInfo::PileUpInfo() noexcept:
     numPV(0),
     rho(0),
     trueNumPU(0),
     inTimeNumPU(0)
 {}
-
-
-pec::PileUpInfo::PileUpInfo(PileUpInfo const &src):
-    numPV(src.numPV),
-    rho(src.rho),
-    trueNumPU(src.trueNumPU),
-    inTimeNumPU(src.inTimeNumPU)
-{}
-
-
-pec::PileUpInfo &pec::PileUpInfo::operator=(PileUpInfo const &src)
-{
-    numPV = src.numPV;
-    rho = src.rho;
-    trueNumPU = src.trueNumPU;
-    inTimeNumPU = src.inTimeNumPU;
-    
-    return *this;
-}
 
 
 void pec::PileUpInfo::Reset()

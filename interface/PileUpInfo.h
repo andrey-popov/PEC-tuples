@@ -13,13 +13,13 @@ class PileUpInfo
 {
 public:
     /// Constructor without parameters
-    PileUpInfo();
+    PileUpInfo() noexcept;
     
-    /// Copy constructor
-    PileUpInfo(PileUpInfo const &src);
+    /// Default copy constructor
+    PileUpInfo(PileUpInfo const &) = default;
     
-    /// Assignment operator
-    PileUpInfo &operator=(PileUpInfo const &src);
+    /// Default assignment operator
+    PileUpInfo &operator=(PileUpInfo const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

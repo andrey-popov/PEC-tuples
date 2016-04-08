@@ -4,37 +4,13 @@
 #include <stdexcept>
 
 
-pec::GeneratorInfo::GeneratorInfo():
+pec::GeneratorInfo::GeneratorInfo() noexcept:
     processId(0),
     nominalWeight(0),
     pdfX(),  // the array is zeroed according to the C++03 standard
     pdfId(0),
     pdfQScale(0)
 {}
-
-
-pec::GeneratorInfo::GeneratorInfo(GeneratorInfo const &src):
-    processId(src.processId),
-    nominalWeight(src.nominalWeight),
-    altWeights(src.altWeights),
-    pdfId(src.pdfId),
-    pdfQScale(src.pdfQScale)
-{
-    std::copy(src.pdfX, src.pdfX + 2, pdfX);
-}
-
-
-pec::GeneratorInfo &pec::GeneratorInfo::operator=(GeneratorInfo const &src)
-{
-    processId = src.processId;
-    nominalWeight = src.nominalWeight;
-    altWeights = src.altWeights;
-    std::copy(src.pdfX, src.pdfX + 2, pdfX);
-    pdfId = src.pdfId;
-    pdfQScale = src.pdfQScale;
-    
-    return *this;
-}
 
 
 void pec::GeneratorInfo::Reset()

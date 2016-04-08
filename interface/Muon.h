@@ -13,17 +13,12 @@ namespace pec
  */
 class Muon: public Lepton
 {
+public:    
+    /// Constructor with no parameters
+    Muon() noexcept;
+    
 public:
     /// Resets the object to a state right after the default initialisation
-    virtual void Reset();
-    
-    /// Constructor with no parameters
-    Muon();
-    
-    /// Copy constructor
-    Muon(Muon const &src);
-    
-    /// Assignment operator
-    Muon &operator=(Muon const &src);
+    virtual void Reset() override;
 };
 }  // end of namespace pec
