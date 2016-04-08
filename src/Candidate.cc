@@ -6,22 +6,6 @@ pec::Candidate::Candidate():
 {}
 
 
-pec::Candidate::Candidate(Candidate const &src):
-    pt(src.pt), eta(src.eta), phi(src.phi), mass(src.mass)
-{}
-
-
-pec::Candidate &pec::Candidate::operator=(Candidate const &src)
-{
-    pt = src.pt;
-    eta = src.eta;
-    phi = src.phi;
-    mass = src.mass;
-    
-    return *this;
-}
-
-
 pec::Candidate::~Candidate()
 {}
 

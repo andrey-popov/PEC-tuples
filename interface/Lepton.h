@@ -15,11 +15,11 @@ public:
     /// Constructor with no parameters
     Lepton();
     
-    /// Copy constructor
-    Lepton(Lepton const &src);
+    /// Default copy constructor
+    Lepton(Lepton const &) = default;
     
-    /// Assignment operator
-    Lepton &operator=(Lepton const &src);
+    /// Default assignment operator
+    Lepton &operator=(Lepton const &) = default;
     
     /// Trivial virtual destructor
     virtual ~Lepton();

@@ -20,11 +20,11 @@ public:
     /// Constructor with no parameters
     Jet();
     
-    /// Copy constructor
-    Jet(Jet const &src);
+    /// Default copy constructor
+    Jet(Jet const &) = default;
     
-    /// Assignment operator
-    Jet &operator=(Jet const &src);
+    /// Default assignment operator
+    Jet &operator=(Jet const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

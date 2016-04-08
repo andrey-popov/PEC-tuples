@@ -15,11 +15,11 @@ namespace pec
         /// Constructor without parameters
         EventID();
         
-        /// Copy constructor
-        EventID(EventID const &src);
+        /// Default copy constructor
+        EventID(EventID const &) = default;
         
-        /// Assignment operator
-        EventID &operator=(EventID const &src);
+        /// Default assignment operator
+        EventID &operator=(EventID const &) = default;
         
     public:
         /// Resets the object to a state right after the default initialisation

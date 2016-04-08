@@ -15,37 +15,6 @@ pec::Jet::Jet():
 {}
 
 
-pec::Jet::Jet(Jet const &src):
-    CandidateWithID(src),
-    jecFactor(src.jecFactor), jecUncertainty(src.jecUncertainty),
-    bTagCMVA(src.bTagCMVA), bTagCSV(src.bTagCSV), secVertexMass(src.secVertexMass),
-    pileUpMVA(src.pileUpMVA),
-    area(src.area),
-    charge(src.charge),
-    pullAngle(src.pullAngle),
-    flavour(src.flavour)
-{}
-
-
-pec::Jet &pec::Jet::operator=(Jet const &src)
-{
-    CandidateWithID::operator=(src);
-    
-    jecFactor = src.jecFactor;
-    jecUncertainty = src.jecUncertainty;
-    bTagCMVA = src.bTagCMVA;
-    bTagCSV = src.bTagCSV;
-    secVertexMass = src.secVertexMass;
-    pileUpMVA = src.pileUpMVA;
-    area = src.area;
-    charge = src.charge;
-    pullAngle = src.pullAngle;
-    flavour = src.flavour;
-    
-    return *this;
-}
-
-
 void pec::Jet::Reset()
 {
     CandidateWithID::Reset();

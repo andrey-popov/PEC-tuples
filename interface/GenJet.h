@@ -18,11 +18,11 @@ public:
     /// Constructor with no parameters
     GenJet();
     
-    /// Copy constructor
-    GenJet(GenJet const &src);
+    /// Default copy constructor
+    GenJet(GenJet const &) = default;
     
-    /// Assignment operator
-    GenJet &operator=(GenJet const &src);
+    /// Default assignment operator
+    GenJet &operator=(GenJet const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

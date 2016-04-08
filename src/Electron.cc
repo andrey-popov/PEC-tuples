@@ -18,27 +18,6 @@ pec::Electron::Electron():
 }
 
 
-pec::Electron::Electron(Electron const &src):
-    Lepton(src),
-    etaSC(src.etaSC),
-    cutBasedId(src.cutBasedId)
-{
-    std::copy(std::begin(src.mvaId), std::end(src.mvaId), std::begin(mvaId));
-}
-
-
-pec::Electron &pec::Electron::operator=(Electron const &src)
-{
-    Lepton::operator=(src);
-    
-    etaSC = src.etaSC;
-    cutBasedId = src.cutBasedId;
-    std::copy(std::begin(src.mvaId), std::end(src.mvaId), std::begin(mvaId));
-    
-    return *this;
-}
-
-
 void pec::Electron::Reset()
 {
     Lepton::Reset();

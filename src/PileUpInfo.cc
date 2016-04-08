@@ -9,25 +9,6 @@ pec::PileUpInfo::PileUpInfo():
 {}
 
 
-pec::PileUpInfo::PileUpInfo(PileUpInfo const &src):
-    numPV(src.numPV),
-    rho(src.rho),
-    trueNumPU(src.trueNumPU),
-    inTimeNumPU(src.inTimeNumPU)
-{}
-
-
-pec::PileUpInfo &pec::PileUpInfo::operator=(PileUpInfo const &src)
-{
-    numPV = src.numPV;
-    rho = src.rho;
-    trueNumPU = src.trueNumPU;
-    inTimeNumPU = src.inTimeNumPU;
-    
-    return *this;
-}
-
-
 void pec::PileUpInfo::Reset()
 {
     numPV = 0;

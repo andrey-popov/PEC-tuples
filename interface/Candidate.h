@@ -21,11 +21,11 @@ public:
      */
     Candidate();
     
-    /// Copy constructor
-    Candidate(Candidate const &src);
+    /// Default copy constructor
+    Candidate(Candidate const &) = default;
     
-    /// Assignment operator
-    Candidate &operator=(Candidate const &src);
+    /// Default assignment operator
+    Candidate &operator=(Candidate const &) = default;
     
     /// Trivial virtual destructor
     virtual ~Candidate();

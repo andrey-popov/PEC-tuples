@@ -20,11 +20,11 @@ public:
     /// Constructor with no parameters
     Electron();
     
-    /// Copy constructor
-    Electron(Electron const &src);
+    /// Default copy constructor
+    Electron(Electron const &) = default;
     
-    /// Assignment operator
-    Electron &operator=(Electron const &src);
+    /// Default assignment operator
+    Electron &operator=(Electron const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

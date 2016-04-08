@@ -8,23 +8,6 @@ pec::EventID::EventID():
 {}
 
 
-pec::EventID::EventID(EventID const &src):
-    run(src.run),
-    lumi(src.lumi),
-    event(src.event)
-{}
-
-
-pec::EventID &pec::EventID::operator=(EventID const &src)
-{
-    run = src.run;
-    lumi = src.lumi;
-    event = src.event;
-    
-    return *this;
-}
-
-
 void pec::EventID::Reset()
 {
     run = 0;

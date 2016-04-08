@@ -17,11 +17,11 @@ public:
     /// Constructor without parameters
     GeneratorInfo();
     
-    /// Copy constructor
-    GeneratorInfo(GeneratorInfo const &src);
+    /// Default copy constructor
+    GeneratorInfo(GeneratorInfo const &) = default;
     
-    /// Assignment operator
-    GeneratorInfo &operator=(GeneratorInfo const &src);
+    /// Default assignment operator
+    GeneratorInfo &operator=(GeneratorInfo const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

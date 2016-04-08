@@ -19,11 +19,11 @@ public:
     /// Constructor with no parameters
     GenParticle();
     
-    /// Copy constructor
-    GenParticle(GenParticle const &src);
+    /// Default copy constructor
+    GenParticle(GenParticle const &) = default;
     
-    /// Assignment operator
-    GenParticle &operator=(GenParticle const &src);
+    /// Default assignment operator
+    GenParticle &operator=(GenParticle const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation

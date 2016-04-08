@@ -18,11 +18,11 @@ public:
     /// Constructor with no parameters
     CandidateWithID();
     
-    /// Copy constructor
-    CandidateWithID(CandidateWithID const &src);
+    /// Default copy constructor
+    CandidateWithID(CandidateWithID const &) = default;
     
-    /// Assignment operator
-    CandidateWithID &operator=(CandidateWithID const &src);
+    /// Default assignment operator
+    CandidateWithID &operator=(CandidateWithID const &) = default;
     
     /// Trivial virtual descructor
     virtual ~CandidateWithID();

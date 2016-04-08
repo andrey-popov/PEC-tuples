@@ -20,10 +20,10 @@ public:
     /// Constructor with no parameters
     Muon();
     
-    /// Copy constructor
-    Muon(Muon const &src);
+    /// Default copy constructor
+    Muon(Muon const &) = default;
     
-    /// Assignment operator
-    Muon &operator=(Muon const &src);
+    /// Default assignment operator
+    Muon &operator=(Muon const &) = default;
 };
 }  // end of namespace pec

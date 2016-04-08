@@ -27,11 +27,11 @@ public:
     /// Constructor with no parameters
     ShowerParton();
     
-    /// Copy constructor
-    ShowerParton(ShowerParton const &src);
+    /// Default copy constructor
+    ShowerParton(ShowerParton const &) = default;
     
-    /// Assignment operator
-    ShowerParton &operator=(ShowerParton const &src);
+    /// Default assignment operator
+    ShowerParton &operator=(ShowerParton const &) = default;
     
 public:
     /// Resets the object to a state right after the default initialisation
