@@ -8,12 +8,11 @@ cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
 
-# Bugfixes in CMSSW
 git cms-init
-git remote add private-updates https://github.com/andrey-popov/cmssw.git
-git fetch private-updates
-git cms-addpkg PhysicsTools/PatUtils
-git cherry-pick fcb419ef5d4c2e2b7c1410f4d9d8621bf641d524  # From branch fix-ShiftedJetProducerT
+
+# Fix recomputation of MET
+# [3] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=41#Instructions_for_7_6_X_Recommend
+git cms-merge-topic cms-met:metTool76X
 
 
 # Update pile-up jet ID.  Recipe is based on instructions in [1], but instead of switching to a
@@ -32,6 +31,7 @@ wget https://github.com/jbrands/RecoJets-JetProducers/raw/3dad903ed25d025f68be94
 cd ../../..
 
 
-# Fix recomputation of MET
-# [3] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=41#Instructions_for_7_6_X_Recommend
-git cms-merge-topic cms-met:metTool76X
+# Fixes not provided centrally
+git remote add private-updates https://github.com/andrey-popov/cmssw.git
+git fetch private-updates
+git cherry-pick fcb419ef5d4c2e2b7c1410f4d9d8621bf641d524  # From branch fix-ShiftedJetProducerT
