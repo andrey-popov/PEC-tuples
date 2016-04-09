@@ -119,6 +119,18 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
         storeJet.Reset();
         
         
+        // Check if there is a matching generator-level jet. Use half of the jet radius (i.e. 0.2)
+        //as the maximal allowed separation, as done for JER smearing here [1]. By default, PAT
+        //performs a looser matching requiring dR < 0.4 (see references in [2]). The flag will be
+        //used to perform JER smearing, and it will also be stored in pec::Jet.
+        //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/python/patPFMETCorrections_cff.py#L132
+        //[2] https://github.com/andrey-popov/PEC-tuples/issues/81
+        bool matchedGenJetFound = false;
+        
+        if (j.genJet() and ROOT::Math::VectorUtil::DeltaR2(j.p4(), j.genJet()->p4()) < 0.2 * 0.2)
+            matchedGenJetFound = true;
+        
+        
         // Will check if the current jet satisfies the provided selection on transverse momentum.
         //Jets just below the threshold might pass it as a result of a fluctuation in JEC.
         //Check this possibility
@@ -144,9 +156,9 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
               jerSFProvider.getScaleFactor({{JME::Binning::JetEta, j.eta()}}, Variation::DOWN);
             
             
-            // Compute JER factors to rescale jet momentum. The formula is taken from [1]
+            // Compute JER factors to rescale jet momentum. The formula is taken from [1].
             //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L237
-            if (j.genJet())
+            if (matchedGenJetFound)
             {
                 double const energyFactor = (j.energy() - j.genJet()->energy()) / j.energy();
                 
@@ -250,10 +262,9 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             {
                 storeJet.SetFlavour(j.hadronFlavour());
                 
-                storeJet.SetBit(0, (j.genJet() and j.genJet()->pt() > 8. and
-                 ROOT::Math::VectorUtil::DeltaR(j.p4(), j.genJet()->p4()) < 0.25));
-                //^ The matching is performed according to the definition from JME-13-005. By
-                //default, PAT uses a looser definition
+                storeJet.SetBit(0, (matchedGenJetFound and j.genJet()->pt() > 8.));
+                //^ The check of angular distance has already been performed. Tighten the matching
+                //condition with a requirement on pt as in JME-13-005
             }
             
             
