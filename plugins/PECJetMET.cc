@@ -157,7 +157,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             curJECUncertainty = jecUncProvider->getUncertainty(true);
             
             
-            // Obtain JER scale factors
+            // Obtain JER data-to-simulation scale factors
             double const jerSFNominal =
               jerSFProvider.getScaleFactor({{JME::Binning::JetEta, j.eta()}}, Variation::NOMINAL);
             double const jerSFUp =
@@ -185,7 +185,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
                   {JME::Binning::JetEta, j.eta()}, {JME::Binning::Rho, *rho}});
                 
                 
-                // A shift in jet energy is randomly sampled according to the resolution in
+                // A shift in jet pt is randomly sampled according to the resolution in
                 //simulation and then scaled based on the data-to-simulation scale factors. It is
                 //important that the sampling is only done once and then reused for the
                 //systematical variations. Otherwise the variations would also include an effect
@@ -193,11 +193,11 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
                 double const mcShift = rGen.Gaus(0., ptResolution);
                 
                 jerFactorNominal = 1. + mcShift *
-                  std::sqrt(std::max(std::pow(jerSFNominal, 2) - 1., 0.)) / j.energy();
+                  std::sqrt(std::max(std::pow(jerSFNominal, 2) - 1., 0.)) / j.pt();
                 jerFactorUp = 1. + mcShift *
-                  std::sqrt(std::max(std::pow(jerSFUp, 2) - 1., 0.)) / j.energy();
+                  std::sqrt(std::max(std::pow(jerSFUp, 2) - 1., 0.)) / j.pt();
                 jerFactorDown = 1. + mcShift *
-                  std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.)) / j.energy();
+                  std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.)) / j.pt();
             }
             
             
