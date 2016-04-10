@@ -242,21 +242,21 @@ process.countTightPatMuons = cms.EDFilter('PATCandViewCountFilter',
     src = cms.InputTag('patMuonsForEventSelection'),
     minNumber = cms.uint32(1), maxNumber = cms.uint32(999)
 )
-
-process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
-    src = cms.VInputTag('analysisPatJets'),
-    cut = cms.string('pt > ' + str(jetPtThreshold)),
-    minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999)
-)
-if not runOnData:
-    process.countGoodJets.src = cms.VInputTag('analysisPatJets',
-        'analysisPatJetsScaleUp', 'analysisPatJetsScaleDown')
-
 if elChan:
     process.elPath += process.countTightPatElectrons
 if muChan:
     process.muPath += process.countTightPatMuons
-paths.append(process.countGoodJets)
+
+if minNumJets > 0:
+    process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
+        src = cms.VInputTag('analysisPatJets'),
+        cut = cms.string('pt > ' + str(jetPtThreshold)),
+        minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999)
+    )
+    if not runOnData:
+        process.countGoodJets.src = cms.VInputTag('analysisPatJets',
+            'analysisPatJetsScaleUp', 'analysisPatJetsScaleDown')
+    paths.append(process.countGoodJets)
 
 
 # Apply event filters recommended for analyses involving MET
