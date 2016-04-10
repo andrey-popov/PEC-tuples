@@ -26,11 +26,13 @@ PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     jetMinPt(cfg.getParameter<double>("jetMinPt")),
     jetMinRawPt(cfg.getParameter<double>("jetMinRawPt")),
     runOnData(cfg.getParameter<bool>("runOnData")),
-    rawJetMomentaOnly(cfg.getParameter<bool>("rawJetMomentaOnly"))
+    rawJetMomentaOnly(cfg.getParameter<bool>("rawJetMomentaOnly")),
+    rGen(0)
 {
     // Register required input data
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<InputTag>("jets"));
     metToken = consumes<edm::View<pat::MET>>(cfg.getParameter<InputTag>("met"));
+    rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
     
     for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("contIDMaps"))
         contIDMapTokens.emplace_back(consumes<ValueMap<float>>(tag));
@@ -61,6 +63,8 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
     desc.add<bool>("rawJetMomentaOnly", false)->
      setComment("Requests that only raw jet momenta are saved but not their corrections.");
     desc.add<InputTag>("met")->setComment("MET.");
+    desc.add<InputTag>("rho", InputTag("fixedGridRhoFastjetAll"))->
+     setComment("Rho (mean angular pt density).");
     
     descriptions.add("jetMET", desc);
 }
@@ -105,7 +109,13 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
         event.getByToken(contIDMapTokens.at(i), contIDMaps.at(i));
     
     
-    // Object that provides JER scale factors
+    // Read rho, which is used in JER smearing
+    Handle<double> rho;
+    event.getByToken(rhoToken, rho);
+    
+    
+    // Objects that provide jet energy resolution and its scale factors
+    JME::JetResolution jerProvider(JME::JetResolution::get(setup, jetType + "_pt"));
     JME::JetResolutionScaleFactor jerSFProvider(JME::JetResolutionScaleFactor::get(setup, jetType));
     
     
@@ -156,8 +166,10 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
               jerSFProvider.getScaleFactor({{JME::Binning::JetEta, j.eta()}}, Variation::DOWN);
             
             
-            // Compute JER factors to rescale jet momentum. The formula is taken from [1].
+            // Compute JER factors to rescale jet momentum. The formulas are taken from [1] and [2]
+            //for the case of present and missing generator-level match
             //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L237
+            //[2] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244
             if (matchedGenJetFound)
             {
                 double const energyFactor = (j.energy() - j.genJet()->energy()) / j.energy();
@@ -165,6 +177,27 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
                 jerFactorNominal = 1. + (jerSFNominal - 1.) * energyFactor;
                 jerFactorUp = 1. + (jerSFUp - 1.) * energyFactor;
                 jerFactorDown = 1. + (jerSFDown - 1.) * energyFactor;
+            }
+            else
+            {
+                double const ptResolution =
+                  jerProvider.getResolution({{JME::Binning::JetPt, j.pt()},
+                  {JME::Binning::JetEta, j.eta()}, {JME::Binning::Rho, *rho}});
+                
+                
+                // A shift in jet energy is randomly sampled according to the resolution in
+                //simulation and then scaled based on the data-to-simulation scale factors. It is
+                //important that the sampling is only done once and then reused for the
+                //systematical variations. Otherwise the variations would also include an effect
+                //due to resampling and not just because of the shift in the scale factor
+                double const mcShift = rGen.Gaus(0., ptResolution);
+                
+                jerFactorNominal = 1. + mcShift *
+                  std::sqrt(std::max(std::pow(jerSFNominal, 2) - 1., 0.)) / j.energy();
+                jerFactorUp = 1. + mcShift *
+                  std::sqrt(std::max(std::pow(jerSFUp, 2) - 1., 0.)) / j.energy();
+                jerFactorDown = 1. + mcShift *
+                  std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.)) / j.energy();
             }
             
             

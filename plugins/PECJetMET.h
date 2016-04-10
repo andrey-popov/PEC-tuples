@@ -16,6 +16,7 @@
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 
+#include <TRandom3.h>
 #include <TTree.h>
 
 #include <string>
@@ -28,13 +29,15 @@
  * \brief Stores reconstructed jets and MET
  * 
  * The plugin stores basic properties of jets (four-momenta, b-tagging discriminators, IDs, etc.)
- * and MET. Bit flags indicate the presence of a generator-level jet nearby and include decisions of
- * user-defined selectors. Fields with generator-level information are not filled when processing
- * data.
+ * and MET. Bit flags indicate the presence of a generator-level jet nearby and include decisions
+ * of user-defined selectors. Fields with generator-level information are not filled when
+ * processing data.
  * 
- * The plugin stores raw jet momenta. Depending on the configuration, it can also store full JEC+JER
- * correction factor and corresponding uncertainties. In case of JER the two variations are not
- * necessarily symmetric, and the largest one is chosen as the uncertainty to store.
+ * The plugin stores raw jet momenta. Depending on the configuration, it can also store full
+ * JEC+JER correction factor and corresponding uncertainties. In case of JER the two variations are
+ * not necessarily symmetric, and the largest one is chosen as the uncertainty to store. Note that
+ * smearing for jets that do not have a generator-level match is performed randomly. The seed for
+ * the random-number engine is chosen randomly, thus results cannot be reproduced exactly.
  * 
  * In order to be saved, a jet must satisfy user-defined selection on either uncorrected or fully
  * corrected transverse momentum. For the case of corrected momentum, the criterion is evaluated
@@ -74,6 +77,13 @@ private:
     
     /// MET
     edm::EDGetTokenT<edm::View<pat::MET>> metToken;
+    
+    /**
+     * \brief Rho (mean angular pt density)
+     * 
+     * Used in JER smearing.
+     */
+    edm::EDGetTokenT<double> rhoToken;
     
     /**
      * \brief Label identifying jet type for JES and JER corrections
@@ -124,6 +134,13 @@ private:
     
     /// An object to access JEC uncertainty
     std::unique_ptr<JetCorrectionUncertainty> jecUncProvider;
+    
+    /**
+     * \brief Random-number generator
+     * 
+     * Used to apply JER smearing for jets that do not have a generator-level match.
+     */
+    TRandom3 rGen;
     
     
     /// Output tree

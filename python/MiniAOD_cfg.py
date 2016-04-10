@@ -338,7 +338,8 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     jetMinPt = cms.double(20.),
     jetSelection = jetQualityCuts,
     contIDMaps = cms.VInputTag(pileUpIDMap),
-    met = cms.InputTag('slimmedMETs', processName=process.name_())
+    met = cms.InputTag('slimmedMETs', processName=process.name_()),
+    rho = cms.InputTag('fixedGridRhoFastjetAll')
 )
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',
