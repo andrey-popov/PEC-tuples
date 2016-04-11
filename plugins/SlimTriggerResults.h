@@ -79,8 +79,15 @@ struct TriggerState
  * trigger: a boolean indicating if the trigger was executed in the current event, a boolean showing
  * if the current event was accepted by the trigger, and an integer with the trigger prescale.
  * 
+ * The prescale is computed as the product of the given L1T and HLT prescale factors. Since a single
+ * HLT path can be seeded by multiple L1T bits, minimal and maximal prescales of the exploited
+ * seeds are stored in MiniAOD [1]. User is normally expected to provide the tag of the collection
+ * with minimal prescales.
+ * 
  * The plugin can be configured in such a way that it rejects an event if it is not accepted by any
  * of the selected triggers. The default behaviour is to reject no events.
+ * 
+ * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015?rev=96#Trigger
  */
 class SlimTriggerResults: public edm::EDFilter
 {
@@ -124,8 +131,11 @@ private:
     /// Token to access trigger decisions
     edm::EDGetTokenT<edm::TriggerResults> triggerBitsToken;
     
-    /// Token to access trigger prescales
-    edm::EDGetTokenT<pat::PackedTriggerPrescales> triggerPrescalesToken;
+    /// Token to access HLT prescales
+    edm::EDGetTokenT<pat::PackedTriggerPrescales> hltPrescalesToken;
+    
+    /// Token to access L1T prescales
+    edm::EDGetTokenT<pat::PackedTriggerPrescales> l1tPrescalesToken;
     
     /// Specifies whether the plugin is to reject events that do not fire any of selected triggers
     bool const filterOn;

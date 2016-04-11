@@ -50,9 +50,11 @@ SlimTriggerResults::SlimTriggerResults(edm::ParameterSet const &cfg):
     
     // Tokens to read trigger details
     triggerBitsToken =
-     consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("triggerBits"));
-    triggerPrescalesToken =
-     consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("triggerPrescales"));
+      consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("triggerBits"));
+    hltPrescalesToken =
+      consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("hltPrescales"));
+    l1tPrescalesToken =
+      consumes<pat::PackedTriggerPrescales>(cfg.getParameter<edm::InputTag>("l1tPrescales"));
 
 }
 
@@ -90,10 +92,14 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
     
     
     // Read prescales if needed
-    edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
+    edm::Handle<pat::PackedTriggerPrescales> hltPrescales;
+    edm::Handle<pat::PackedTriggerPrescales> l1tPrescales;
     
     if (savePrescales)
-        event.getByToken(triggerPrescalesToken, triggerPrescales);
+    {
+        event.getByToken(hltPrescalesToken, hltPrescales);
+        event.getByToken(l1tPrescalesToken, l1tPrescales);
+    }
     
     
     // Overall filter result that will be a logical OR of all selected triggers
@@ -114,7 +120,8 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
         t.second.accept = triggerBits->accept(t.second.index);
         
         if (savePrescales)
-            t.second.prescale = triggerPrescales->getPrescaleForIndex(t.second.index);
+            t.second.prescale = hltPrescales->getPrescaleForIndex(t.second.index) *
+              l1tPrescales->getPrescaleForIndex(t.second.index);
         
         
         if (t.second.wasRun and t.second.accept)
@@ -138,16 +145,18 @@ void SlimTriggerResults::fillDescriptions(edm::ConfigurationDescriptions &descri
     
     edm::ParameterSetDescription desc;
     desc.add<vector<string>>("triggers")->
-     setComment("Names of triggers whose results are to be saved.");
+      setComment("Names of triggers whose results are to be saved.");
     desc.add<bool>("filter", false)->
-     setComment("Indicates if an event that does not fire any of the requested triggers should be "
-     "rejected.");
+      setComment("Indicates if an event that does not fire any of the requested triggers should be "
+      "rejected.");
     desc.add<bool>("savePrescales", true)->
-     setComment("Specifies whether trigger prescales should be saved.");
+      setComment("Specifies whether trigger prescales should be saved.");
     desc.add<edm::InputTag>("triggerBits", edm::InputTag("TriggerResults"))->
-     setComment("Trigger decisions.");
-    desc.add<edm::InputTag>("triggerPrescales", edm::InputTag("patTrigger"))->
-     setComment("Packed trigger prescales.");
+      setComment("Trigger decisions.");
+    desc.add<edm::InputTag>("hltPrescales", edm::InputTag("patTrigger"))->
+      setComment("Packed HLT prescales.");
+    desc.add<edm::InputTag>("l1tPrescales", edm::InputTag("patTrigger", "l1min"))->
+      setComment("Packed L1T trigger prescales.");
     
     descriptions.add("triggerInfo", desc);
 }
