@@ -154,6 +154,71 @@ def define_muons(process):
     return muQualityCuts
 
 
+def define_photons(process):
+    """Define reconstructed photons.
+    
+    Configure reconstructed photons to be used in an analysis.
+    
+    Arguments:
+        process: The process to which relevant photon producers are
+            added.
+    
+    Return value:
+        Return a tuple with the following elements:
+        phoQualityCuts: List of string-based quality selections whose
+            decisions are to be saved.
+        phoCutBasedIDMaps: Tags to access maps with boolean photon IDs
+            whose decisions are to be saved.
+    
+    In addition to constructing the return values, add producers that
+    create the following collections of photons:
+        analysisPatPhotons: Collection of loosely identified
+            non-isolated photons to be saved.
+    """
+    
+    # Collection of photons satisfying a basic kinematic selection
+    process.analysisPatPhotons = cms.EDFilter('PATPhotonSelector',
+        src = cms.InputTag('slimmedPhotons'),
+        cut = cms.string('pt > 20. & abs(eta) < 2.5')
+    )
+    
+    
+    # Decisions of cut-based identification algorithm [1]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2?rev=28
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDPhotonIdProducer,
+        setupAllVIDIdsInModule, setupVIDPhotonSelection, DataFormat)
+    switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
+    
+    for idModule in ['cutBasedPhotonID_Spring15_25ns_V1_cff']:
+        setupAllVIDIdsInModule(
+            process,
+            'RecoEgamma.PhotonIdentification.Identification.' +
+            idModule, setupVIDPhotonSelection
+        )
+    
+    process.photonIDValueMapProducer.srcMiniAOD = 'analysisPatPhotons'
+    process.egmPhotonIDs.physicsObjectSrc = 'analysisPatPhotons'
+    
+    
+    # Labels of maps with photon ID
+    phoCutBasedIDMaps = ['egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-' + p
+        for p in ['loose', 'medium', 'tight']]
+    
+    
+    # Information about geometry is needed to evaluate the ID
+    process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
+    
+    
+    # Additional selections to be evaluated
+    phoQualityCuts = cms.vstring(
+        # EE-EB gap
+        '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)'
+    )
+    
+    return phoQualityCuts, phoCutBasedIDMaps
+
+
+
 def define_jets(process, reapplyJEC=False, runOnData=False):
     """Define reconstructed jets.
     
