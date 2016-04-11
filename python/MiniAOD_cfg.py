@@ -271,7 +271,7 @@ apply_event_filters(
 # menu [1] used in 25 ns MC and menus deployed online.  When processing
 # data, reject event that do not fire any of the listed triggers since
 # they cannot be used in an analysis anyway.
-# [1] /frozen/2015/25ns14e33/v1.2/HLT/V2
+# [1] /frozen/2015/25ns14e33/v4.4/HLT/V2
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
         triggers = cms.vstring(
