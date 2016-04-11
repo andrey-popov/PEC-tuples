@@ -30,7 +30,7 @@ void PECGenerator::fillDescriptions(ConfigurationDescriptions &descriptions)
      setComment("Generator-level event information.");
     desc.add<bool>("saveLHEWeightVars", true)->
      setComment("Indicates whether LHE-level variations of event weights should be stored.");
-    desc.add<InputTag>("lheEventInfoProduct")->
+    desc.add<InputTag>("lheEventInfoProduct", InputTag("externalLHEProducer"))->
      setComment("Tag to access per-event LHE information. Ignored if externalLHE is False.");
     
     descriptions.add("generator", desc);
