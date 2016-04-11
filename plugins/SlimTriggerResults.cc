@@ -103,7 +103,7 @@ bool SlimTriggerResults::filter(edm::Event &event, edm::EventSetup const &setup)
     
     
     // Overall filter result that will be a logical OR of all selected triggers
-    bool result = true;
+    bool result = false;
     
     
     
