@@ -172,7 +172,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             //[2] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244
             if (matchedGenJetFound)
             {
-                double const energyFactor = (j.energy() - j.genJet()->energy()) / j.energy();
+                double const energyFactor = (j.pt() - j.genJet()->pt()) / j.pt();
                 
                 jerFactorNominal = 1. + (jerSFNominal - 1.) * energyFactor;
                 jerFactorUp = 1. + (jerSFUp - 1.) * energyFactor;
