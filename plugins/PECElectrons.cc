@@ -103,7 +103,6 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         storeElectron.SetPhi(el.phi());
         
         storeElectron.SetCharge(el.charge());
-        storeElectron.SetDB(el.dB());
         
         
         // Isolation is calculated by a dedicated method

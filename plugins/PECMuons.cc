@@ -84,7 +84,6 @@ void PECMuons::analyze(Event const &event, EventSetup const &)
         storeMuon.SetPhi(mu.phi());
         
         storeMuon.SetCharge(mu.charge());
-        storeMuon.SetDB(mu.dB());
         
         // Relative isolation with delta-beta correction [1]
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideMuonIdRun2?rev=22#Muon_Isolation

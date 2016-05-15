@@ -29,9 +29,6 @@ public:
     /// Sets relative isolation
     void SetRelIso(float relIso);
     
-    /// Sets transverse impact parameter (cm)
-    void SetDB(float dB);
-    
     /**
      * \brief Returns electric charge of the lepton
      * 
@@ -41,13 +38,6 @@ public:
     
     /// Returns relative isolation
     float RelIso() const;
-    
-    /**
-     * \brief Returns transverse impact parameter (cm)
-     * 
-     * The returned value is always positive.
-     */
-    float DB() const;
     
 private:
     /**
@@ -59,8 +49,5 @@ private:
     
     /// Relative isolation
     Float_t relIso;
-    
-    /// Transverse impact parameter, cm
-    Float_t dB;
 };
 }  // end of namespace pec

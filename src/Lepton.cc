@@ -5,7 +5,7 @@
 
 pec::Lepton::Lepton() noexcept:
     CandidateWithID(),
-    charge(false), relIso(0), dB(0)
+    charge(false), relIso(0)
 {}
 
 
@@ -15,7 +15,6 @@ void pec::Lepton::Reset()
     
     charge = false;
     relIso = 0;
-    dB = 0;
 }
 
 
@@ -34,12 +33,6 @@ void pec::Lepton::SetRelIso(float relIso_)
 }
 
 
-void pec::Lepton::SetDB(float dB_)
-{
-    dB = dB_;
-}
-
-
 int pec::Lepton::Charge() const
 {
     return ((charge) ? -1 : 1);
@@ -49,10 +42,4 @@ int pec::Lepton::Charge() const
 float pec::Lepton::RelIso() const
 {
     return relIso;
-}
-
-
-float pec::Lepton::DB() const
-{
-    return dB;
 }
