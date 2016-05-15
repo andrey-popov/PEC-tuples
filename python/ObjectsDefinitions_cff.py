@@ -275,8 +275,8 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     
     
     # Jet ID [1].  Accessors to energy fractions in pat::Jet take into
-    # account JEC, and thus there is no need to unapply the corrections
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID?rev=93#Recommendations_for_13_TeV_data
+    # account JEC, and thus there is no need to unapply the corrections.
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID?rev=94#Recommendations_for_13_TeV_data
     jetLooseID = (
         # Common block of requirements for |eta| < 3
         'abs(eta) <= 3. & (chargedMultiplicity + neutralMultiplicity) > 1 & ' +
@@ -296,7 +296,11 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     jetQualityCuts = cms.vstring(jetLooseID)
     
     
-    # Set up pile-up jet ID
+    # Set up pile-up jet ID.  The IDs are now included as userFloats,
+    # but in MiniAOD80Xv1 they have been produced with 76X training
+    # (while ones in MiniAOD80Xv2 will be up-to-date [1]).  For the
+    # moment, recompute the IDs.
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=27#Information_for_13_TeV_data_anal
     process.load('RecoJets.JetProducers.PileupJetID_cfi')
     process.pileupJetIdCustomized = process.pileupJetId.clone(
         jets = cms.InputTag('analysisPatJets'),
@@ -309,7 +313,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     
     # When running over simulation, produce jet collections with varied
     # systematic uncertainties.  They will be used to perform the loose
-    # event selection, taking the uncertainty into account
+    # event selection, taking the uncertainty into account.
     if not runOnData:
         process.analysisPatJetsScaleUp = cms.EDProducer('ShiftedPATJetProducer',
             src = cms.InputTag('analysisPatJets'),
