@@ -355,20 +355,16 @@ def define_METs(process, runOnData=False):
     Among other things, add to the process producer slimmedMETs, which
     overrides the namesake collection from MiniAOD.  User must use this
     new collection.
-    
-    Implementation is based on instructions provided here [1].
-    [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=41#Instructions_for_7_6_X_Recommend
     """
     
     # Recalculate MET corrections.  Some poor documentation is
-    # available in [1].  There is a relevant discussion in hypernews.
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
-    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/met/437.html?inline=-1
+    # available in [1-2].
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=46#Instructions_for_8_0_X_X_5
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
         runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD(
         process,
-        metType='PF',
         isData=runOnData,
         # electronColl='', muonColl='', photonColl='', tauColl='',
         postfix=''
@@ -377,4 +373,4 @@ def define_METs(process, runOnData=False):
     # have switched off calculation of the corresponding variations of
     # MET by setting collection names to '', but PATMETSlimmer requires
     # these variations [1].
-    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_6_4/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
+    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
