@@ -6,7 +6,6 @@
 #include <Analysis/PECTuples/interface/Jet.h>
 #include <Analysis/PECTuples/interface/GenParticle.h>
 #include <Analysis/PECTuples/interface/GenJet.h>
-#include <Analysis/PECTuples/interface/ShowerParton.h>
 
 #include <Analysis/PECTuples/interface/EventID.h>
 #include <Analysis/PECTuples/interface/PileUpInfo.h>
@@ -24,4 +23,3 @@ template class std::vector<pec::Electron>;
 template class std::vector<pec::Jet>;
 template class std::vector<pec::GenParticle>;
 template class std::vector<pec::GenJet>;
-template class std::vector<pec::ShowerParton>;

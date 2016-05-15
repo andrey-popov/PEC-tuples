@@ -372,15 +372,6 @@ if not runOnData and options.saveGenParticles:
     paths.append(process.pecGenParticles)
 
 
-# # Save information on heavy-flavour quarks
-# if options.saveHeavyFlavours:
-#     process.heavyFlavours = cms.EDAnalyzer('PartonShowerOutcome',
-#         absPdgId = cms.vint32(4, 5),
-#         genParticles = cms.InputTag('genParticles')
-#     )
-#     paths.append(process.heavyFlavours)
-
-
 # Save information on generator-level jets and MET
 if not runOnData and options.saveGenJets:
     process.pecGenJetMET = cms.EDAnalyzer('PECGenJetMET',
