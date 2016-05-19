@@ -9,8 +9,9 @@
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
-#include <TMath.h>
 #include <Math/GenVector/VectorUtil.h>
+#include <TMath.h>
+#include <TVector2.h>
 
 #include <algorithm>
 #include <cmath>
@@ -80,6 +81,9 @@ void PECJetMET::beginJob()
     
     storeMETsPointer = &storeMETs;
     outTree->Branch("METs", &storeMETsPointer);
+    
+    storeUncorrMETsPointer = &storeUncorrMETs;
+    outTree->Branch("uncorrMETs", &storeUncorrMETsPointer);
 }
 
 
@@ -117,6 +121,11 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
     // Objects that provide jet energy resolution and its scale factors
     JME::JetResolution jerProvider(JME::JetResolution::get(setup, jetType + "_pt"));
     JME::JetResolutionScaleFactor jerSFProvider(JME::JetResolutionScaleFactor::get(setup, jetType));
+    
+    
+    // A part of the T1 MET correction evaluated only with stored jets. It will be used to compute
+    //partly uncorrected MET.
+    TVector2 metT1Corr;
     
     
     // Loop through the collection and store relevant properties of jets
@@ -309,6 +318,11 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             
             // The jet is set up. Add it to the vector
             storeJets.emplace_back(storeJet);
+            
+            
+            // Update the partial T1 MET correction
+            auto const deltaT1JetP4 = -(j.p4() - j.correctedP4("L1FastJet"));
+            metT1Corr += TVector2(deltaT1JetP4.Px(), deltaT1JetP4.Py());
         }
     }
     
@@ -328,10 +342,8 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
     storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Type1));
     storeMETs.emplace_back(storeMET);
     
-    // Raw MET
+    // An empty entry is put for backward compatibility
     storeMET.Reset();
-    storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Raw));
-    storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Raw));
     storeMETs.emplace_back(storeMET);
     
     
@@ -349,6 +361,24 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             storeMETs.emplace_back(storeMET);
         }
     }
+    
+    
+    // Save variants of uncorrected MET
+    storeUncorrMETs.clear();
+    
+    // Raw MET
+    storeMET.Reset();
+    storeMET.SetPt(met.shiftedPt(pat::MET::NoShift, pat::MET::Raw));
+    storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Raw));
+    storeUncorrMETs.emplace_back(storeMET);
+    
+    // MET with partly undone T1 correction
+    TVector2 const metUncorrT1(met.shiftedPx(pat::MET::NoShift, pat::MET::Type1) - metT1Corr.Px(),
+      met.shiftedPy(pat::MET::NoShift, pat::MET::Type1) - metT1Corr.Py());
+    storeMET.Reset();
+    storeMET.SetPt(metUncorrT1.Mod());
+    storeMET.SetPhi(metUncorrT1.Phi());
+    storeUncorrMETs.emplace_back(storeMET);
     
     
     // Fill the output tree
