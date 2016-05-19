@@ -57,7 +57,7 @@ options.register(
     'The leptonic channels to process'
 )
 options.register(
-    'jetSel', '2j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'jetSel', '0j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'Selection on jets. E.g. 2j30 means that an event must contain at least 2 jets with '
     'pt > 30 GeV/c'
 )
@@ -81,10 +81,6 @@ options.register(
     'saveGenParticles', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Save information about the hard(est) interaction and selected particles'
 )
-# options.register(
-#     'saveHeavyFlavours', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-#     'Saves information about heavy-flavour quarks in parton shower'
-# )
 options.register(
     'saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Save information about generator-level jets'
@@ -92,6 +88,8 @@ options.register(
 
 # Override defaults for automatically defined options
 options.setDefault('maxEvents', 100)
+options.setType('outputFile', VarParsing.varType.string)
+options.setDefault('outputFile', 'sample.root')
 
 options.parseArguments()
 
@@ -157,7 +155,10 @@ if jetSelParsed is None:
  
 minNumJets = int(jetSelParsed.group(1))
 jetPtThreshold = int(jetSelParsed.group(2))
-print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThreshold, 'GeV/c.'
+
+if minNumJets > 0:
+    print 'Will select events with at least', minNumJets,
+    print 'jets with pt >', jetPtThreshold, 'GeV/c.'
 
 
 # Define the input files
