@@ -143,7 +143,7 @@ else:
     if runOnData:
         # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
         # process.source.fileNames = filesRelValSingleMuMINIAOD
-        process.source.fileNames = cms.untracked.vstring('/store/data/Run2016B/SingleMuon/MINIAOD/PromptReco-v2/000/273/150/00000/34A57FB8-D819-E611-B0A4-02163E0144EE.root')
+        process.source.fileNames = cms.untracked.vstring('/store/data/Run2016B/JetHT/MINIAOD/PromptReco-v2/000/273/450/00000/1EAF9289-581C-E611-B23D-02163E014777.root')
     else:
         # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
         # process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
