@@ -41,19 +41,11 @@ process.options = cms.untracked.PSet(
 )
 
 
-# Parse command-line options
+# Parse command-line options.  In addition to the options defined below,
+# use several standard ones: inputFiles, outputFile, maxEvents.
 from FWCore.ParameterSet.VarParsing import VarParsing
-options = VarParsing('python')
+options = VarParsing('analysis')
 
-options.register(
-    'inputFile', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'The name of the source file'
-)
-# Name of the output file.  Extention .root is appended automatically.
-options.register(
-    'outputName', 'sample', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'The name of the output ROOT file'
-)
 options.register(
     'globalTag', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'The relevant global tag'
@@ -65,7 +57,7 @@ options.register(
     'The leptonic channels to process'
 )
 options.register(
-    'jetSel', '2j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'jetSel', '0j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
     'Selection on jets. E.g. 2j30 means that an event must contain at least 2 jets with '
     'pt > 30 GeV/c'
 )
@@ -89,14 +81,15 @@ options.register(
     'saveGenParticles', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Save information about the hard(est) interaction and selected particles'
 )
-# options.register(
-#     'saveHeavyFlavours', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-#     'Saves information about heavy-flavour quarks in parton shower'
-# )
 options.register(
     'saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Save information about generator-level jets'
 )
+
+# Override defaults for automatically defined options
+options.setDefault('maxEvents', 100)
+options.setType('outputFile', VarParsing.varType.string)
+options.setDefault('outputFile', 'sample.root')
 
 options.parseArguments()
 
@@ -134,14 +127,17 @@ if jetSelParsed is None:
  
 minNumJets = int(jetSelParsed.group(1))
 jetPtThreshold = int(jetSelParsed.group(2))
-print 'Will select events with at least', minNumJets, 'jets with pt >', jetPtThreshold, 'GeV/c.'
+
+if minNumJets > 0:
+    print 'Will select events with at least', minNumJets,
+    print 'jets with pt >', jetPtThreshold, 'GeV/c.'
 
 
 # Define the input files
 process.source = cms.Source('PoolSource')
 
-if len(options.inputFile) > 0:
-    process.source.fileNames = cms.untracked.vstring(options.inputFile)
+if len(options.inputFiles) > 0:
+    process.source.fileNames = cms.untracked.vstring(options.inputFiles)
 else:
     # Default input files for testing
     if runOnData:
@@ -159,7 +155,7 @@ else:
 # process.source.eventsToProcess = cms.untracked.VEventRange('1:5')
 
 # Set the maximum number of events to process for a local run (it is overiden by CRAB)
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(100))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
 # Create processing paths.  There is one path per each channel (electron
@@ -367,5 +363,10 @@ if not muChan:
 # The output file for the analyzers
 postfix = '_' + string.join([random.choice(string.letters) for i in range(3)], '')
 
+if options.outputFile.endswith('.root'):
+    outputBaseName = options.outputFile[:-5] 
+else:
+    outputBaseName = options.outputFile
+
 process.TFileService = cms.Service('TFileService',
-    fileName = cms.string(options.outputName + postfix + '.root'))
+    fileName = cms.string(outputBaseName + postfix + '.root'))

@@ -28,7 +28,7 @@
  * \class PECJetMET
  * \brief Stores reconstructed jets and MET
  * 
- * The plugin stores basic properties of jets (four-momenta, b-tagging discriminators, IDs, etc.)
+ * This plugin stores basic properties of jets (four-momenta, b-tagging discriminators, IDs, etc.)
  * and MET. Bit flags indicate the presence of a generator-level jet nearby and include decisions
  * of user-defined selectors. Fields with generator-level information are not filled when
  * processing data.
@@ -42,6 +42,10 @@
  * In order to be saved, a jet must satisfy user-defined selection on either uncorrected or fully
  * corrected transverse momentum. For the case of corrected momentum, the criterion is evaluated
  * taking into account possible variations due to JEC and JER uncertainties.
+ * 
+ * In addition to fully corrected MET and its systematic variations, this plugin saves raw MET and
+ * MET from which corrections induced by stored jets are removed. The latter is useful to reapply
+ * T1 corrections on top of PEC tuples.
  */
 class PECJetMET: public edm::EDAnalyzer
 {
@@ -178,4 +182,25 @@ private:
      * ROOT needs a variable with a pointer to an object to store the object in a tree.
      */
     std::vector<pec::Candidate> *storeMETsPointer;
+    
+    /**
+     * \brief Buffer to store uncorrected MET
+     * 
+     * Includes raw and partly uncorrected MET. When jet-related MET corrections are undone, the
+     * fully corrected MET is used as the starting point, and only corrections induced by saved
+     * jets are undone. These partly uncorrected METs are useful to reapply jet corrections over
+     * PEC tuples.
+     * 
+     * Consult the source code for details. MET is  stored as an instance of pec::Candidate, but
+     * its pseudorapidity and mass are set to zeros, which allows them to be compressed
+     * efficiently.
+     */
+    std::vector<pec::Candidate> storeUncorrMETs;
+    
+    /**
+     * \brief An auxiliary pointer
+     * 
+     * ROOT needs a variable with a pointer to an object to store the object in a tree.
+     */
+    std::vector<pec::Candidate> *storeUncorrMETsPointer;
 };
