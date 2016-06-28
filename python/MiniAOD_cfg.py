@@ -70,6 +70,10 @@ options.register(
     'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
 )
 options.register(
+    'triggerProcessName', 'HLT', VarParsing.multiplicity.singleton,
+    VarParsing.varType.string, 'Name of process that evaluated trigger decisions'
+)
+options.register(
     'saveLHEWeightVars', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Indicates whether LHE-level variations of event weights should be stored'
 )
@@ -255,7 +259,7 @@ if runOnData:
         ),
         filter = cms.bool(True),
         savePrescales = cms.bool(True),
-        triggerBits = cms.InputTag('TriggerResults', processName='HLT'),
+        triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName),
         hltPrescales = cms.InputTag('patTrigger'),
         l1tPrescales = cms.InputTag('patTrigger', 'l1min')
     )
@@ -274,7 +278,7 @@ else:
         ),
         filter = cms.bool(False),
         savePrescales = cms.bool(False),
-        triggerBits = cms.InputTag('TriggerResults', processName='HLT')
+        triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName)
     )
 
 paths.append(process.pecTrigger)
