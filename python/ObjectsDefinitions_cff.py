@@ -42,7 +42,7 @@ def define_electrons(process):
     # Collection of electrons that will be stored in tuples
     process.analysisPatElectrons = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('slimmedElectrons'),
-        cut = cms.string('pt > 20. & abs(eta) < 2.5')
+        cut = cms.string('pt > 20. & (abs(eta) < 2.5 | abs(superCluster.eta) < 2.5)')
     )
     
     
@@ -98,7 +98,7 @@ def define_electrons(process):
     # main configuration.  Tighter kinematical cuts are applied to them.
     process.patElectronsForEventSelection = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('analysisPatElectrons'),
-        cut = cms.string('pt > 23. & abs(eta) < 2.5')
+        cut = cms.string('pt > 23. & (abs(eta) < 2.5 | abs(superCluster.eta) < 2.5)')
     )
     
     
