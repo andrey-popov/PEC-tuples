@@ -56,9 +56,12 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
     Handle<GenEventInfoProduct> generator;
     event.getByToken(generatorToken, generator);
     
+    Handle<LHEEventProduct> lheEventInfo;
+    event.getByToken(lheEventInfoToken, lheEventInfo);
+    
     
     // Process ID
-    generatorInfo.SetProcessId(generator->signalProcessID());
+    generatorInfo.SetProcessId(lheEventInfo->hepeup().IDPRUP);
     
     
     // Event weights
@@ -66,11 +69,6 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
     
     if (saveLHEWeightVars)
     {
-        // Read the LHE information
-        Handle<LHEEventProduct> lheEventInfo;
-        event.getByToken(lheEventInfoToken, lheEventInfo);
-        
-        
         // Alternative LHE weights will be rescaled by the ratio between the nominal weight above
         //and the nominal LHE weight, as instructed here [1]
         //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW?rev=7#How_to_use_weights
