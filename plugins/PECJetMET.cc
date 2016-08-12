@@ -177,8 +177,8 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
             
             // Compute JER factors to rescale jet momentum. The formulas are taken from [1] and [2]
             //for the case of present and missing generator-level match
-            //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L237
-            //[2] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_3/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244
+            //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_17/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L237
+            //[2] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_17/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244
             if (matchedGenJetFound)
             {
                 double const energyFactor = (j.pt() - j.genJet()->pt()) / j.pt();
@@ -202,11 +202,11 @@ void PECJetMET::analyze(Event const &event, EventSetup const &setup)
                 double const mcShift = rGen.Gaus(0., ptResolution);
                 
                 jerFactorNominal = 1. + mcShift *
-                  std::sqrt(std::max(std::pow(jerSFNominal, 2) - 1., 0.)) / j.pt();
+                  std::sqrt(std::max(std::pow(jerSFNominal, 2) - 1., 0.));
                 jerFactorUp = 1. + mcShift *
-                  std::sqrt(std::max(std::pow(jerSFUp, 2) - 1., 0.)) / j.pt();
+                  std::sqrt(std::max(std::pow(jerSFUp, 2) - 1., 0.));
                 jerFactorDown = 1. + mcShift *
-                  std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.)) / j.pt();
+                  std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.));
             }
             
             
