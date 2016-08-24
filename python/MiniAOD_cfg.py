@@ -107,13 +107,13 @@ muChan = (options.channels.find('m') != -1)
 # Provide a default global tag if user has not given any.  With data use
 # the global tag for prompt reconstruction [1].  With simulation take
 # the one recommended by JERC group [2].
-# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=568#Global_Tags_for_2016_data_taking
-# [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=112
+# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=575#Prompt_reconstruction_Global_Tag
+# [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=119
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = '80X_dataRun2_Prompt_v8'
+        options.globalTag = '80X_dataRun2_Prompt_v9'
     else:
-        options.globalTag = '80X_mcRun2_asymptotic_2016_miniAODv2'
+        options.globalTag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
     
     print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
 
@@ -147,11 +147,11 @@ else:
     if runOnData:
         # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValSingleMuMINIAOD
         # process.source.fileNames = filesRelValSingleMuMINIAOD
-        process.source.fileNames = cms.untracked.vstring('/store/data/Run2016B/JetHT/MINIAOD/PromptReco-v2/000/273/450/00000/1EAF9289-581C-E611-B23D-02163E014777.root')
+        process.source.fileNames = cms.untracked.vstring('/store/data/Run2016D/SingleMuon/MINIAOD/PromptReco-v2/000/276/315/00000/168C3DE5-F444-E611-A012-02163E014230.root')
     else:
         # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
         # process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
-        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISpring16MiniAODv1/TT_TuneCUETP8M1mpiOFF_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16_80X_mcRun2_asymptotic_2016_v3-v1/00000/0456EE8A-8609-E611-87E9-20CF3027A588.root')
+        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISpring16MiniAODv2/TT_TuneCUETP8M1_13TeV-powheg-pythia8/MINIAODSIM/PUSpring16RAWAODSIM_reHLT_80X_mcRun2_asymptotic_v14_ext3-v1/00000/0064B539-803A-E611-BDEA-002590D0B060.root')
 
 # process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 

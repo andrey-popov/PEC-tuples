@@ -1,12 +1,15 @@
 #!/bin/bash
 
 # The latest release in the 80X series
-release="CMSSW_8_0_8"
+release="CMSSW_8_0_18"
 scramv1 project CMSSW $release  # cmsrel alias expanded
 
 cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
+
+exit
+# Everything below this line remains from previous CMSSW release and has not been updated
 
 git cms-init
 
