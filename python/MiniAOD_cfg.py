@@ -241,6 +241,8 @@ apply_event_filters(
 
 # Save decisions of selected triggers.  The lists are based on menu [1],
 # which was used in the re-HLT campaign with RunIISpring16MiniAODv2.
+# Events that are not accepted by any of the considered triggers are
+# rejected since they cannot be used in an analysis.
 # [1] /frozen/2016/25ns10e33/v2.1/HLT/V3
 triggerNames = [
     # Single-lepton paths
@@ -273,7 +275,7 @@ if runOnData:
 else:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
         triggers = cms.vstring(triggerNames),
-        filter = cms.bool(False),
+        filter = cms.bool(True),
         savePrescales = cms.bool(False),
         triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName)
     )
