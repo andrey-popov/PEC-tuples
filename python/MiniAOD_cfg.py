@@ -239,24 +239,31 @@ apply_event_filters(
 )
 
 
-# Save decisions of selected triggers.  The lists are aligned with
-# menu [1] used in 25 ns MC and menus deployed online.  When processing
-# data, reject event that do not fire any of the listed triggers since
-# they cannot be used in an analysis anyway.
-# [1] /frozen/2015/25ns14e33/v4.4/HLT/V2
+# Save decisions of selected triggers.  The lists are based on menu [1],
+# which was used in the re-HLT campaign with RunIISpring16MiniAODv2.
+# [1] /frozen/2016/25ns10e33/v2.1/HLT/V3
+triggerNames = [
+    # Single-lepton paths
+    'Mu45_eta2p1', 'Mu50', 'Mu55',
+    'IsoMu20', 'IsoTkMu20', 'IsoMu22', 'IsoTkMu22', 'IsoMu22_eta2p1', 'IsoTkMu22_eta2p1',
+    'IsoMu24', 'IsoTkMu24', 'IsoMu27', 'IsoTkMu27',
+    'Ele23_WPLoose_Gsf', 'Ele24_eta2p1_WPLoose_Gsf',
+    'Ele25_WPTight_Gsf', 'Ele25_eta2p1_WPLoose_Gsf', 'Ele25_eta2p1_WPTight_Gsf',
+    'Ele27_WPLoose_Gsf', 'Ele27_WPTight_Gsf',
+    'Ele27_eta2p1_WPLoose_Gsf', 'Ele27_eta2p1_WPTight_Gsf',
+    'Ele32_eta2p1_WPTight_Gsf', 'Ele35_WPLoose_Gsf',
+    # Dilepton paths
+    'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+    'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL',
+    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
+    'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+    # Cross-triggers
+    'Ele27_eta2p1_WPLoose_Gsf_HT200'
+]
+
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
-        triggers = cms.vstring(
-            # Single-lepton paths
-            'Mu45_eta2p1', 'Mu50',
-            'IsoMu18', 'IsoMu20', 'IsoTkMu20',
-            'Ele22_eta2p1_WPLoose_Gsf', 'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf',
-            # Dilepton paths
-            'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-            'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
-            'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
-            'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ'
-        ),
+        triggers = cms.vstring(triggerNames),
         filter = cms.bool(True),
         savePrescales = cms.bool(True),
         triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName),
@@ -265,17 +272,7 @@ if runOnData:
     )
 else:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
-        triggers = cms.vstring(
-            # Single-lepton paths
-            'Mu45_eta2p1', 'Mu50',
-            'IsoMu18', 'IsoMu20', 'IsoTkMu20',
-            'Ele22_eta2p1_WPLoose_Gsf', 'Ele23_WPLoose_Gsf', 'Ele27_eta2p1_WPLoose_Gsf',
-            # Dilepton paths
-            'Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-            'Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL',
-            'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ',
-            'Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ'
-        ),
+        triggers = cms.vstring(triggerNames),
         filter = cms.bool(False),
         savePrescales = cms.bool(False),
         triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName)
