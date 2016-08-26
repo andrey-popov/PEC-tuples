@@ -15,6 +15,8 @@
 #include <cmath>
 #include <limits>
 
+#define DEBUG
+
 
 SystAwareJetSelector::SystAwareJetSelector(edm::ParameterSet const &cfg):
     edm::EDFilter(),
@@ -105,6 +107,9 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
         
         
         double jetPtUpVarFactor = 1.;
+        double jecUncertainty = 0.;
+        double jerFactorNominal = 1., jerFactorUp = 1., jerFactorDown = 1.;
+        bool hasGenMatch = false;
         
         if (includeJERCVariations)
         {
@@ -112,17 +117,10 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
             //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=137#JetCorUncertainties
             jecUncProvider->setJetEta(j.eta());
             jecUncProvider->setJetPt(j.pt());
-            double const jecUncertainty = std::abs(jecUncProvider->getUncertainty(true));
-            
-            
-            #ifdef DEBUG
-            std::cout << " JEC uncertainty: " << jecUncertainty << '\n';
-            #endif
+            jecUncertainty = std::abs(jecUncProvider->getUncertainty(true));
             
             
             // Evaluate JER smearing factors. This is only done for simulation.
-            double jerFactorNominal = 1., jerFactorUp = 1., jerFactorDown = 1.;
-            
             if (not event.isRealData())
             {
                 // JER pt resolution (relative) and scale factors
@@ -145,6 +143,7 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                 
                 if (genJet)
                 {
+                    hasGenMatch = true;
                     double const energyFactor = (j.pt() - genJet->pt()) / j.pt();
                     
                     jerFactorNominal = 1. + (jerSFNominal - 1.) * energyFactor;
@@ -167,20 +166,7 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                     jerFactorDown = 1. + mcShift *
                       std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.));
                 }
-                
-                
-                #ifdef DEBUG
-                if (genJet)
-                    std::cout << " GEN-level match found\n";
-                else
-                    std::cout << " No GEN-level match found\n";
-                #endif
             }
-            
-            #ifdef DEBUG
-            std::cout << " JER factors: " << jerFactorNominal << ", " << jerFactorUp << ", " <<
-              jerFactorDown << '\n';
-            #endif
             
             
             jetPtUpVarFactor =
@@ -189,10 +175,30 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
         
         
         if (j.pt() * jetPtUpVarFactor > minPt)
-            selectedJets->emplace_back(j);
+        {
+            pat::Jet copyJet(j);
+            
+            copyJet.addUserFloat("jecUncertainty", jecUncertainty);
+            copyJet.addUserFloat("jerFactorNominal", jerFactorNominal);
+            copyJet.addUserFloat("jerFactorUp", jerFactorUp);
+            copyJet.addUserFloat("jerFactorDown", jerFactorDown);
+            copyJet.addUserInt("hasGenMatch", int(hasGenMatch));
+            
+            selectedJets->emplace_back(std::move(copyJet));
+        }
         
         
         #ifdef DEBUG
+        std::cout << " JEC uncertainty: " << jecUncertainty << '\n';
+
+        if (hasGenMatch)
+            std::cout << " GEN-level match found\n";
+        else
+            std::cout << " No GEN-level match found\n";
+
+        std::cout << " JER factors: " << jerFactorNominal << ", " << jerFactorUp << ", " <<
+          jerFactorDown << '\n';
+        
         if (j.pt() * jetPtUpVarFactor > minPt)
             std::cout << " Accepted\n";
         else
@@ -205,8 +211,10 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
     #endif
     
     
-    // Perform the event selection
-    return (selectedJets->size() >= minNumJets);
+    // Evaluate the filter dicision and write selected jets into the event
+    bool const filterDecision = (selectedJets->size() >= minNumJets);
+    event.put(std::move(selectedJets));
+    return filterDecision;
 }
 
 

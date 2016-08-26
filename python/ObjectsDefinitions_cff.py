@@ -264,10 +264,17 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     recorrectedJetsLabel = ('updatedPatJetsUpdatedJEC' if reapplyJEC else 'slimmedJets')
     
     
-    # Define analysis-level jets by applying a very loose selection
-    process.analysisPatJets = cms.EDFilter('PATJetSelector',
+    # Define analysis-level jets.  The produced collection will contain
+    # all jets that have a chance to pass the given pt threshold thanks
+    # to JEC and JER variations.
+    process.analysisPatJets = cms.EDFilter('SystAwareJetSelector',
         src = cms.InputTag(recorrectedJetsLabel),
-        cut = cms.string('pt > 10. & abs(eta) < 5.')
+        jetTypeLabel = cms.string('AK4PFchs'),
+        preselection = cms.string('abs(eta) < 5.'),
+        minPt = cms.double(20.),
+        includeJERCVariations = cms.bool(not runOnData),
+        genJets = cms.InputTag('slimmedGenJets'),
+        rho = cms.InputTag('fixedGridRhoFastjetAll')
     )
     
     
