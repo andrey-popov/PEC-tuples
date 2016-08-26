@@ -20,11 +20,13 @@ SystAwareJetSelector::SystAwareJetSelector(edm::ParameterSet const &cfg):
     edm::EDFilter(),
     preselector(cfg.getParameter<std::string>("preselection")),
     minPt(cfg.getParameter<double>("minPt")),
+    minRawPt(cfg.getParameter<double>("minRawPt")),
     minNumJets(cfg.getParameter<unsigned>("minNum")),
     includeJERCVariations(cfg.getParameter<bool>("includeJERCVariations")),
     jetTypeLabel(cfg.getParameter<std::string>("jetTypeLabel")),
     jetConeSize(cfg.getParameter<double>("jetConeSize")),
-    rGen(cfg.getParameter<unsigned>("seed"))
+    rGen(cfg.getParameter<unsigned>("seed")),
+    nSigmaJERUnmatched(std::abs(cfg.getParameter<double>("nSigmaJERUnmatched")))
 {
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<edm::InputTag>("src"));
     genJetToken = consumes<edm::View<reco::GenJet>>(cfg.getParameter<edm::InputTag>("genJets"));
@@ -43,10 +45,13 @@ void SystAwareJetSelector::fillDescriptions(edm::ConfigurationDescriptions &desc
     desc.add<double>("jetConeSize", 0.4)->setComment("Jet cone size.");
     desc.add<std::string>("preselection", "")->setComment("Preselection for jets.");
     desc.add<double>("minPt")->setComment("Cut on jet pt.");
+    desc.add<double>("minRawPt", 9999.)->setComment("Cut on jet raw pt.");
     desc.add<bool>("includeJERCVariations", true)->
       setComment("Indicates whether variations in JEC and JER should be considered.");
     desc.add<edm::InputTag>("genJets")->setComment("GEN-level jets.");
     desc.add<edm::InputTag>("rho")->setComment("Rho (mean angular pt density).");
+    desc.add<double>("nSigmaJERUnmatched", 3.)->
+      setComment("JER variation to be used to choose jets without GEN-level matches.");
     desc.add<unsigned>("minNum", 0)->
       setComment("Minimal number of selected jets to accept an event.");
     desc.add<unsigned>("seed", 0)->setComment("Seed for random number generator.");
@@ -104,9 +109,9 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
         #endif
         
         
-        double jetPtUpVarFactor = 1.;
         double jecUncertainty = 0.;
         double jerFactorNominal = 1., jerFactorUp = 1., jerFactorDown = 1.;
+        double jerSafetyFactor = 1.;  // Used to choose if the jet is to be selected
         bool hasGenMatch = false;
         
         if (includeJERCVariations)
@@ -147,6 +152,8 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                     jerFactorNominal = 1. + (jerSFNominal - 1.) * energyFactor;
                     jerFactorUp = 1. + (jerSFUp - 1.) * energyFactor;
                     jerFactorDown = 1. + (jerSFDown - 1.) * energyFactor;
+                    
+                    jerSafetyFactor = std::max({jerFactorNominal, jerFactorUp, jerFactorDown});
                 }
                 else
                 {
@@ -163,16 +170,23 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                       std::sqrt(std::max(std::pow(jerSFUp, 2) - 1., 0.));
                     jerFactorDown = 1. + mcShift *
                       std::sqrt(std::max(std::pow(jerSFDown, 2) - 1., 0.));
+                    
+                    
+                    // Decide whether the jet should be selected based on the requested n-sigma
+                    //variation instead of the sampled factors. This allows to reapply stochastic
+                    //JER smearing on the selected jets.
+                    double const maxJERSF = std::max({jerSFNominal, jerSFUp, jerSFDown});
+                    jerSafetyFactor = 1. + nSigmaJERUnmatched *
+                      std::sqrt(std::max(std::pow(maxJERSF, 2) - 1., 0.));
                 }
             }
-            
-            
-            jetPtUpVarFactor =
-              std::max({1. + jecUncertainty, jerFactorNominal, jerFactorUp, jerFactorDown});
         }
         
         
-        if (j.pt() * jetPtUpVarFactor > minPt)
+        // Copy the jet if it has a chance to pass one of the pt thresholds
+        double const jetPtUpVarFactor = std::max({1. + jecUncertainty, jerSafetyFactor});
+        
+        if (j.pt() * jetPtUpVarFactor > minPt or j.correctedP4("Uncorrected").pt() > minRawPt)
         {
             pat::Jet copyJet(j);
             

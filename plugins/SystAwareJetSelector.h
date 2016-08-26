@@ -51,8 +51,11 @@ private:
     /// Preselection for jets
     StringCutObjectSelector<pat::Jet> const preselector;
     
-    /// Selection on pt
+    /// Selection on corrected pt
     double minPt;
+    
+    /// Selection on raw pt
+    double minRawPt;
     
     /// Threshold on the number of selected jets
     unsigned minNumJets;
@@ -103,4 +106,7 @@ private:
      * Used to apply JER smearing for jets that do not have a generator-level match.
      */
     TRandom3 rGen;
+    
+    /// Variation of this size is used to determine if a jet w/o GEN-level match to be saved
+    double nSigmaJERUnmatched;
 };
