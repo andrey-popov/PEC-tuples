@@ -15,8 +15,6 @@
 #include <cmath>
 #include <limits>
 
-#define DEBUG
-
 
 SystAwareJetSelector::SystAwareJetSelector(edm::ParameterSet const &cfg):
     edm::EDFilter(),

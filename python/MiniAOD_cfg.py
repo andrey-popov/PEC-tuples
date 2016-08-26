@@ -306,12 +306,9 @@ process.pecMuons = cms.EDAnalyzer('PECMuons',
 process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
-    jetType = cms.string('AK4PFchs'),
-    jetMinPt = cms.double(20.),
     jetSelection = jetQualityCuts,
     contIDMaps = cms.VInputTag(pileUpIDMap),
-    met = cms.InputTag('slimmedMETs', processName=process.name_()),
-    rho = cms.InputTag('fixedGridRhoFastjetAll')
+    met = cms.InputTag('slimmedMETs', processName=process.name_())
 )
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',

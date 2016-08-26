@@ -11,12 +11,10 @@
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
-#include <CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h>
 
 #include <FWCore/ServiceRegistry/interface/Service.h>
 #include <CommonTools/UtilAlgos/interface/TFileService.h>
 
-#include <TRandom3.h>
 #include <TTree.h>
 
 #include <string>
@@ -64,16 +62,13 @@ public:
     /// Creates output tree
     virtual void beginJob() override;
     
-    /// Creates an object to access JEC uncertainty
-    virtual void beginRun(edm::Run const &, edm::EventSetup const &setup) override;
-    
     /**
      * \brief Analyses current event
      * 
      * Copies jets and MET into the buffers, evaluates string-based selections for jets, fills the
      * output tree.
      */
-    virtual void analyze(edm::Event const &event, edm::EventSetup const &setup) override;
+    virtual void analyze(edm::Event const &event, edm::EventSetup const &) override;
     
 private:
     /// Collection of jets
@@ -81,26 +76,6 @@ private:
     
     /// MET
     edm::EDGetTokenT<edm::View<pat::MET>> metToken;
-    
-    /**
-     * \brief Rho (mean angular pt density)
-     * 
-     * Used in JER smearing.
-     */
-    edm::EDGetTokenT<double> rhoToken;
-    
-    /**
-     * \brief Label identifying jet type for JES and JER corrections
-     * 
-     * Needed to access JEC uncertainties and jet energy resolutions and their scale factors.
-     */
-    std::string const jetType;
-    
-    /// Minimal corrected transverse momentum to determine which jets are stored
-    double const jetMinPt;
-    
-    /// Minimal raw transverse momentum to determine which jets are stored
-    double const jetMinRawPt;
     
     /**
      * \brief String-based selections
@@ -134,17 +109,6 @@ private:
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;
-    
-    
-    /// An object to access JEC uncertainty
-    std::unique_ptr<JetCorrectionUncertainty> jecUncProvider;
-    
-    /**
-     * \brief Random-number generator
-     * 
-     * Used to apply JER smearing for jets that do not have a generator-level match.
-     */
-    TRandom3 rGen;
     
     
     /// Output tree
