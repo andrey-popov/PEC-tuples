@@ -220,14 +220,13 @@ if muChan:
     process.muPath += process.countTightPatMuons
 
 if minNumJets > 0:
-    process.countGoodJets = cms.EDFilter('PATCandViewCountMultiFilter',
-        src = cms.VInputTag('analysisPatJets'),
-        cut = cms.string('pt > ' + str(jetPtThreshold)),
-        minNumber = cms.uint32(minNumJets), maxNumber = cms.uint32(999)
+    process.countGoodJets = cms.EDFilter('SystAwareJetSelector',
+        src = cms.InputTag('analysisPatJets'),
+        jetTypeLabel = cms.string('AK4PFchs'),
+        minPt = cms.double(jetPtThreshold),
+        includeJERCVariations = cms.bool(not runOnData),
+        minNum = cms.uint32(minNumJets)
     )
-    if not runOnData:
-        process.countGoodJets.src = cms.VInputTag('analysisPatJets',
-            'analysisPatJetsScaleUp', 'analysisPatJetsScaleDown')
     paths.append(process.countGoodJets)
 
 

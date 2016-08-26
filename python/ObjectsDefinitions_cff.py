@@ -244,9 +244,6 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     Create the following jet collections:
         analysisPatJets: Jets with up-to-date JEC and a loose quality
             selection to be used in an analysis.
-        analysisPatJetsScaleUp/Down: Collections of jets with varied JEC
-            systematic uncertainties.  To be used in the loose event
-            selection in the main configuration.
     """
     
     # Reapply JEC if requested [1].  The corrections are read from the
@@ -309,21 +306,6 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
         vertexes = cms.InputTag('offlineSlimmedPrimaryVertices')
     )
     pileUpIDMap = 'pileupJetIdCustomized:fullDiscriminant'
-    
-    
-    # When running over simulation, produce jet collections with varied
-    # systematic uncertainties.  They will be used to perform the loose
-    # event selection, taking the uncertainty into account.
-    if not runOnData:
-        process.analysisPatJetsScaleUp = cms.EDProducer('ShiftedPATJetProducer',
-            src = cms.InputTag('analysisPatJets'),
-            jetCorrPayloadName = cms.string('AK4PFchs'),
-            jetCorrUncertaintyTag = cms.string('Uncertainty'),
-            addResidualJES = cms.bool(False),
-            shiftBy = cms.double(+1.)
-        )
-        
-        process.analysisPatJetsScaleDown = process.analysisPatJetsScaleUp.clone(shiftBy = -1.)
     
     
     return recorrectedJetsLabel, jetQualityCuts, pileUpIDMap
