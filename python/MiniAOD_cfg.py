@@ -225,6 +225,8 @@ if minNumJets > 0:
         jetTypeLabel = cms.string('AK4PFchs'),
         minPt = cms.double(jetPtThreshold),
         includeJERCVariations = cms.bool(not runOnData),
+        genJets = cms.InputTag('slimmedGenJets'),
+        rho = cms.InputTag('fixedGridRhoFastjetAll'),
         minNum = cms.uint32(minNumJets)
     )
     paths.append(process.countGoodJets)
