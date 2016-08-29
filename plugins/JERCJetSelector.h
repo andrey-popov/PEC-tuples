@@ -4,14 +4,14 @@
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
+#include <FWCore/ServiceRegistry/interface/Service.h>
+#include <FWCore/Utilities/interface/RandomNumberGenerator.h>
 
 #include <CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 #include <DataFormats/JetReco/interface/GenJet.h>
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
-
-#include <TRandom3.h>
 
 #include <memory>
 
@@ -129,11 +129,11 @@ private:
     std::unique_ptr<JME::JetResolutionScaleFactor> jerSFProvider;
     
     /**
-     * \brief Random-number generator
+     * \brief Random-number generator service
      * 
      * Used to apply JER smearing for jets that do not have a generator-level match.
      */
-    TRandom3 rGen;
+    edm::Service<edm::RandomNumberGenerator> rGenService;
     
     /// Variation of this size is used to determine if a jet w/o GEN-level match to be saved
     double nSigmaJERUnmatched;

@@ -4,10 +4,13 @@
 #include <FWCore/Framework/interface/EventSetup.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
+#include <FWCore/Utilities/interface/Exception.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
 #include <CondFormats/JetMETObjects/interface/JetCorrectorParameters.h>
 #include <JetMETCorrections/Objects/interface/JetCorrectionsRecord.h>
+
+#include <CLHEP/Random/RandGaussQ.h>
 
 #include <Math/GenVector/VectorUtil.h>
 
@@ -25,7 +28,6 @@ JERCJetSelector::JERCJetSelector(edm::ParameterSet const &cfg):
     includeJERCVariations(cfg.getParameter<bool>("includeJERCVariations")),
     jetTypeLabel(cfg.getParameter<std::string>("jetTypeLabel")),
     jetConeSize(cfg.getParameter<double>("jetConeSize")),
-    rGen(cfg.getParameter<unsigned>("seed")),
     nSigmaJERUnmatched(std::abs(cfg.getParameter<double>("nSigmaJERUnmatched")))
 {
     jetToken = consumes<edm::View<pat::Jet>>(cfg.getParameter<edm::InputTag>("src"));
@@ -93,6 +95,22 @@ bool JERCJetSelector::filter(edm::Event &event, edm::EventSetup const &)
     edm::Handle<edm::View<reco::GenJet>> genJets;
     if (includeJERCVariations and not event.isRealData())
         event.getByToken(genJetToken, genJets);
+    
+    
+    // Get random-number engine
+    CLHEP::HepRandomEngine *randomNumberEngine = nullptr;
+    
+    if (includeJERCVariations and not event.isRealData())
+    {
+        if (not rGenService.isAvailable())
+        {
+            cms::Exception excp("Configuration");
+            excp << "No random-number service is set up for this module.";
+            excp.raise();
+        }
+        
+        randomNumberEngine = &rGenService->getEngine(event.streamID());
+    }
     
     
     // Build a collection of jets passing the selection
@@ -165,7 +183,8 @@ bool JERCJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                     //for the systematical variations. Otherwise the variations would also include
                     //the effect of resampling and not just the shift in the scale factor.
                     //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244-L250
-                    double const mcShift = rGen.Gaus(0., ptResolution);
+                    double const mcShift = CLHEP::RandGaussQ::shoot(randomNumberEngine,
+                      0., ptResolution);
                     
                     jerFactorNominal = 1. + mcShift *
                       std::sqrt(std::max(std::pow(jerSFNominal, 2) - 1., 0.));

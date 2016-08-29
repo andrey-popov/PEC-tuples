@@ -162,6 +162,20 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
+# Set up random-number service.  CRAB overwrites the seeds
+# automatically.
+process.RandomNumberGeneratorService = cms.Service('RandomNumberGeneratorService',
+    analysisPatJets = cms.PSet(
+        initialSeed = cms.untracked.uint32(372),
+        engineName = cms.untracked.string('TRandom3')
+    ),
+    countGoodJets = cms.PSet(
+        initialSeed = cms.untracked.uint32(3631),
+        engineName = cms.untracked.string('TRandom3')
+    )
+)
+
+
 # Create processing paths.  There is one path per each channel (electron
 # or muon).
 process.elPath = cms.Path()
