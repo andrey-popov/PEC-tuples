@@ -104,14 +104,12 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Provide a default global tag if user has not given any.  With data use
-# the global tag for prompt reconstruction [1].  With simulation take
-# the one recommended by JERC group [2].
-# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=575#Prompt_reconstruction_Global_Tag
-# [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=119
+# Provide a default global tag if user has not given any.  Chosen
+# following recommendations of the JERC group [1].
+# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=119
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = '80X_dataRun2_Prompt_v9'
+        options.globalTag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
     else:
         options.globalTag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
     
