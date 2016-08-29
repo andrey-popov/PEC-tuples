@@ -1,4 +1,4 @@
-#include "SystAwareJetSelector.h"
+#include "JERCJetSelector.h"
 
 #include <FWCore/Framework/interface/ESHandle.h>
 #include <FWCore/Framework/interface/EventSetup.h>
@@ -16,7 +16,7 @@
 #include <limits>
 
 
-SystAwareJetSelector::SystAwareJetSelector(edm::ParameterSet const &cfg):
+JERCJetSelector::JERCJetSelector(edm::ParameterSet const &cfg):
     edm::EDFilter(),
     preselector(cfg.getParameter<std::string>("preselection")),
     minPt(cfg.getParameter<double>("minPt")),
@@ -36,7 +36,7 @@ SystAwareJetSelector::SystAwareJetSelector(edm::ParameterSet const &cfg):
 }
 
 
-void SystAwareJetSelector::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
+void JERCJetSelector::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
     edm::ParameterSetDescription desc;
     desc.add<edm::InputTag>("src")->setComment("Source collection of jets.");
@@ -60,7 +60,7 @@ void SystAwareJetSelector::fillDescriptions(edm::ConfigurationDescriptions &desc
 }
 
 
-void SystAwareJetSelector::beginRun(edm::Run const &, edm::EventSetup const &setup)
+void JERCJetSelector::beginRun(edm::Run const &, edm::EventSetup const &setup)
 {
     // Construct an object to obtain JEC uncertainty [1]
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=137#JetCorUncertainties
@@ -79,7 +79,7 @@ void SystAwareJetSelector::beginRun(edm::Run const &, edm::EventSetup const &set
 }
 
 
-bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
+bool JERCJetSelector::filter(edm::Event &event, edm::EventSetup const &)
 {
     // Read the source collection of jets and rho. The latter is only used in JER smearing and thus
     //is only read when the corresponding flag is set.
@@ -146,6 +146,8 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                 
                 if (genJet)
                 {
+                    // Apply scaling as in [1].
+                    //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L236-L237
                     hasGenMatch = true;
                     double const energyFactor = (j.pt() - genJet->pt()) / j.pt();
                     
@@ -158,10 +160,11 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
                 else
                 {
                     // A shift in jet pt is randomly sampled according to the resolution in
-                    //simulation and then scaled based on the data-to-simulation scale factors. It
-                    //is important that the sampling is only done once and then reused for the
-                    //systematical variations. Otherwise the variations would also include the
-                    //effect of resampling and not just the shift in the scale factor.
+                    //simulation and then scaled based on the data-to-simulation scale factors, as
+                    //in [1]. It is important that the sampling is only done once and then reused
+                    //for the systematical variations. Otherwise the variations would also include
+                    //the effect of resampling and not just the shift in the scale factor.
+                    //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244-L250
                     double const mcShift = rGen.Gaus(0., ptResolution);
                     
                     jerFactorNominal = 1. + mcShift *
@@ -230,7 +233,7 @@ bool SystAwareJetSelector::filter(edm::Event &event, edm::EventSetup const &)
 }
 
 
-reco::GenJet const *SystAwareJetSelector::MatchGenJet(reco::Jet const &jet,
+reco::GenJet const *JERCJetSelector::MatchGenJet(reco::Jet const &jet,
   edm::View<reco::GenJet> const &genJets, double maxDPt) const
 {
     reco::GenJet const *matchedJet = nullptr;
@@ -256,4 +259,4 @@ reco::GenJet const *SystAwareJetSelector::MatchGenJet(reco::Jet const &jet,
 }
 
 
-DEFINE_FWK_MODULE(SystAwareJetSelector);
+DEFINE_FWK_MODULE(JERCJetSelector);

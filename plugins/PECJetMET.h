@@ -31,15 +31,11 @@
  * of user-defined selectors. Fields with generator-level information are not filled when
  * processing data.
  * 
- * The plugin stores raw jet momenta. Depending on the configuration, it can also store full
+ * The input collection of jets must have been created by an instance of plugin JERCJetSelector
+ * as the plugin reads some userData from it, such as JEC uncertainties and JER smearing factors.
+ * By default, the plugin stores raw momenta. Depending on the configuration, it can also save full
  * JEC+JER correction factor and corresponding uncertainties. In case of JER the two variations are
- * not necessarily symmetric, and the largest one is chosen as the uncertainty to store. Note that
- * smearing for jets that do not have a generator-level match is performed randomly. The seed for
- * the random-number engine is chosen randomly, thus results cannot be reproduced exactly.
- * 
- * In order to be saved, a jet must satisfy user-defined selection on either uncorrected or fully
- * corrected transverse momentum. For the case of corrected momentum, the criterion is evaluated
- * taking into account possible variations due to JEC and JER uncertainties.
+ * not necessarily symmetric, and the largest one is chosen as the uncertainty to store.
  * 
  * In addition to fully corrected MET and its systematic variations, this plugin saves raw MET and
  * MET from which corrections induced by stored jets are removed. The latter is useful to reapply

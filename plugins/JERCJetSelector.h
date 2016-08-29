@@ -17,20 +17,44 @@
 
 
 /**
- * \class SystAwareJetSelector
- * \brief A plugin to select jets taking into account JEC and JER variations
+ * \class JERCJetSelector
+ * \brief A plugin to evaluate JEC uncertainty and JER factors and select jets taking into account
+ * JEC and JER variations
+ * 
+ * This plugin selects PAT jets that could possibly pass the given pt threshold thanks to
+ * variations in JEC and JER smearing. JEC are varied within their uncertainties. JER smearing is
+ * applied only to simulation, following the recommendations in [1]. When there is no matching
+ * generator-level jet, the reconstructed jet is accepted if it could pass the pt threshold using
+ * a JER variation some factor larger than the pt resolution in simulation (as given by parameter
+ * "nSigmaJERUnmatched"). Selected jets are written in the event without reordering.
+ * 
+ * Jet variations can be switched off by setting flag "includeJERCVariations" to false. In this
+ * case the plugin simply selects jets with pt larger than then given threshold. A string-based
+ * preselection can be applied to jets (parameter "preselection"). Jets failing it are rejected
+ * unconditionally. If the number of selected jets is less than the given value (parameter
+ * "minNum", set to zero by default), the event is rejected.
+ * 
+ * Additional information is added to the produced collection of jets. JEC uncertainty and JER
+ * factors are written as userFloats "jecUncertainty", "jerFactor[Nominal|Up|Down]", and a flag
+ * indicating the presence of a matching generator-level jet is written as userInt "hasGenMatch".
+ * The matching is performed as recommended in [1].
+ * 
+ * [1] https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution?rev=54#Smearing_procedures
  */
-class SystAwareJetSelector: public edm::EDFilter
+class JERCJetSelector: public edm::EDFilter
 {
 public:
-    SystAwareJetSelector(edm::ParameterSet const &cfg);
+    /// Constructor
+    JERCJetSelector(edm::ParameterSet const &cfg);
     
 public:
+    /// Creates objects that provide JEC uncertainty and JER resolution and scale factors
     virtual void beginRun(edm::Run const &, edm::EventSetup const &setup) override;
     
     /// Verifies plugin configuration
     static void fillDescriptions(edm::ConfigurationDescriptions &descriptions);
     
+    /// Produces collection of selected jets and performs event filtering
     virtual bool filter(edm::Event &event, edm::EventSetup const &) override;
     
 private:
@@ -54,7 +78,11 @@ private:
     /// Selection on corrected pt
     double minPt;
     
-    /// Selection on raw pt
+    /**
+     * \brief Selection on raw pt
+     * 
+     * Added in disjunction with the selection on the corrected pt.
+     */
     double minRawPt;
     
     /// Threshold on the number of selected jets

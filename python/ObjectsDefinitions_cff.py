@@ -267,7 +267,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     # Define analysis-level jets.  The produced collection will contain
     # all jets that have a chance to pass the given pt threshold thanks
     # to JEC and JER variations.
-    process.analysisPatJets = cms.EDFilter('SystAwareJetSelector',
+    process.analysisPatJets = cms.EDFilter('JERCJetSelector',
         src = cms.InputTag(recorrectedJetsLabel),
         jetTypeLabel = cms.string('AK4PFchs'),
         preselection = cms.string('abs(eta) < 5.'),

@@ -220,7 +220,7 @@ if muChan:
     process.muPath += process.countTightPatMuons
 
 if minNumJets > 0:
-    process.countGoodJets = cms.EDFilter('SystAwareJetSelector',
+    process.countGoodJets = cms.EDFilter('JERCJetSelector',
         src = cms.InputTag('analysisPatJets'),
         jetTypeLabel = cms.string('AK4PFchs'),
         minPt = cms.double(jetPtThreshold),
