@@ -83,7 +83,7 @@ def define_electrons(process):
         # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1645/2/1/1.html
         # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=26#Triggering_electron_MVA_details
         'pt > 15. & \
-         ((abs(superCluster.eta) < 1.4442 & full5x5_sigmaIetaIeta < 0.012 & hcalOverEcal < 0.9 & \
+         ((abs(superCluster.eta) < 1.4442 & full5x5_sigmaIetaIeta < 0.012 & hcalOverEcal < 0.09 & \
           ecalPFClusterIso / pt < 0.37 & hcalPFClusterIso / pt < 0.25 & dr03TkSumPt / pt < 0.18 & \
           abs(deltaEtaSuperClusterTrackAtVtx) < 0.0095 & \
           abs(deltaPhiSuperClusterTrackAtVtx) < 0.065) | \
