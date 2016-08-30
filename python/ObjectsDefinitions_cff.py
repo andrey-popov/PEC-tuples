@@ -79,8 +79,6 @@ def define_electrons(process):
     
     # Additional selections to be evaluated
     eleQualityCuts = cms.vstring(
-        # EE-EB gap
-        '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)',
         # Trigger-emulating preselection [1], referenced from [2]
         # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1645/2/1/1.html
         # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=26#Triggering_electron_MVA_details
