@@ -27,12 +27,12 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     Return value:
         None.
     
-    [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=82#MiniAOD_805
+    [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=99
     """
     
-    # Decisions of all filters are stored in MiniAOD as trigger results,
-    # which are true for good events.  It is sufficient to simply check
-    # the corresponding bits.
+    # Decisions of most filters are stored in MiniAOD as trigger
+    # results, which are true for good events.  It is sufficient to
+    # simply check the corresponding bits.
     process.applyEmulatedMETFilters = cms.EDFilter('HLTHighLevel',
         HLTPaths = cms.vstring(
             'Flag_HBHENoiseFilter', 'Flag_HBHENoiseIsoFilter', 'Flag_CSCTightHalo2015Filter',
@@ -46,4 +46,24 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     )
     
     paths.append(process.applyEmulatedMETFilters)
+    
+    
+    # Filter for "bad" muons
+    from RecoMET.METFilters.BadPFMuonFilter_cfi import BadPFMuonFilter
+    process.badPFMuonFilter = BadPFMuonFilter.clone(
+        muons = cms.InputTag('slimmedMuons'),
+        PFCandidates = cms.InputTag('packedPFCandidates')
+    )
+    
+    paths.append(process.badPFMuonFilter)
+    
+    
+    # Filter for "bad" charged hadrons
+    from RecoMET.METFilters.BadChargedCandidateFilter_cfi import BadChargedCandidateFilter
+    process.badChargedCandidateFilter = BadChargedCandidateFilter.clone(
+        muons = cms.InputTag('slimmedMuons'),
+        PFCandidates = cms.InputTag('packedPFCandidates')
+    )
+    
+    paths.append(process.badChargedCandidateFilter)
     
