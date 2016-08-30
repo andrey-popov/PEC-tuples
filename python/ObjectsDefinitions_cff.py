@@ -238,8 +238,6 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
             configuration) and no kinamatical or quality selection.
         jetQualityCuts: List of string-based quality selections whose
             decisions are to be saved.
-        pileUpIDMap: Name of a map that contains real-valued pile-up ID
-            decisions.
     
     Create the following jet collections:
         analysisPatJets: Jets with up-to-date JEC and a loose quality
@@ -300,22 +298,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     jetQualityCuts = cms.vstring(jetLooseID)
     
     
-    # Set up pile-up jet ID.  The IDs are now included as userFloats,
-    # but in MiniAOD80Xv1 they have been produced with 76X training
-    # (while ones in MiniAOD80Xv2 will be up-to-date [1]).  For the
-    # moment, recompute the IDs.
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=27#Information_for_13_TeV_data_anal
-    process.load('RecoJets.JetProducers.PileupJetID_cfi')
-    process.pileupJetIdCustomized = process.pileupJetId.clone(
-        jets = cms.InputTag('analysisPatJets'),
-        inputIsCorrected = True,
-        applyJec = False,
-        vertexes = cms.InputTag('offlineSlimmedPrimaryVertices')
-    )
-    pileUpIDMap = 'pileupJetIdCustomized:fullDiscriminant'
-    
-    
-    return recorrectedJetsLabel, jetQualityCuts, pileUpIDMap
+    return recorrectedJetsLabel, jetQualityCuts
 
 
 def define_METs(process, runOnData=False):

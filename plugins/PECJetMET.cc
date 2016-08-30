@@ -3,6 +3,8 @@
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
+#include <FWCore/Utilities/interface/Exception.h>
+
 #include <TMath.h>
 #include <TVector2.h>
 
@@ -25,6 +27,16 @@ PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     
     for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("contIDMaps"))
         contIDMapTokens.emplace_back(consumes<ValueMap<float>>(tag));
+    
+    
+    // Currently plugin does not read any information from the ID maps. Throw an exception if any
+    //are actually given.
+    if (contIDMapTokens.size() > 0)
+    {
+        cms::Exception excp("Configuration");
+        excp << "Currenly module ignores all continuous ID maps.";
+        excp.raise();
+    }
     
     
     // Construct string-based selectors
@@ -77,7 +89,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
     event.getByToken(jetToken, srcJets);
     
     
-    // Read maps with real-valued jet ID
+    // Read maps with real-valued jet ID. They are however not used currently.
     vector<Handle<ValueMap<float>>> contIDMaps(contIDMapTokens.size());
     
     for (unsigned i = 0; i < contIDMapTokens.size(); ++i)
@@ -147,14 +159,9 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015?rev=92#Jets
         storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
         
-        
-        // Save the pile-up ID if available. It should be the first ID in the dedicated
-        //collection of maps
-        if (contIDMaps.size() > 0)
-        {
-            Ptr<pat::Jet> const jetPtr(srcJets, i);
-            storeJet.SetPileUpID((*contIDMaps.at(0))[jetPtr]);
-        }
+        // Save pileup ID
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=29#Information_for_13_TeV_data_anal
+        storeJet.SetPileUpID(j.userFloat("pileupJetId:fullDiscriminant"));
         
         
         // Calculate the jet pull angle
