@@ -30,10 +30,11 @@
  * to facilitate file compression. Bit field inherited from CandidateWithID includes decision of a
  * conversion rejection algorithm and results of custom selections specifed by the user.
  * 
- * The plugin can store various IDs in a flexible way. It can store a variable number of boolean and
- * real-valued decisions embedded in pat::Electron, accessing them via labels provided in the
- * configuration. In addition, it can include boolean and real-valued decisions provided in the form
- * of value maps. All IDs are optional.
+ * The plugin can store various IDs in a flexible way. It can store a variable number of boolean
+ * and real-valued decisions embedded in pat::Electron, accessing them via labels provided in the
+ * configuration. In addition, it can include boolean and real-valued decisions provided in the
+ * form of value maps. All these IDs are optional. It also stores the value of the dicriminator for
+ * non-triggering MVA ID; the access to it is hard-coded.
  */
 class PECElectrons: public edm::EDAnalyzer
 {

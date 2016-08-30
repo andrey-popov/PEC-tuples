@@ -52,29 +52,10 @@ def define_electrons(process):
         for p in ['veto', 'loose', 'medium', 'tight']]
     
     
-    # Decisions of triggering MVA ID are not stored in MiniAOD76Xv2 and
-    # should be calculated
-    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=26
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
-        setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
-    switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
-    
-    for idModule in ['mvaElectronID_Spring15_25ns_Trig_V1_cff']:
-        setupAllVIDIdsInModule(
-            process,
-            'RecoEgamma.ElectronIdentification.Identification.' +
-            idModule, setupVIDElectronSelection
-        )
-    
-    process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
-    
-    
     # Labels of maps with electron ID.  No maps are needed for the
     # cut-based ID since its decisions are embedded in pat::Electron.
     eleCutBasedIDMaps = []
-    eleMVAIDMaps = [
-        'electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring15Trig25nsV1Values'
-    ]
+    eleMVAIDMaps = []
     
     
     # Additional selections to be evaluated

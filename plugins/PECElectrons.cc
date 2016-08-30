@@ -113,6 +113,12 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         storeElectron.SetEtaSC(el.superCluster()->eta());
         
         
+        // Copy non-triggering MVA ID stored as a userFloat
+        storeElectron.SetContinuousID(0,
+          el.userFloat("ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values"));
+        unsigned nUsedContIDs = 1;
+        
+        
         // Copy embedded ID decisions
         unsigned const nEmbeddedBoolIDs = embeddedBoolIDLabels.size();
         unsigned const nEmbeddedContIDs = embeddedContIDLabels.size();
@@ -123,7 +129,10 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
             //conversion to a boolean value
         
         for (unsigned i = 0; i < nEmbeddedContIDs; ++i)
-            storeElectron.SetContinuousID(i, el.electronID(embeddedContIDLabels.at(i)));
+            storeElectron.SetContinuousID(nUsedContIDs + i,
+              el.electronID(embeddedContIDLabels.at(i)));
+        
+        nUsedContIDs += nEmbeddedContIDs;
         
         
         // Copy additional ID decisions from the maps
@@ -133,7 +142,7 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
             storeElectron.SetBooleanID(nEmbeddedBoolIDs + i, (*boolIDMaps.at(i))[elPtr]);
         
         for (unsigned i = 0; i < contIDMaps.size(); ++i)
-            storeElectron.SetContinuousID(nEmbeddedContIDs + i, (*contIDMaps.at(i))[elPtr]);
+            storeElectron.SetContinuousID(nUsedContIDs + i, (*contIDMaps.at(i))[elPtr]);
         
         
         // Conversion rejection [1]. True for a "good" electron
