@@ -163,4 +163,7 @@ private:
      * ROOT needs a variable with a pointer to an object to store the object in a tree.
      */
     std::vector<pec::Candidate> *storeUncorrMETsPointer;
+    
+    /// Buffer to store MET significance
+    Float_t storeMETSignificance;
 };

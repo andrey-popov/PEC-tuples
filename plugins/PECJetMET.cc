@@ -65,6 +65,8 @@ void PECJetMET::beginJob()
     
     storeUncorrMETsPointer = &storeUncorrMETs;
     outTree->Branch("uncorrMETs", &storeUncorrMETsPointer);
+    
+    outTree->Branch("METSignificance", &storeMETSignificance);
 }
 
 
@@ -214,6 +216,8 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
     Handle<View<pat::MET>> metHandle;
     event.getByToken(metToken, metHandle);
     pat::MET const &met = metHandle->front();
+    
+    storeMETSignificance = met.metSignificance();
     
     storeMETs.clear();
     pec::Candidate storeMET;
