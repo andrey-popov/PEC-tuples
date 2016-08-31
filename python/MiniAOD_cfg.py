@@ -12,10 +12,10 @@ EventFilters_cff.
 After reconstructed objects are defined and the loose event selection is
 performed, relevant reconstructed objects as well as some
 generator-level properties are saved in a ROOT file with the help of a
-set of dedicated EDAnalyzers.  The jobs does not produce and EDM output.
+set of dedicated EDAnalyzers.  The job does not produce any EDM output.
 
 Behaviour can be controlled with a number of command-line options (see
-their list in the code).
+their list in the code below).
 """
 
 import sys
@@ -48,13 +48,13 @@ options = VarParsing('analysis')
 
 options.register(
     'globalTag', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'The relevant global tag'
+    'Global tag to be used'
 )
 # Leptonic channels to be processed.  Here 'e' and 'm' stand for
 # electron and muon respectively.
 options.register(
     'channels', 'em', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'The leptonic channels to process'
+    'Leptonic channels to process'
 )
 options.register(
     'jetSel', '0j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
@@ -63,7 +63,7 @@ options.register(
 )
 options.register(
     'runOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Indicates whether it runs on the real data'
+    'Indicates whether the job processes real data'
 )
 options.register(
     'isPromptReco', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
@@ -71,11 +71,11 @@ options.register(
 )
 options.register(
     'triggerProcessName', 'HLT', VarParsing.multiplicity.singleton,
-    VarParsing.varType.string, 'Name of process that evaluated trigger decisions'
+    VarParsing.varType.string, 'Name of the process that evaluated trigger decisions'
 )
 options.register(
     'saveLHEWeightVars', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Indicates whether LHE-level variations of event weights should be stored'
+    'Save LHE-level variations of event weights'
 )
 options.register(
     'labelLHEEventProduct', 'externalLHEProducer', VarParsing.multiplicity.singleton,
@@ -83,7 +83,7 @@ options.register(
 )
 options.register(
     'saveGenParticles', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Save information about the hard(est) interaction and selected particles'
+    'Save information about the hard(est) interaction and certain particles'
 )
 options.register(
     'saveGenJets', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
@@ -98,7 +98,7 @@ options.setDefault('outputFile', 'sample.root')
 options.parseArguments()
 
 
-# Make the shortcuts to access some of the configuration options easily
+# Make shortcuts to access some of the configuration options easily
 runOnData = options.runOnData
 elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
@@ -160,7 +160,7 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
-# Set up random-number service.  CRAB overwrites the seeds
+# Set up random-number service.  CRAB overwrites the seeds.
 # automatically.
 process.RandomNumberGeneratorService = cms.Service('RandomNumberGeneratorService',
     analysisPatJets = cms.PSet(

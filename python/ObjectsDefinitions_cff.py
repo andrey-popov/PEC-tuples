@@ -1,4 +1,4 @@
-"""Defines reconstructed physics objects.
+"""Definitions of reconstructed physics objects.
 
 The module is exploited by cmsRun configuration MiniAOD_cfg.py.  It
 exports several functions define_* that define different reconstructed
@@ -125,7 +125,7 @@ def define_muons(process):
     # configuration.  Realistically tight kinematical cuts are applied.
     process.patMuonsForEventSelection = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('analysisPatMuons'),
-        cut = cms.string('pt > 18. & abs(eta) < 2.5')
+        cut = cms.string('pt > 20. & abs(eta) < 2.5')
     )
     
     
@@ -291,10 +291,6 @@ def define_METs(process, runOnData=False):
     taus, and photons, although these variations are not considered in
     targeted analyses.
     
-    There have been many problems with the MET PAT tool and related
-    CMSSW plugins.  Although some of them are fixed here, there might be
-    others.  Thus, MET should be used ith a great causion.
-    
     Arguments:
         process: The process to which relevant MET producers are added.
         runOnData: Flag to distinguish processing of data and
@@ -308,10 +304,8 @@ def define_METs(process, runOnData=False):
     new collection.
     """
     
-    # Recalculate MET corrections.  Some poor documentation is
-    # available in [1-2].
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=46#Instructions_for_8_0_X_X_5
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuidePATTools?rev=60#MET_Systematics_Tools
+    # Recalculate MET corrections similar to what is done in [1]
+    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
         runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD(
@@ -324,4 +318,4 @@ def define_METs(process, runOnData=False):
     # have switched off calculation of the corresponding variations of
     # MET by setting collection names to '', but PATMETSlimmer requires
     # these variations [1].
-    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
+    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
