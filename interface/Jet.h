@@ -9,13 +9,28 @@ namespace pec
  * \class Jet
  * \brief Represents a reconstructed jet
  * 
- * Stores four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet
+ * Stored four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet
  * (especially of a soft one) might be left uninitialized if they are not expected to be used in an
  * analysis. Properties that make sence for simulations only (like flavours) are not expected to be
  * set in case of real data.
  */
 class Jet: public CandidateWithID
 {
+public:
+    /// Supported b-tagging algorithms
+    enum class BTagAlgo: unsigned
+    {
+        CSV = 0,
+        CMVA = 1
+    };
+    
+    /// Supported c-tagging algorithms
+    enum class CTagAlgo: unsigned
+    {
+        CvsB = 0,
+        CvsL = 1
+    };
+    
 public:
     /// Constructor with no parameters
     Jet() noexcept;
@@ -33,11 +48,11 @@ public:
     /// Sets relative uncertainty of the JER smearing factor
     void SetJERUncertainty(float jecUncertainty);
     
-    /// Sets the value of the cMVA b-tagging discriminator
-    void SetBTagCMVA(float bTag);
+    /// Sets value of the given b-tagging discriminator
+    void SetBTag(BTagAlgo algo, float value);
     
-    /// Sets the value of the CSV b-tagging discriminator
-    void SetBTagCSV(float bTag);
+    /// Sets value of the given c-tagging discriminator
+    void SetCTag(CTagAlgo algo, float value);
     
     /// Sets mass of the secondary vertex associated with the jet
     void SetSecVertexMass(float mass);
@@ -98,11 +113,11 @@ public:
      */
     float JERUncertainty() const;
     
-    /// Returns the value of the cMVA b-tagging discriminator
-    float BTagCMVA() const;
+    /// Returns value of the requested b-tagging discriminator
+    float BTag(BTagAlgo algo) const;
     
-    /// Returns the value of the CSV b-tagging discriminator
-    float BTagCSV() const;
+    /// Returns value of the requested c-tagging discriminator
+    float CTag(CTagAlgo algo) const;
     
     /// Returns value of the pile-up discriminator
     float PileUpID() const;
@@ -167,8 +182,8 @@ private:
      */
     Float_t jerUncertainty;
     
-    /// Values of b-tagging discriminators
-    Float_t bTagCMVA, bTagCSV;
+    /// Values of b-tagging  and c-tagging discriminators
+    Float_t bTags[2], cTags[2];
     
     /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
     Float_t secVertexMass;

@@ -6,7 +6,7 @@
 pec::Jet::Jet() noexcept:
     CandidateWithID(),
     corrFactor(0), jecUncertainty(0), jerUncertainty(0),
-    bTagCMVA(0), bTagCSV(0), secVertexMass(0),
+    bTags{0, 0}, cTags{0, 0}, secVertexMass(0),
     pileUpMVA(0),
     area(0),
     charge(0),
@@ -21,7 +21,7 @@ void pec::Jet::Reset()
     
     corrFactor = 0;
     jecUncertainty = jerUncertainty = 0;
-    bTagCMVA = bTagCSV = 0;
+    bTags[0] = bTags[1] = cTags[0] = cTags[1] = 0;
     secVertexMass = 0;
     pileUpMVA = 0;
     area = 0;
@@ -49,15 +49,15 @@ void pec::Jet::SetJERUncertainty(float jerUncertainty_)
 }
 
 
-void pec::Jet::SetBTagCMVA(float bTag)
+void pec::Jet::SetBTag(BTagAlgo algo, float value)
 {
-    bTagCMVA = bTag;
+    bTags[unsigned(algo)] = value;
 }
 
 
-void pec::Jet::SetBTagCSV(float bTag)
+void pec::Jet::SetCTag(CTagAlgo algo, float value)
 {
-    bTagCSV = bTag;
+    cTags[unsigned(algo)] = value;
 }
 
 
@@ -120,15 +120,15 @@ float pec::Jet::JERUncertainty() const
 }
 
 
-float pec::Jet::BTagCMVA() const
+float pec::Jet::BTag(BTagAlgo algo) const
 {
-    return bTagCMVA;
+    return bTags[unsigned(algo)];
 }
 
 
-float pec::Jet::BTagCSV() const
+float pec::Jet::CTag(CTagAlgo algo) const
 {
-    return bTagCSV;
+    return cTags[unsigned(algo)];
 }
 
 
