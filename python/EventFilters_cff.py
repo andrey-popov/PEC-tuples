@@ -35,7 +35,7 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     # simply check the corresponding bits.
     process.applyEmulatedMETFilters = cms.EDFilter('HLTHighLevel',
         HLTPaths = cms.vstring(
-            'Flag_HBHENoiseFilter', 'Flag_HBHENoiseIsoFilter', 'Flag_CSCTightHalo2015Filter',
+            'Flag_HBHENoiseFilter', 'Flag_HBHENoiseIsoFilter', 'Flag_globalTightHalo2016Filter',
             'Flag_EcalDeadCellTriggerPrimitiveFilter', 'Flag_eeBadScFilter'),
         andOr = cms.bool(False),  # AND mode
         throw = cms.bool(True),
