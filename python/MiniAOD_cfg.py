@@ -196,6 +196,17 @@ class PathManager:
 paths = PathManager(process.elPath, process.muPath)
 
 
+# Include an event counter before any selection is applied.  It is only
+# needed for simulation.
+if not runOnData:
+    process.eventCounter = cms.EDAnalyzer('EventCounter',
+        generator = cms.InputTag('generator'),
+        saveLHEWeightVars = cms.bool(options.saveLHEWeightVars),
+        lheEventInfoProduct = cms.InputTag(options.labelLHEEventProduct)
+    )
+    paths.append(process.eventCounter)
+
+
 # Filter on properties of the first vertex
 process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
     src = cms.InputTag('offlineSlimmedPrimaryVertices'),
