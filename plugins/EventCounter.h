@@ -55,6 +55,9 @@ private:
  * event weight. If configured to do so, it also saves mean values of each type of alternative
  * LHE-level weights. These quantities are stored in a trivial tree containing a single entry.
  * 
+ * The plugin can only process simulated events. Normally it should be put in the execution path
+ * before any filters.
+ * 
  * Computation of mean weights is implemented with the help of the compensated summation algorithm
  * provided by class SignedKahanSum.
  */
@@ -82,7 +85,7 @@ private:
     edm::EDGetTokenT<LHEEventProduct> lheEventInfoToken;
     
     /// Flag requesting saving of mean LHE-level event weights
-    bool saveLHEWeightVars;
+    bool saveAltLHEWeights;
     
     /// Running number of processed events
     ULong64_t nEventProcessed;

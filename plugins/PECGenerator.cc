@@ -1,24 +1,43 @@
 #include "PECGenerator.h"
 
 #include <FWCore/Framework/interface/EventSetup.h>
-#include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
+#include <FWCore/Utilities/interface/Exception.h>
+#include <FWCore/Utilities/interface/InputTag.h>
 
+/**/#include <iostream>
 
 using namespace edm;
 using namespace std;
 
 
 PECGenerator::PECGenerator(ParameterSet const &cfg):
-    saveLHEWeightVars(cfg.getParameter<bool>("saveLHEWeightVars"))
+    saveAltLHEWeights(cfg.getParameter<bool>("saveAltLHEWeights"))
 {
-    // Register required input data
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     
-    if (saveLHEWeightVars)
+    // LHEEventProduct must be read whenever an LHE-based sample is processed, not just when
+    //alternative LHE-level weights are requested. This is because process ID is normally read from
+    //the LHE event record. When processing samples without LHE (e.g. pure Pythia), an empty tag
+    //should be given to indicate that this information is not available.
+    InputTag lheEventInfoTag(cfg.getParameter<InputTag>("lheEventProduct"));
+    
+    if (lheEventInfoTag.label() != "")
     {
-        lheEventInfoToken =
-         consumes<LHEEventProduct>(cfg.getParameter<InputTag>("lheEventInfoProduct"));
+        readLHEEventRecord = true;
+        lheEventInfoToken = consumes<LHEEventProduct>(lheEventInfoTag);
+    }
+    else
+    {
+        readLHEEventRecord = false;
+        
+        if (saveAltLHEWeights)
+        {
+            cms::Exception excp("Configuration");
+            excp << "A valid value for lheEventProduct must be provided in order to access " <<
+              "alternative LHE-level weights.";
+            excp.raise();
+        }
     }
 }
 
@@ -27,11 +46,11 @@ void PECGenerator::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
     ParameterSetDescription desc;
     desc.add<InputTag>("generator", InputTag("generator"))->
-     setComment("Generator-level event information.");
-    desc.add<bool>("saveLHEWeightVars", true)->
-     setComment("Indicates whether LHE-level variations of event weights should be stored.");
-    desc.add<InputTag>("lheEventInfoProduct", InputTag("externalLHEProducer"))->
-     setComment("Tag to access per-event LHE information. Ignored if externalLHE is False.");
+      setComment("Tag to access GenEventInfoProduct.");
+    desc.add<InputTag>("lheEventProduct", InputTag("externalLHEProducer"))->
+      setComment("Tag to access LHEEventProduct. An empty value (\"\") is allowed.");
+    desc.add<bool>("saveAltLHEWeights", true)->
+      setComment("Requests saving alternative LHE-level weights.");
     
     descriptions.add("generator", desc);
 }
@@ -52,22 +71,30 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
     generatorInfo.Reset();
     
     
-    // Read generator information for the current event
+    // Read generator information for the current event and set process ID
     Handle<GenEventInfoProduct> generator;
     event.getByToken(generatorToken, generator);
     
     Handle<LHEEventProduct> lheEventInfo;
-    event.getByToken(lheEventInfoToken, lheEventInfo);
     
-    
-    // Process ID
-    generatorInfo.SetProcessId(lheEventInfo->hepeup().IDPRUP);
+    if (readLHEEventRecord)
+    {
+        event.getByToken(lheEventInfoToken, lheEventInfo);
+        generatorInfo.SetProcessId(lheEventInfo->hepeup().IDPRUP);
+    }
+    else
+    {
+        // Cannot read process ID as given in the LHE event record. Instead of a default, read one
+        //from GenEventInfoProduct
+        generatorInfo.SetProcessId(generator->signalProcessID());
+    }
+
     
     
     // Event weights
     generatorInfo.SetNominalWeight(generator->weight());
     
-    if (saveLHEWeightVars)
+    if (readLHEEventRecord and saveAltLHEWeights)
     {
         // Alternative LHE weights will be rescaled by the ratio between the nominal weight above
         //and the nominal LHE weight, as instructed here [1]

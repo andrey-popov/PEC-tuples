@@ -63,7 +63,7 @@ options.register(
 )
 options.register(
     'runOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Indicates whether the job processes real data'
+    'Indicates whether the job processes data or simulation'
 )
 options.register(
     'isPromptReco', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
@@ -74,8 +74,8 @@ options.register(
     VarParsing.varType.string, 'Name of the process that evaluated trigger decisions'
 )
 options.register(
-    'saveLHEWeightVars', True, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Save LHE-level variations of event weights'
+    'saveAltLHEWeights', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Save alternative LHE-level event weights'
 )
 options.register(
     'labelLHEEventProduct', 'externalLHEProducer', VarParsing.multiplicity.singleton,
@@ -201,8 +201,8 @@ paths = PathManager(process.elPath, process.muPath)
 if not runOnData:
     process.eventCounter = cms.EDAnalyzer('EventCounter',
         generator = cms.InputTag('generator'),
-        saveLHEWeightVars = cms.bool(options.saveLHEWeightVars),
-        lheEventInfoProduct = cms.InputTag(options.labelLHEEventProduct)
+        saveAltLHEWeights = cms.bool(options.saveAltLHEWeights),
+        lheEventProduct = cms.InputTag(options.labelLHEEventProduct)
     )
     paths.append(process.eventCounter)
 
@@ -348,8 +348,8 @@ paths.append(process.pecEventID, process.pecElectrons, process.pecMuons, process
 if not runOnData:
     process.pecGenerator = cms.EDAnalyzer('PECGenerator',
         generator = cms.InputTag('generator'),
-        saveLHEWeightVars = cms.bool(options.saveLHEWeightVars),
-        lheEventInfoProduct = cms.InputTag(options.labelLHEEventProduct)
+        saveAltLHEWeights = cms.bool(options.saveAltLHEWeights),
+        lheEventProduct = cms.InputTag(options.labelLHEEventProduct)
     )
     paths.append(process.pecGenerator)
 

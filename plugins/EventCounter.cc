@@ -44,15 +44,15 @@ double SignedKahanSum::GetSum() const
 
 
 EventCounter::EventCounter(edm::ParameterSet const &cfg):
-    saveLHEWeightVars(cfg.getParameter<bool>("saveLHEWeightVars")),
+    saveAltLHEWeights(cfg.getParameter<bool>("saveAltLHEWeights")),
     nEventProcessed(0)
 {
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<edm::InputTag>("generator"));
     
-    if (saveLHEWeightVars)
+    if (saveAltLHEWeights)
     {
         lheEventInfoToken =
-          consumes<LHEEventProduct>(cfg.getParameter<edm::InputTag>("lheEventInfoProduct"));
+          consumes<LHEEventProduct>(cfg.getParameter<edm::InputTag>("lheEventProduct"));
     }
 }
 
@@ -71,7 +71,7 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
     
     
     // Update sums of alternative event weights if requested
-    if (saveLHEWeightVars)
+    if (saveAltLHEWeights)
     {
         edm::Handle<LHEEventProduct> lheEventInfo;
         event.getByToken(lheEventInfoToken, lheEventInfo);
@@ -108,7 +108,7 @@ void EventCounter::endJob()
     
     std::vector<Float_t> bfMeanAltWeightCollection;
     
-    if (saveLHEWeightVars)
+    if (saveAltLHEWeights)
     {
         for (auto const &summator: sumAltWeightCollection)
             bfMeanAltWeightCollection.emplace_back(summator.GetSum() / nEventProcessed);
@@ -126,10 +126,10 @@ void EventCounter::fillDescriptions(edm::ConfigurationDescriptions &descriptions
     edm::ParameterSetDescription desc;
     desc.add<edm::InputTag>("generator", edm::InputTag("generator"))->
       setComment("Tag to access GenEventInfoProduct.");
-    desc.add<bool>("saveLHEWeightVars", true)->
+    desc.add<bool>("saveAltLHEWeights", true)->
       setComment("Requests saving mean values of alternative LHE-level weights.");
-    desc.add<edm::InputTag>("lheEventInfoProduct", edm::InputTag("externalLHEProducer"))->
-      setComment("Tag to access LHEEventProduct. Ignored if saveLHEWeightVars is False.");
+    desc.add<edm::InputTag>("lheEventProduct", edm::InputTag("externalLHEProducer"))->
+      setComment("Tag to access LHEEventProduct. Ignored if saveAltLHEWeights is False.");
     
     descriptions.add("eventCounter", desc);
 }
