@@ -70,6 +70,10 @@ options.register(
     'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
 )
 options.register(
+    'disableTriggerFilter', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+    'Switch off filtering on selected triggers'
+)
+options.register(
     'triggerProcessName', 'HLT', VarParsing.multiplicity.singleton,
     VarParsing.varType.string, 'Name of the process that evaluated trigger decisions'
 )
@@ -290,7 +294,7 @@ triggerNames = [
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
         triggers = cms.vstring(triggerNames),
-        filter = cms.bool(True),
+        filter = cms.bool(not options.disableTriggerFilter),
         savePrescales = cms.bool(True),
         triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName),
         hltPrescales = cms.InputTag('patTrigger'),
@@ -299,7 +303,7 @@ if runOnData:
 else:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
         triggers = cms.vstring(triggerNames),
-        filter = cms.bool(True),
+        filter = cms.bool(not options.disableTriggerFilter),
         savePrescales = cms.bool(False),
         triggerBits = cms.InputTag('TriggerResults', processName=options.triggerProcessName)
     )
