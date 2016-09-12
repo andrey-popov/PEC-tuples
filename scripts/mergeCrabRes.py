@@ -1,307 +1,366 @@
-#! /bin/env python
+#!/usr/bin/env python
 
 """Script to merge output ROOT files produced by a CRAB task.
 
-The current directory is seached for *.root files (though user can
-provide a mask to tighten selection of files).  They are merged into a
-small number of larger files (called "parts") that match approximately
-provided file size.  The script exploits the hadd utility from ROOT
-distribution. Because the utility does not cope well with a large number
-of input files (~500 or more), each part is not merged in one go but
-instead split into several blocks, each containing a sufficiently small
-number of source files.  Files in blocks are merged first, and then the
-blocks are merged into parts.  The merging is performed in several
-threads; their number can be adjusted by user.  Produced final files
-(as well as temporary ones) are placed in a newly created temporary
-directory; user can specify a parent directory in which the temporary
-one is created.
+This script searches the current directory for files whose names match a
+user-defined mask (".*\.root" by default), and the files are then merged
+into several larger files.  The grouping is done such that size of each
+produced file is close to a value specified by the user (2 GiB by
+default).
 
-After source files are merged, the script calculates the total number of
-events in them.  It is done by counting entries in a specified tree.
+Merging of ROOT files does not always work well for a large number of
+input files (hundreds), and for this reason the script does it in a
+recursive manner, limiting the total number of files that are merged in
+a single act.
 
-The script runs with python 2.7 or newer 2.X and requires pyROOT to be
-configured properly.  In a clean session of lxplus the installation can
-be performed with the following example commands:
-  export PATH=/afs/cern.ch/sw/lcg/external/Python/2.7.3/x86_64-slc5-gcc47-opt/bin/:$PATH
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/afs/cern.ch/sw/lcg/external/Python/2.7.3/x86_64-slc5-gcc47-opt/lib/
-  source /afs/cern.ch/sw/lcg/app/releases/ROOT/5.34.11/x86_64-slc5-gcc46-opt/root/bin/thisroot.sh
+The result of merging is validated by counting events in a given tree in
+the output files and comparing it to the total number of events in input
+files.
 """
 
-import sys
-import os
 import argparse
-import re
 import math
-import tempfile
 from multiprocessing import Pool
-from subprocess import call
+from operator import attrgetter
+import os
+import re
 import shutil
+from subprocess import call
+import sys
+import tempfile
+
 import ROOT
 
 
-class SourceFileName:
-    """Stores name of a source file together with the job index.
+class InputFile(object):
+    """Stores name of a source file together with size and job index.
     
-    A class to store the name of a source file.  It extracts the job
-    number from the name and stores it as a number for an easy access.
+    The job index is extracted from the file name.
     """
     
     # A static regular expression to parse the name of a source file
-    nameRegex = re.compile(r'.*_(\d+)\.root')
+    nameRegex = re.compile(r'^.*_(\d+)\.root$')
     
-    def __init__(self, fileName):
+    def __init__(self, fileName, fileSize):
         self.name = fileName
         
-        res = SourceFileName.nameRegex.match(fileName)
+        res = InputFile.nameRegex.match(fileName)
         if res is None:
-            raise RuntimeError('File name "' + fileName + '" does not seem as an output ROOT '\
-                'file delivered by CRAB.')
+            raise RuntimeError(
+                'Failed to extract job index from CRAB output file name "{}".'.format(fileName)
+            )
         
         self.jobIndex = int(res.group(1))
+        self.size = fileSize
 
 
-class FileNameBlock:
-    """Keeps track of files within a single block.
+class Partitioner(object):
+    """Class to split a list of files into parts by size and length.
     
-    The class lists all files in a single block within a part.  It is an
-    auxiliary data type needed to merge results of a CRAB task.  In a
-    general case results of individual jobs are merged into a small
-    number of files called parts instead of a single large file.  Jobs
-    within a single part are splitted among several blocks.  Jobs in
-    each block are merged in one go; then produced files for all blocks
-    within a part are merged.
+    Input files are grouped into "parts" such that the total size of
+    each part is close to the given target value.  Files assigned to
+    each part are further split into blocks such that number of files
+    in each block does not exceed the given limit.  Ordering of input
+    files is preserved.
     """
     
-    def __init__(self, partNumber_, blockNumber_):
-        """Initialize with indices of a part and a block.
+    def __init__(self, targetPartSize, maxBlockLength):
+        """Create new object giving target part size and block length.
         
-        Create a new instance providing indices of a part and a block
-        with the part.  The indices start from zero.
+        The part size is given in bytes.
         """
         
-        self.partNumber = partNumber_
-        self.blockNumber = blockNumber_
-        self.fileNames = []
-    
-    def add_file(self, fileName):
-        """Add name of a new source file to the list."""
+        self.targetPartSize = targetPartSize
+        self.maxBlockLength = maxBlockLength
         
-        self.fileNames.append(fileName)
+        self.parts = [[[]]]
+        self._curPart = self.parts[0]
+        self._curPartSize = 0
+        self._curBlock = self._curPart[0]
+        self._curBlockLength = 0
+    
+    
+    def _add_cur_part(self, inputFile):
+        """Add a file to the current part.
+        
+        A new block is created in the current part if needed.
+        """
+        
+        if self._curBlockLength == self.maxBlockLength:
+            # Create a new block within the current part
+            self._curPart.append([])
+            self._curBlock = self._curPart[-1]
+            self._curBlockLength = 0
+        
+        self._curBlock.append(inputFile)
+        self._curBlockLength += 1
+        self._curPartSize += inputFile.size
+    
+    
+    def _close_part(self):
+        """Close current part and add a new one."""
+        
+        self.parts.append([[]])
+        self._curPart = self.parts[-1]
+        self._curPartSize = 0
+        self._curBlock = self._curPart[0]
+        self._curBlockLength = 0
+    
+    
+    def add(self, inputFile):
+        """Add new input file.
+        
+        New blocks and parts are created as necessary.
+        """
+        
+        newPartSize = self._curPartSize + inputFile.size
+        if newPartSize > self.targetPartSize:
+            # Adding this file would overflow the current part, so a new
+            # part will be created.  Depending on what would give the
+            # total size closer to the target, add the file to current
+            # part or the new one
+            if newPartSize - self.targetPartSize > self.targetPartSize - self._curPartSize:
+                self._close_part()
+                self._add_cur_part(inputFile)
+            else:
+                self._add_cur_part(inputFile)
+                self._close_part()
+        
+        else:
+            # No need to start a new part
+            self._add_cur_part(inputFile)
+    
+    
+    def get_partitioning(self):
+        """Return created partitioning."""
+        
+        # It is possible to have an empty part at the end.  Remove it
+        # if present.
+        if len(self.parts[-1]) == 1 and len(self.parts[-1][0]) == 0:
+            del(self.parts[-1])
+            self._curPart = None
+            self._curBlock = None
+        
+        return self.parts
 
 
-def merge_files(outputFileName, sourceFiles):
+def count_events(inputFiles, treeName):
+    """Count events in the given tree in all input files."""
+    
+    counter = 0
+    
+    for inputFile in inputFiles:
+        f = ROOT.TFile(inputFile)
+        tree = f.Get(treeName)
+        
+        if not tree:
+            raise RuntimeError(
+                'File "{}" does not contain requested tree "{}".'.format(inputFile, treeName)
+            )
+        
+        counter += tree.GetEntries()
+        f.Close()
+    
+    return counter
+        
+
+def critical_error(formatString, *args, **kwargs):
+    """Report a critical error.
+    
+    Print an error message and exit the script with code 1.  The error
+    message is formed from the given format string and subsequent
+    arguments using method str.format.
+    """
+    
+    print 'Error:', formatString.format(*args, **kwargs)
+    sys.exit(1)
+
+
+def merge_files(outputFileName, inputFiles):
     """Merge provided ROOT files.
     
     Perform the task by calling the hadd program from ROOT distribution.
+    Alternatively, could have used TFileMerger class, but it is not
+    clear if it can run in a multithread environment.
     """
     
     # Make sure there is more than one source file
-    if len(sourceFiles) > 1:
+    if len(inputFiles) > 1:
         devnull = open('/dev/null', 'w')
-        res = call(['hadd', '-v0', outputFileName] + sourceFiles,
-            stdout = devnull, stderr = devnull)
+        res = call(['hadd', '-v0', outputFileName] + inputFiles,
+            stdout=devnull, stderr=devnull)
+        devnull.close()
         
         if res != 0:
             raise RuntimeError('Call to hadd terminated with an error.')
     else:
-        shutil.copyfile(sourceFiles[0], outputFileName)
+        shutil.copyfile(inputFiles[0], outputFileName)
+
 
 
 if __name__ == '__main__':
+    
     # Define supported arguments and options
-    optionParser = argparse.ArgumentParser(description = __doc__)
-    optionParser.add_argument(
+    argParser = argparse.ArgumentParser(
+        epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    argParser.add_argument(
         '-m', '--mask',
-        help = 'POSIX regular expression to specify input files', default = '.*\.root'
+        help='POSIX regular expression to specify input files', default='.*\.root'
     )
-    optionParser.add_argument(
-        '-s', '--max-size',
-        help = 'Maximal size of an output file (GiB). The output is splitted into several files '\
+    argParser.add_argument(
+        '-s', '--size',
+        help='Target size of an output file (GiB). The output is splitted into several files '
             'if needed',
-        type = float, default = 2.,
-        dest = 'max_size'
+        type=float, default=2., dest='target_size'
     )
-    optionParser.add_argument(
+    argParser.add_argument(
         '-o', '--out-dir',
-        help = 'Directory to store output. If it does not exist, it is created. All output is '\
-            'placed in a temporary directory created within the specified one',
-        default = '/tmp/', dest = 'out_dir'
+        help='Directory to store output. If it does not exist, it is created',
+        default='./', dest='out_dir'
     )
-    optionParser.add_argument(
-        '-n', '--num-threads', help = 'Number of threads to be used',
-        default = 6, type = int, dest = 'num_threads'
+    argParser.add_argument(
+        '-n', '--num-threads', help='Number of threads to be used',
+        type=int, default=5, dest='num_threads'
     )
-    optionParser.add_argument(
-        '-t', '--tree-name', help = 'Name of a tree to count events',
-        default = 'pecEventID/EventID', dest = 'tree_name'
+    argParser.add_argument(
+        '--max-files-to-merge', help='Maximal number of files to be merged in a single act',
+        type=int, default=256, dest='max_files_to_merge'
     )
-    optionParser.add_argument(
-        '-d', '--keep-tmp-files', help = 'Do not delete temporary files',
-        action = 'store_true', dest = 'keep_tmp_files'
+    argParser.add_argument(
+        '-t', '--tree-name', help='Name of a tree to count events',
+        default='pecEventID/EventID', dest='tree_name'
     )
-
+    argParser.add_argument(
+        '-k', '--keep-tmp-files', help='Do not delete temporary files',
+        action='store_true', dest='keep_tmp_files'
+    )
+    
     # Parse the arguments and options
-    args = optionParser.parse_args()
-
+    args = argParser.parse_args()
+    
     # The current directory only will be searched for the input files.
     # For this reason, the mask must not contain a slash.
     if args.mask.find('/') != -1:
-        print 'Error. The mask to choose input files must not contain a slash.'
-        sys.exit(1)
-
-
-    # Identify source files in the current directory.  Save their names
-    # and calculate their total size.
+        critical_error(
+            'Mask to choose input files ("{}") can only refer to the current directory.',
+            args.mask
+        )
+    
+    
+    # Identify input files in the current directory.  Order them by job
+    # index.
     maskRegex = re.compile(args.mask)
-    sourceFiles = []
-    totalSize = 0  # in bytes
-
+    inputFiles = []
+    
     for fileName in os.listdir('./'):
         if maskRegex.match(fileName) is None:
             continue
         
-        sourceFiles.append(SourceFileName(fileName))
-        totalSize += os.stat(fileName).st_size
-
-    # Sort the list of source files' names
-    sourceFiles.sort(key = lambda fileName: fileName.jobIndex)
-
-
-    # Find out the number of parts into which the output should be split
-    nParts = int(totalSize / float(args.max_size * 1024**3))
-
-    if nParts == 0:
-        nParts = 1
-
-    nFilesPerPart = int(math.ceil(len(sourceFiles) / float(nParts)))
-
-
-    # Specify explicitly what files are assigned to what part.  Files
-    # for one part will not be merged all in one go; instead, they will
-    # be split into blocks of size maxFilesToMerge (defined below), and
-    # each block will be merged independently.  Files are separated by
-    # part and by block.
-    maxFilesToMerge = 256
-    blocks = []
-
-    iPart = -1
-    iBlock = -1
-
-    for iJob in range(len(sourceFiles)):
-        # Check if a new part is started
-        if iJob % nFilesPerPart == 0:
-            iPart += 1
-            iBlock = -1
+        fileSize = os.stat(fileName).st_size  # in bytes
+        inputFiles.append(InputFile(fileName, fileSize))
+    
+    inputFiles.sort(key=attrgetter('jobIndex'))
+    
+    
+    # Split the list of input files into parts such that the total size
+    # of each part is close to the given target.  Files assigned to each
+    # part are further split into blocks with the given maximal size (in
+    # terms of the number of files), which will be merged independently.
+    partitioner = Partitioner(args.target_size * 1024**3, args.max_files_to_merge)
+    for inputFile in inputFiles:
+        partitioner.add(inputFile)
+    
+    parts = partitioner.get_partitioning()
+    
+    
+    # Prepare to merge files in the blocks.  First create a temporary
+    # output directory.
+    outputDir = args.out_dir
+    if not os.path.exists(outputDir):
+        os.makedirs(outputDir)
+    tmpDir = tempfile.mkdtemp(dir=outputDir)
+    tmpDir += '/'
         
-        # Check if a new block is started
-        if (iJob % nFilesPerPart) % maxFilesToMerge == 0:
-        # ^If the part number has just increased, this condition is also
-        # true
-            iBlock += 1
-            
-            blocks.append(FileNameBlock(iPart, iBlock))
-        
-        # Add file name to the current block
-        blocks[-1].add_file(sourceFiles[iJob].name)
-    
-    
-    # Prepare to merge files within the blocks.  First create a
-    # temporary output directory.
-    if not os.path.exists(args.out_dir):
-        os.makedirs(args.out_dir)
-    outputDir = tempfile.mkdtemp(dir = args.out_dir)
-    outputDir += '/'
-    
-    print 'Start merging of input files. Results will be placed in directory', outputDir + '.'
-    
-
     # Deduce the base name of output ROOT files: everything before the
     # job number.  It is used to name output files.
-    res = re.match(r'(.*)_\d+\.root', sourceFiles[0].name)
-    basename = res.group(1)
+    res = re.match(r'(.*)_\d+\.root', inputFiles[0].name)
+    baseOutputName = res.group(1)
     
     
-    # Create a thread pool to merge files within the blocks and submit
-    # jobs to it
-    pool = Pool(processes = args.num_threads)
+    # Merge files in the blocks
+    pool = Pool(processes=args.num_threads)
     
-    for block in blocks:
-        outputName = outputDir + basename + '_p' + str(block.partNumber + 1) + \
-            '_' + str(block.blockNumber + 1) + '.root'
-        pool.apply_async(merge_files, (outputName, block.fileNames))
+    for iPart, part in enumerate(parts):
+        for iBlock, block in enumerate(part):
+            outputName = tmpDir + '{baseName}_part{partNumber:d}_{blockNumber:d}.root'.format(
+                baseName=baseOutputName, partNumber=iPart + 1, blockNumber=iBlock + 1
+            )
+            pool.apply_async(merge_files, (outputName, [inputFile.name for inputFile in block]))
     
-    # Wait until the jobs are done
     pool.close()
     pool.join()
     
     
-    # Now merge the blocks to produce final files ("parts").  In order
-    # to do it, it is convenient to know which block are available for
-    # each part.
-    partToBlock = dict()
+    # Now merge the blocks to produce final files
+    partFileShortNames = []
+    pool = Pool(processes=args.num_threads)
     
-    for block in blocks:
-        if block.partNumber not in partToBlock:
-            partToBlock[block.partNumber] = []
-        
-        partToBlock[block.partNumber].append(block.blockNumber)
-    
-    for partNumber in partToBlock.iterkeys():
-        partToBlock[partNumber].sort()
-    
-    
-    # Perform the actual merging
-    pool = Pool(processes = args.num_threads)
-    
-    for partNumber in partToBlock.iterkeys():
-        nameFragment = outputDir + basename + '_p' + str(partNumber + 1)
-        if nParts > 1:
-            outputName = nameFragment + '.root'
+    for iPart, part in enumerate(parts):
+        if len(parts) > 1:
+            outputShortName = '{baseName}.part{partNumber:d}.root'.format(
+                baseName=baseOutputName, partNumber=iPart + 1
+            )
         else:
-            outputName = outputDir + basename + '.root'
+            outputShortName = baseOutputName + '.root'
         
-        sourceFiles = []
+        partFileShortNames.append(outputShortName)
+        outputName = tmpDir + outputShortName
         
-        for blockNumber in partToBlock[partNumber]:
-            sourceFiles.append(nameFragment + '_' + str(blockNumber + 1) + '.root')
+        blockFiles = []
+        for iBlock in range(len(part)):
+            blockFiles.append(
+                tmpDir + '{baseName}_part{partNumber:d}_{blockNumber:d}.root'.format(
+                    baseName=baseOutputName, partNumber=iPart + 1, blockNumber=iBlock + 1
+                )
+            )
         
-        pool.apply_async(merge_files, (outputName, sourceFiles))
+        pool.apply_async(merge_files, (outputName, blockFiles))
     
-    # Wait for the jobs to finish
     pool.close()
     pool.join()
     
     
-    # Delete temporary files and make a list of final files
-    finalFileNames = []
+    # Move merged files to the output directory and delete the temporary
+    # directory with all temporary files
+    for shortName in partFileShortNames:
+        if os.path.exists(outputDir + shortName):
+            critical_error(
+                'Cannot create output file "{}" because a file with such name already exists.',
+                outputDir + shortName
+            )
+        shutil.move(tmpDir + shortName, outputDir + shortName)
     
-    for partNumber in partToBlock.iterkeys():
-        nameFragment = outputDir + basename + '_p' + str(partNumber + 1)
-        
-        if nParts > 1:
-            finalFileNames.append(nameFragment + '.root')
-        else:
-            finalFileNames.append(outputDir + basename + '.root')
-        
-        if not args.keep_tmp_files:
-            for blockNumber in partToBlock[partNumber]:
-                os.remove(nameFragment + '_' + str(blockNumber + 1) + '.root')
+    if not args.keep_tmp_files:
+        shutil.rmtree(tmpDir)
     
     
     # Print out names of the final files
-    print 'Results of all jobs have been merged into the following files:'
-    
-    for fileName in finalFileNames:
+    print 'Results of {} jobs have been merged into the following files:'.format(len(inputFiles))
+    outputFiles = [outputDir + shortName for shortName in partFileShortNames]
+    for fileName in outputFiles:
         print '', fileName
     
     
-    # Count events in the produced files
-    nTotalEvents = 0
+    # Count events in input and processed files
+    nEventInput = count_events([inputFile.name for inputFile in inputFiles], args.tree_name)
+    nEventMerged = count_events(outputFiles, args.tree_name)
     
-    for fileName in finalFileNames:
-        finalFile = ROOT.TFile(fileName)
-        tree = finalFile.Get(args.tree_name)
-        nTotalEvents += tree.GetEntries()
-        finalFile.Close()
-    
-    print 'Total number of events in these files:', nTotalEvents
+
+    if nEventInput != nEventMerged:
+        critical_error(
+            'Total number of events in input and merged files do not agree ({} vs {}).',
+            nEventInput, nEventMerged
+        )
+    else:
+        print 'Total number of events in these files:', nEventMerged
