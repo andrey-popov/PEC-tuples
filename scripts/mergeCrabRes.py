@@ -260,6 +260,9 @@ if __name__ == '__main__':
         fileSize = os.stat(fileName).st_size  # in bytes
         inputFiles.append(InputFile(fileName, fileSize))
     
+    if not inputFiles:
+        critical_error('Found no files whose name match mask "{}".', args.mask)
+    
     inputFiles.sort(key=attrgetter('jobIndex'))
     
     
