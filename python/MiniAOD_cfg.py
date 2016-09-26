@@ -62,6 +62,10 @@ options.register(
     'pt > 30 GeV/c'
 )
 options.register(
+    'processIDs', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'Comma-separated list of process IDs to select in simulation'
+)
+options.register(
     'runOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Indicates whether the job processes data or simulation'
 )
@@ -198,6 +202,15 @@ class PathManager:
                 p += m
 
 paths = PathManager(process.elPath, process.muPath)
+
+
+# Apply filtering on process IDs
+if not runOnData and options.processIDs:
+    process.processIDFilter = cms.EDFilter('ProcessIDFilter',
+        lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
+        processIDs = cms.vint32([int(i) for i in options.processIDs.split(',')])
+    )
+    paths.append(process.processIDFilter)
 
 
 # Include an event counter before any selection is applied.  It is only

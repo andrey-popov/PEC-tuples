@@ -5,7 +5,6 @@
 #include <FWCore/Utilities/interface/Exception.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 
-/**/#include <iostream>
 
 using namespace edm;
 using namespace std;
