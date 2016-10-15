@@ -255,26 +255,8 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     )
     
     
-    # Jet ID [1].  Accessors to energy fractions in pat::Jet take into
-    # account JEC, and thus there is no need to unapply the corrections.
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID?rev=94#Recommendations_for_13_TeV_data
-    jetLooseID = (
-        # Common block of requirements for |eta| < 3
-        'abs(eta) <= 3. & (chargedMultiplicity + neutralMultiplicity) > 1 & ' +
-         'neutralHadronEnergyFraction < 0.99 & neutralEmEnergyFraction < 0.99 & ' +
-            # Additional requirements for |eta| < 2.4
-            '(chargedHadronEnergyFraction > 0. & chargedMultiplicity > 0 & ' +
-             'chargedEmEnergyFraction < 0.99' +
-            ' | ' +
-            # There are no additional requirements for 2.4 < |eta| < 3.
-            'abs(eta) >= 2.4)' +
-        ' | ' +
-        # Requirements for the HF region
-        'abs(eta) > 3. & neutralMultiplicity > 10 & neutralEmEnergyFraction < 0.90'
-    )
-    
-    # Specify additional selection to be evaluated
-    jetQualityCuts = cms.vstring(jetLooseID)
+    # Additional selection to be evaluated (empty at the moment)
+    jetQualityCuts = cms.vstring()
     
     
     return recorrectedJetsLabel, jetQualityCuts

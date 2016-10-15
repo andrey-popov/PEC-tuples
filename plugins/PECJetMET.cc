@@ -198,18 +198,41 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         
 
         if (not runOnData)
-        // These are variables is from the generator tree, but it's more convenient to
-        //calculate it here
         {
             storeJet.SetFlavour(j.hadronFlavour());
             storeJet.SetBit(0, bool(j.userInt("hasGenMatch")));
         }
         
         
-        // User-difined selectors if any. The first bit has already been used for the match with
-        //generator-level jet
+        // Loose PF jet ID [1]. Accessors to energy factions take into account JEC, so there is no
+        //need to undo the corrections.
+        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID?rev=95#Recommendations_for_13_TeV_data
+        bool passPFID = false;
+        double const absEta = std::abs(rawP4.Eta());
+        
+        if (absEta <= 2.7)
+        {
+            bool const commonCriteria = (j.neutralHadronEnergyFraction() < 0.99 and
+              j.neutralEmEnergyFraction() < 0.99 and
+              (j.chargedMultiplicity() + j.neutralMultiplicity() > 1));
+            
+            if (absEta <= 2.4)
+                passPFID = (commonCriteria and j.chargedHadronEnergyFraction() > 0. and
+                  j.chargedMultiplicity() > 0 and j.chargedEmEnergyFraction() < 0.99);
+            else
+                passPFID = commonCriteria;
+        }
+        else if (absEta <= 3.)
+            passPFID = (j.neutralEmEnergyFraction() < 0.9 and j.neutralMultiplicity() > 2);
+        else
+            passPFID = (j.neutralEmEnergyFraction() < 0.9 and j.neutralMultiplicity() > 10);
+        
+        storeJet.SetBit(1, passPFID);
+        
+        
+        // User-defined selectors if any. The first two bits have already been used.
         for (unsigned i = 0; i < jetSelectors.size(); ++i)
-            storeJet.SetBit(i + 1, jetSelectors[i](j));
+            storeJet.SetBit(i + 2, jetSelectors[i](j));
         
         
         // The jet is set up. Add it to the vector
