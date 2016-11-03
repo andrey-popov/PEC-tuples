@@ -144,7 +144,9 @@ if minNumJets > 0:
 
 
 # Define the input files
-process.source = cms.Source('PoolSource')
+process.source = cms.Source('PoolSource',
+    inputCommands = cms.untracked.vstring('keep *', 'drop LHERunInfoProduct_*_*_*')
+)
 
 if len(options.inputFiles) > 0:
     process.source.fileNames = cms.untracked.vstring(options.inputFiles)
