@@ -6,7 +6,7 @@
 pec::Jet::Jet() noexcept:
     CandidateWithID(),
     corrFactor(0), jecUncertainty(0), jerUncertainty(0),
-    bTags{0, 0}, cTags{0, 0}, secVertexMass(0),
+    bTags{0, 0}, cTags{0, 0},
     pileUpMVA(0),
     area(0),
     charge(0),
@@ -22,7 +22,6 @@ void pec::Jet::Reset()
     corrFactor = 0;
     jecUncertainty = jerUncertainty = 0;
     bTags[0] = bTags[1] = cTags[0] = cTags[1] = 0;
-    secVertexMass = 0;
     pileUpMVA = 0;
     area = 0;
     charge = 0;
@@ -58,17 +57,6 @@ void pec::Jet::SetBTag(BTagAlgo algo, float value)
 void pec::Jet::SetCTag(CTagAlgo algo, float value)
 {
     cTags[unsigned(algo)] = value;
-}
-
-
-void pec::Jet::SetSecVertexMass(float mass)
-{
-    // The mass is set to a negative value when there is no secondary vertex associated with the
-    //jet. In this case reset the mass to zero to allow a better compression.
-    if (mass < 0.)
-        mass = 0.;
-    
-    secVertexMass = mass;
 }
 
 
@@ -129,12 +117,6 @@ float pec::Jet::BTag(BTagAlgo algo) const
 float pec::Jet::CTag(CTagAlgo algo) const
 {
     return cTags[unsigned(algo)];
-}
-
-
-float pec::Jet::SecVertexMass() const
-{
-    return secVertexMass;
 }
 
 

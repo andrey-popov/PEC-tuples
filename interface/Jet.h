@@ -54,9 +54,6 @@ public:
     /// Sets value of the given c-tagging discriminator
     void SetCTag(CTagAlgo algo, float value);
     
-    /// Sets mass of the secondary vertex associated with the jet
-    void SetSecVertexMass(float mass);
-    
     /// Sets value of the pile-up discriminator
     void SetPileUpID(float pileUpMVA);
     
@@ -122,13 +119,6 @@ public:
     /// Returns value of the pile-up discriminator
     float PileUpID() const;
     
-    /**
-     * \brief Returns mass of the secondary vertex associated with the jet
-     * 
-     * When there is no secondary vertex associated with the jet, the method returns 0.
-     */
-    float SecVertexMass() const;
-    
     /// Returns jet area
     float Area() const;
     
@@ -184,9 +174,6 @@ private:
     
     /// Values of b-tagging  and c-tagging discriminators
     Float_t bTags[2], cTags[2];
-    
-    /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
-    Float_t secVertexMass;
     
     /// Value of an MVA discriminator against pile-up
     Float_t pileUpMVA;

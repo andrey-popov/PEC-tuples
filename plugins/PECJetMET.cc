@@ -158,10 +158,6 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         storeJet.SetCTag(pec::Jet::CTagAlgo::CvsB, j.bDiscriminator("pfCombinedCvsBJetTags"));
         storeJet.SetCTag(pec::Jet::CTagAlgo::CvsL, j.bDiscriminator("pfCombinedCvsLJetTags"));
         
-        // Mass of the secondary vertex is available as userFloat [1]
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookMiniAOD2015?rev=92#Jets
-        storeJet.SetSecVertexMass(j.userFloat("vtxMass"));
-        
         // Save pileup ID
         //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=29#Information_for_13_TeV_data_anal
         storeJet.SetPileUpID(j.userFloat("pileupJetId:fullDiscriminant"));
