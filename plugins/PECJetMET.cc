@@ -206,7 +206,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         
         // Loose PF jet ID [1]. Accessors to energy factions take into account JEC, so there is no
         //need to undo the corrections.
-        //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetID?rev=95#Recommendations_for_13_TeV_data
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016?rev=1
         bool passPFID = false;
         double const absEta = std::abs(rawP4.Eta());
         
@@ -223,9 +223,10 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
                 passPFID = commonCriteria;
         }
         else if (absEta <= 3.)
-            passPFID = (j.neutralEmEnergyFraction() < 0.9 and j.neutralMultiplicity() > 2);
+            passPFID = (j.neutralMultiplicity() > 2 and
+              j.neutralHadronEnergyFraction() < 0.98 and j.neutralEmEnergyFraction() > 0.01);
         else
-            passPFID = (j.neutralEmEnergyFraction() < 0.9 and j.neutralMultiplicity() > 10);
+            passPFID = (j.neutralMultiplicity() > 10 and j.neutralEmEnergyFraction() < 0.9);
         
         storeJet.SetBit(1, passPFID);
         
