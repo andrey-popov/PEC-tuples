@@ -3,7 +3,6 @@
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
-
 using namespace edm;
 
 
@@ -37,6 +36,9 @@ void PECEventID::analyze(edm::Event const &event, edm::EventSetup const &)
     eventId.SetRunNumber(event.id().run());
     eventId.SetEventNumber(event.id().event());
     eventId.SetLumiSectionNumber(event.luminosityBlock());
+    
+    if (event.isRealData())
+        eventId.SetBunchCrossing(event.bunchCrossing());
     
     
     // Fill the output tree

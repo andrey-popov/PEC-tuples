@@ -22,26 +22,32 @@ public:
     EventID &operator=(EventID const &) = default;
     
 public:
-    /// Resets the object to a state right after the default initialisation
+    /// Resets the object to a state right after the default initialization
     void Reset();
     
     /// Sets run number
-    void SetRunNumber(unsigned long long run);
+    void SetRunNumber(unsigned long run);
     
-    /// Sets number of the luminosity secion
-    void SetLumiSectionNumber(unsigned long long lumi);
+    /// Sets number of the luminosity section
+    void SetLumiSectionNumber(unsigned long lumi);
     
     /// Sets event number
     void SetEventNumber(unsigned long long event);
     
-    /// Returns run number
-    unsigned long long RunNumber() const;
+    /// Sets bunch crossing number
+    void SetBunchCrossing(unsigned bunchCrossing);
     
-    /// Returns number of the luminosity secion
-    unsigned long long LumiSectionNumber() const;
+    /// Returns run number
+    unsigned long RunNumber() const;
+    
+    /// Returns number of the luminosity section
+    unsigned long LumiSectionNumber() const;
     
     /// Returns event number
     unsigned long long EventNumber() const;
+    
+    /// Returns bunch crossing number
+    unsigned BunchCrossing() const;
     
 private:
     /// Run number
@@ -52,5 +58,12 @@ private:
     
     /// Event number within the run
     ULong64_t event;
+    
+    /**
+     * \brief Bunch crossing number
+     * 
+     * In simulation this field is expected to be set to zero.
+     */
+    UShort_t bunchCrossing;
 };
 }  // end of namespace pec
