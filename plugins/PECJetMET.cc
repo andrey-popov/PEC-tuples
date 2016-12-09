@@ -259,10 +259,6 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
     storeMET.SetPhi(met.shiftedPhi(pat::MET::NoShift, pat::MET::Type1));
     storeMETs.emplace_back(storeMET);
     
-    // An empty entry is put for backward compatibility
-    storeMET.Reset();
-    storeMETs.emplace_back(storeMET);
-    
     
     // Save MET with systematical variations
     if (not runOnData)
