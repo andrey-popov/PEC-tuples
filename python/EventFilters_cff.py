@@ -27,7 +27,7 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     Return value:
         None.
     
-    [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=99
+    [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=103
     """
     
     # Decisions of most filters are stored in MiniAOD as trigger

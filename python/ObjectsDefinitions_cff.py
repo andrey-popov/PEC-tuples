@@ -225,7 +225,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     
     # Reapply JEC if requested [1].  The corrections are read from the
     # current global tag.
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=134#CorrPatJets
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=139#CorrPatJets
     if reapplyJEC:
         jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
         if runOnData:
@@ -247,7 +247,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     process.analysisPatJets = cms.EDFilter('JERCJetSelector',
         src = cms.InputTag(recorrectedJetsLabel),
         jetTypeLabel = cms.string('AK4PFchs'),
-        preselection = cms.string('abs(eta) < 5.'),
+        preselection = cms.string('abs(eta) < 5.2'),
         minPt = cms.double(20.),
         includeJERCVariations = cms.bool(not runOnData),
         genJets = cms.InputTag('slimmedGenJets'),
@@ -286,8 +286,8 @@ def define_METs(process, runOnData=False):
     new collection.
     """
     
-    # Recalculate MET corrections similar to what is done in [1]
-    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
+    # Recalculate MET corrections [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=57#Instructions_for_8_0_X_X_20_for
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
         runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD(
