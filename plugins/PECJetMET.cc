@@ -195,7 +195,8 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
 
         if (not runOnData)
         {
-            storeJet.SetFlavour(j.hadronFlavour());
+            storeJet.SetFlavour(j.hadronFlavour(), j.partonFlavour(),
+              (j.genParton() ? j.genParton()->pdgId() : 0));
             storeJet.SetBit(0, bool(j.userInt("hasGenMatch")));
         }
         
