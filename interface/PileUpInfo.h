@@ -31,6 +31,9 @@ public:
     /// Sets average angular pt density
     void SetRho(float rho);
     
+    /// Sets average angular pt density computed in the central region
+    void SetRhoCentral(float rho);
+    
     /**
      * \brief Sets the true number of pile-up interactions
      * 
@@ -51,10 +54,13 @@ public:
     /// Returns average angular pt density, GeV
     float Rho() const;
     
+    /// Returns average angular pt density computed in the central region only
+    float RhoCentral() const;
+    
     /**
      * \brief Returns the true number of pile-up interactions
      * 
-     * Actually, this is instantaneous luminosity measured in terms of the number if pile-up
+     * Actually, this is instantaneous luminosity measured in terms of the number of pile-up
      * interactions in a bunch crossing. When used with real data, the method is expected to return
      * a zero.
      */
@@ -71,8 +77,8 @@ private:
     /// Number of good reconstructed primary vertices
     UChar_t numPV;
     
-    /// Average angular pt density, GeV
-    Float_t rho;
+    /// Average angular pt densities, GeV
+    Float_t rho, rhoCentral;
     
     /**
      * \brief "True" number of pile-up interactions

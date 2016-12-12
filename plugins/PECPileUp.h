@@ -47,7 +47,7 @@ private:
     edm::EDGetTokenT<reco::VertexCollection> primaryVerticesToken;
     
     /// Rho (mean angular pt density)
-    edm::EDGetTokenT<double> rhoToken;
+    edm::EDGetTokenT<double> rhoToken, rhoCentralToken;
     
     /// Indicates whether an event is data or simulation
     bool const runOnData;

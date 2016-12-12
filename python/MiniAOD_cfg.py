@@ -355,6 +355,7 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
     rho = cms.InputTag('fixedGridRhoFastjetAll'),
+    rhoCentral = cms.InputTag('fixedGridRhoFastjetCentral'),
     runOnData = cms.bool(runOnData),
     puInfo = cms.InputTag('slimmedAddPileupInfo')
 )

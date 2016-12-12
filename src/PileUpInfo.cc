@@ -3,7 +3,7 @@
 
 pec::PileUpInfo::PileUpInfo() noexcept:
     numPV(0),
-    rho(0),
+    rho(0), rhoCentral(0),
     trueNumPU(0),
     inTimeNumPU(0)
 {}
@@ -13,6 +13,7 @@ void pec::PileUpInfo::Reset()
 {
     numPV = 0;
     rho = 0;
+    rhoCentral = 0;
     trueNumPU = 0;
     inTimeNumPU = 0;
 }
@@ -27,6 +28,12 @@ void pec::PileUpInfo::SetNumPV(unsigned numPV_)
 void pec::PileUpInfo::SetRho(float rho_)
 {
     rho = rho_;
+}
+
+
+void pec::PileUpInfo::SetRhoCentral(float rho_)
+{
+    rhoCentral = rho_;
 }
 
 
@@ -51,6 +58,12 @@ unsigned pec::PileUpInfo::NumPV() const
 float pec::PileUpInfo::Rho() const
 {
     return rho;
+}
+
+
+float pec::PileUpInfo::RhoCentral() const
+{
+    return rhoCentral;
 }
 
 

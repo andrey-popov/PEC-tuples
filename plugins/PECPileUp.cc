@@ -20,6 +20,7 @@ PECPileUp::PECPileUp(ParameterSet const &cfg):
      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
     puSummaryToken = consumes<View<PileupSummaryInfo>>(cfg.getParameter<InputTag>("puInfo"));
     rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
+    rhoCentralToken = consumes<double>(cfg.getParameter<InputTag>("rhoCentral"));
 }
 
 
@@ -30,6 +31,8 @@ void PECPileUp::fillDescriptions(ConfigurationDescriptions &descriptions)
      setComment("Collection of reconstructed primary vertices.");
     desc.add<InputTag>("rho", InputTag("fixedGridRhoFastjetAll"))->
      setComment("Rho (mean angular pt density).");
+    desc.add<InputTag>("rhoCentral", InputTag("fixedGridRhoFastjetCentral"))->
+     setComment("Rho in the central region.");
     desc.add<bool>("runOnData")->
      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
@@ -70,10 +73,13 @@ void PECPileUp::analyze(Event const &event, EventSetup const &)
     
     
     // Save rho
-    Handle<double> rho;
-    event.getByToken(rhoToken, rho);
+    Handle<double> rho, rhoCentral;
     
+    event.getByToken(rhoToken, rho);
     puInfo.SetRho(*rho);
+    
+    event.getByToken(rhoCentralToken, rhoCentral);
+    puInfo.SetRhoCentral(*rhoCentral);
     
     
     // Save pile-up information as simulated
