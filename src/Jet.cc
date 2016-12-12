@@ -9,6 +9,7 @@ pec::Jet::Jet() noexcept:
     corrFactor(0), jecUncertainty(0), jerUncertainty(0),
     bTags{0, 0}, cTags{0, 0},
     pileUpMVA(0),
+    qgTag(0),
     area(0),
     charge(0),
     pullAngle(0),
@@ -24,6 +25,7 @@ void pec::Jet::Reset()
     jecUncertainty = jerUncertainty = 0;
     bTags[0] = bTags[1] = cTags[0] = cTags[1] = 0;
     pileUpMVA = 0;
+    qgTag = 0;
     area = 0;
     charge = 0;
     pullAngle = 0;
@@ -64,6 +66,12 @@ void pec::Jet::SetCTag(CTagAlgo algo, float value)
 void pec::Jet::SetPileUpID(float pileUpMVA_)
 {
     pileUpMVA = pileUpMVA_;
+}
+
+
+void pec::Jet::SetQGTag(float value)
+{
+    qgTag = value;
 }
 
 
@@ -134,6 +142,12 @@ float pec::Jet::CTag(CTagAlgo algo) const
 float pec::Jet::PileUpID() const
 {
     return pileUpMVA;
+}
+
+
+float pec::Jet::QGTag() const
+{
+    return qgTag;
 }
 
 

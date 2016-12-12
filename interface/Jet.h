@@ -75,6 +75,9 @@ public:
     /// Sets value of the pile-up discriminator
     void SetPileUpID(float pileUpMVA);
     
+    /// Sets value of the quark-gluon discriminator
+    void SetQGTag(float value);
+    
     /// Sets jet area
     void SetArea(float area);
     
@@ -136,6 +139,9 @@ public:
     /// Returns value of the pile-up discriminator
     float PileUpID() const;
     
+    /// Returns value of the quark-gluon discriminator
+    float QGTag() const;
+    
     /// Returns jet area
     float Area() const;
     
@@ -189,6 +195,9 @@ private:
     
     /// Value of an MVA discriminator against pile-up
     Float_t pileUpMVA;
+    
+    /// Value of quark-gluon discriminator
+    Float_t qgTag;
     
     /// Jet area
     Float_t area;
