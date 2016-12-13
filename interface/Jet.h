@@ -220,9 +220,9 @@ private:
      * \brief Jet flavours according to multiple definitions, which are encoded in a 16-bit number
      * 
      * Flavour according to each definition is represented by a group of four bits. The number they
-     * form is set to 0 for gluons and to flavour + 6 for quarks and unidentified flavour. Starting
-     * from lower bits, definitions are written in the following order: hadron, parton, and ME
-     * parton flavour. They are described in enumeration FlavourType.
+     * form is set to 15 for gluons, flavour + 6 for quarks, and remains 0 for unidentified
+     * flavour. Starting from lower bits, definitions are written in the following order: hadron,
+     * parton, and ME parton flavour. They are described in enumeration FlavourType.
      */
     UShort_t flavours;
 };

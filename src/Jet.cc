@@ -101,9 +101,28 @@ void pec::Jet::SetFlavour(int hadronFlavour, int partonFlavour /*= 0*/, int meFl
         throw std::runtime_error("Jet::SetFlavour: Illegal value for jet flavour is given.");
     
     
-    unsigned const hadronFlavourEncoded = (hadronFlavour == 21) ? 0 : hadronFlavour + 6;
-    unsigned const partonFlavourEncoded = (partonFlavour == 21) ? 0 : partonFlavour + 6;
-    unsigned const meFlavourEncoded = (meFlavour == 21) ? 0 : meFlavour + 6;
+    unsigned hadronFlavourEncoded, partonFlavourEncoded, meFlavourEncoded;
+    
+    if (hadronFlavour == 21)
+        hadronFlavourEncoded = 0xF;
+    else if (hadronFlavour != 0)
+        hadronFlavourEncoded = hadronFlavour + 6;
+    else
+        hadronFlavourEncoded = 0;
+    
+    if (partonFlavour == 21)
+        partonFlavourEncoded = 0xF;
+    else if (partonFlavour != 0)
+        partonFlavourEncoded = partonFlavour + 6;
+    else
+        partonFlavourEncoded = 0;
+    
+    if (meFlavour == 21)
+        meFlavourEncoded = 0xF;
+    else if (meFlavour != 0)
+        meFlavourEncoded = meFlavour + 6;
+    else
+        meFlavourEncoded = 0;
     
     flavours = hadronFlavourEncoded + (partonFlavourEncoded<<4) + (meFlavourEncoded<<8);
 }
@@ -173,8 +192,10 @@ int pec::Jet::Flavour(FlavourType type /*= FlavourType::Hadron*/) const
 {
     unsigned const encodedFlavour = flavours>>(4 * unsigned(type)) & 0xF;
     
-    if (encodedFlavour == 0)
+    if (encodedFlavour == 0xF)
         return 21;
+    else if (encodedFlavour == 0)
+        return 0;
     else
         return encodedFlavour - 6;
 }
