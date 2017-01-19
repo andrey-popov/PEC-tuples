@@ -112,14 +112,14 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Provide a default global tag if user has not given any.  Chosen
-# following recommendations of the JERC group [1].
-# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=119
+# Provide a default global tag if user has not given any.  At the moment
+# chosen according to [1].
+# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=585
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = '80X_dataRun2_Prompt_ICHEP16JEC_v0'
+        options.globalTag = '80X_dataRun2_2016SeptRepro_v6'
     else:
-        options.globalTag = '80X_mcRun2_asymptotic_2016_miniAODv2_v1'
+        options.globalTag = '80X_mcRun2_asymptotic_2016_TrancheIV_v7'
     
     print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
 
@@ -159,7 +159,7 @@ else:
     else:
         # from PhysicsTools.PatAlgos.patInputFiles_cff import filesRelValTTbarPileUpMINIAODSIM
         # process.source.fileNames = filesRelValTTbarPileUpMINIAODSIM
-        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_backup_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/00000/000E5EF2-B2BA-E611-B5A3-B499BAAC0068.root')
+        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root')
 
 # process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
