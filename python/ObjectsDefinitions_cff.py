@@ -46,31 +46,47 @@ def define_electrons(process):
     )
     
     
-    # Labels to access embedded cut-based ID
-    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=31
-    eleEmbeddedCutBasedIDLabels = ['cutBasedElectronID-Spring15-25ns-V1-standalone-' + p
-        for p in ['veto', 'loose', 'medium', 'tight']]
+    # Labels to access embedded cut-based ID.  They are not used at the
+    # moment, and all IDs are evaluated on the fly.
+    eleEmbeddedCutBasedIDLabels = []
     
     
-    # Labels of maps with electron ID.  No maps are needed for the
-    # cut-based ID since its decisions are embedded in pat::Electron.
-    eleCutBasedIDMaps = []
+    # Setup VID for cut-based ID and trigger-emulating preselection
+    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=41
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
+        setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
+    switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
+    
+    # Delete module for MVA ID, which is added automatically but will
+    # cause problems in initialization because of not found weight
+    # files.  It is defined in this file [1].
+    # [1] https://github.com/ikrav/cmssw/blob/egm_id_80X_v2/RecoEgamma/ElectronIdentification/python/ElectronMVAValueMapProducer_cfi.py
+    del process.electronMVAValueMapProducer
+    
+    
+    for idModule in [
+        'cutBasedElectronID_Summer16_80X_V1_cff',
+        'cutBasedElectronHLTPreselecition_Summer16_V1_cff'
+    ]:
+        setupAllVIDIdsInModule(
+            process,
+            'RecoEgamma.ElectronIdentification.Identification.' +
+            idModule, setupVIDElectronSelection
+        )
+    
+    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
+    
+    
+    # Labels of maps with electron ID
+    eleIDProducer = 'egmGsfElectronIDs'
+    eleCutBasedIDMaps = [eleIDProducer + ':cutBasedElectronID-Summer16-80X-V1-' + p
+        for p in ['veto', 'loose', 'medium', 'tight']] + \
+        [eleIDProducer + ':cutBasedElectronHLTPreselection-Summer16-V1']
     eleMVAIDMaps = []
     
     
-    # Additional selections to be evaluated
-    eleQualityCuts = cms.vstring(
-        # Trigger-emulating preselection [1], referenced from [2]
-        # [1] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1645/2/1/1.html
-        # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MultivariateElectronIdentificationRun2?rev=26#Triggering_electron_MVA_details
-        'pt > 15. & \
-         ((abs(superCluster.eta) < 1.4442 & full5x5_sigmaIetaIeta < 0.012 & hcalOverEcal < 0.09 & \
-          ecalPFClusterIso / pt < 0.37 & hcalPFClusterIso / pt < 0.25 & dr03TkSumPt / pt < 0.18 & \
-          abs(deltaEtaSuperClusterTrackAtVtx) < 0.0095 & \
-          abs(deltaPhiSuperClusterTrackAtVtx) < 0.065) | \
-         (abs(superCluster.eta) > 1.5660 & full5x5_sigmaIetaIeta < 0.033 & hcalOverEcal < 0.09 & \
-          ecalPFClusterIso / pt < 0.45 & hcalPFClusterIso / pt < 0.28 & dr03TkSumPt / pt < 0.18))'
-    )
+    # Additional selections to be evaluated (nothing at the moment)
+    eleQualityCuts = cms.vstring()
     
     
     # Define electrons to be used for the loose event selection in the

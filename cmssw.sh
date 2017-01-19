@@ -17,3 +17,7 @@ git cms-merge-topic cms-met:METRecipe_8020
 # Additional MET filters [2]
 # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=103#How_to_run_the_Bad_Charged_Hadro
 git cms-merge-topic -u cms-met:fromCMSSW_8_0_20_postICHEPfilter
+
+# Updated cut-based electron ID [3]
+# [3] https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2?rev=41#Recipe_for_regular_users_for_8_0
+git cms-merge-topic ikrav:egm_id_80X_v2

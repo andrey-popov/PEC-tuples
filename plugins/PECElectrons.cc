@@ -1,5 +1,7 @@
 #include "PECElectrons.h"
 
+#include <DataFormats/VertexReco/interface/Vertex.h>
+#include <FWCore/Utilities/interface/EDMException.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/ParameterSet/interface/FileInPath.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
@@ -19,6 +21,8 @@ PECElectrons::PECElectrons(ParameterSet const &cfg):
     // Register required input data
     electronToken = consumes<View<pat::Electron>>(cfg.getParameter<InputTag>("src"));
     rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
+    primaryVerticesToken =
+      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
     
     for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("boolIDMaps"))
         boolIDMapTokens.emplace_back(consumes<ValueMap<bool>>(tag));
@@ -38,20 +42,22 @@ void PECElectrons::fillDescriptions(ConfigurationDescriptions &descriptions)
     ParameterSetDescription desc;
     desc.add<InputTag>("src")->setComment("Source collection of electrons.");
     desc.add<InputTag>("rho", InputTag("fixedGridRhoFastjetAll"))->
-     setComment("Rho (mean angular pt density).");
+      setComment("Rho (mean angular pt density).");
     desc.add<FileInPath>("effAreas")->
-     setComment("Data file with effective areas for electron isolation.");
+      setComment("Data file with effective areas for electron isolation.");
+    desc.add<InputTag>("primaryVertices")->
+      setComment("Collection of reconstructed primary vertices.");
     desc.add<vector<string>>("embeddedBoolIDs", vector<string>(0))->
-     setComment("Labels of embedded boolean electron ID decisions to be stored.");
+      setComment("Labels of embedded boolean electron ID decisions to be stored.");
     desc.add<vector<InputTag>>("boolIDMaps", vector<InputTag>(0))->
-     setComment("Maps with additional boolean electron ID decisions to be stored.");
+      setComment("Maps with additional boolean electron ID decisions to be stored.");
     desc.add<vector<string>>("embeddedContIDs", vector<string>(0))->
-     setComment("Labels of embedded real-valued electron ID decisions to be stored.");
+      setComment("Labels of embedded real-valued electron ID decisions to be stored.");
     desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>(0))->
-     setComment("Maps with additional real-valued electron ID decisions to be stored.");
+      setComment("Maps with additional real-valued electron ID decisions to be stored.");
     desc.add<vector<string>>("selection", vector<string>(0))->
-     setComment("User-defined selections for electrons whose results will be stored in the output "
-     "tree.");
+      setComment("User-defined selections for electrons whose results will be stored in the "
+      "output tree.");
     
     descriptions.add("electrons", desc);
 }
@@ -74,6 +80,20 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
     
     event.getByToken(electronToken, srcElectrons);
     event.getByToken(rhoToken, rho);
+    
+    
+    // Get the first primary vertex
+    Handle<reco::VertexCollection> vertices;
+    event.getByToken(primaryVerticesToken, vertices);
+    
+    if (vertices->size() == 0)
+    {
+        edm::Exception excp(edm::errors::LogicError);
+        excp << "Event must contain at least one primary vertex.\n";
+        excp.raise();
+    }
+    
+    auto const &firstPV = vertices->front();
     
     
     // Read ID maps
@@ -114,9 +134,9 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         
         
         // Copy non-triggering MVA ID stored as a userFloat
-        storeElectron.SetContinuousID(0,
-          el.userFloat("ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values"));
-        unsigned nUsedContIDs = 1;
+        // storeElectron.SetContinuousID(0,
+        //   el.userFloat("ElectronMVAEstimatorRun2Spring15NonTrig25nsV1Values"));
+        unsigned nUsedContIDs = 0;
         
         
         // Copy embedded ID decisions
@@ -145,9 +165,20 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
             storeElectron.SetContinuousID(nUsedContIDs + i, (*contIDMaps.at(i))[elPtr]);
         
         
-        // Conversion rejection [1]. True for a "good" electron
-        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/ConversionTools
-        storeElectron.SetBit(0, el.passConversionVeto());
+        // Evaluate loose selection on impact parameters [1]. It is implemented as in [2-3].
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2?rev=41#Offline_selection_criteria
+        //[2] https://github.com/ikrav/cmssw/blob/egm_id_80X_v1/RecoEgamma/ElectronIdentification/plugins/cuts/GsfEleDxyCut.cc#L58-L68
+        //[3] https://github.com/ikrav/cmssw/blob/egm_id_80X_v1/RecoEgamma/ElectronIdentification/plugins/cuts/GsfEleDzCut.cc#L58-L68
+        bool passIPCuts;
+        double const d0 = std::abs(el.gsfTrack()->dxy(firstPV.position()));
+        double const dz = std::abs(el.gsfTrack()->dz(firstPV.position()));
+        
+        if (std::abs(el.superCluster()->eta()) < 1.479)
+            passIPCuts = (d0 < 0.05 and dz < 0.10);  // units are cm
+        else
+            passIPCuts = (d0 < 0.10 and dz < 0.20);
+        
+        storeElectron.SetBit(0, passIPCuts);
         
         
         // Evaluate user-defined selectors if any
@@ -157,7 +188,7 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
             storeElectron.SetBit(nUsedBits + i, eleSelectors[i](el));
         
         
-        // The electron is set up. Add it to the vector
+        // The electron is set up. Add it to the vector.
         storeElectrons.emplace_back(storeElectron);
     }
     

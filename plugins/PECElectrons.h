@@ -9,6 +9,7 @@
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
 #include <DataFormats/PatCandidates/interface/Electron.h>
+#include <DataFormats/VertexReco/interface/VertexFwd.h>
 #include <RecoEgamma/EgammaTools/interface/EffectiveAreas.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
 
@@ -77,6 +78,9 @@ private:
     
     /// Rho (mean angular pt density)
     edm::EDGetTokenT<double> rhoToken;
+    
+    /// Collection of reconstructed primary vertices
+    edm::EDGetTokenT<reco::VertexCollection> primaryVerticesToken;
     
     /// Names of embedded boolean IDs to be saved
     std::vector<std::string> embeddedBoolIDLabels;
