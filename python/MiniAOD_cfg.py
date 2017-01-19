@@ -170,7 +170,32 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
-# Set up random-number service.  CRAB overwrites the seeds.
+# Override JEC in global tags by preliminary versions for ReReco with
+# Summer16
+if runOnData:
+    jecDBFileName = 'Summer16_23Sep2016AllV2_DATA.db'
+    jecTag = 'JetCorrectorParametersCollection_Summer16_23Sep2016AllV2_DATA_AK4PFchs'
+else:
+    jecDBFileName = 'Summer16_23Sep2016V2_MC.db'
+    jecTag = 'JetCorrectorParametersCollection_Summer16_23Sep2016V2_MC_AK4PFchs'
+
+from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
+process.jecDB = cms.ESSource('PoolDBESSource',
+    CondDBSetup,
+    connect = cms.string('sqlite_fip:Analysis/PECTuples/data/' + jecDBFileName),
+    toGet = cms.VPSet(
+        cms.PSet(
+            record = cms.string('JetCorrectionsRecord'),
+            tag = cms.string(jecTag),
+            label = cms.untracked.string('AK4PFchs')
+        )
+    )
+)
+
+process.jecDBPreference = cms.ESPrefer('PoolDBESSource', 'jecDB')
+
+
+# Set up random-number service.  CRAB overwrites the seeds
 # automatically.
 process.RandomNumberGeneratorService = cms.Service('RandomNumberGeneratorService',
     analysisPatJets = cms.PSet(
