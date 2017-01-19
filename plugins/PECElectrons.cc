@@ -200,8 +200,8 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
 
 double PECElectrons::CalculateRhoIsolation(reco::GsfElectron const &el, double const rho) const
 {
-    // Isolation is calculated following an example in [1], as recommended in [2]
-    //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_7_6_2/RecoEgamma/ElectronIdentification/plugins/cuts/GsfEleEffAreaPFIsoCut.cc#L75-L90
+    // Isolation is computed as in [1].  See also explanations here [2].
+    //[1] https://github.com/ikrav/cmssw/blob/egm_id_80X_v1/RecoEgamma/ElectronIdentification/plugins/cuts/GsfEleEffAreaPFIsoCut.cc#L83-L94
     //[2] https://hypernews.cern.ch/HyperNews/CMS/get/egamma/1664/1.html
     reco::GsfElectron::PflowIsolationVariables const &pfIso = el.pfIsolationVariables();
     double const ea = eaReader.getEffectiveArea(fabs(el.superCluster()->eta()));
