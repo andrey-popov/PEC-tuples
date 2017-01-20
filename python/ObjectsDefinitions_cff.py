@@ -51,22 +51,18 @@ def define_electrons(process):
     eleEmbeddedCutBasedIDLabels = []
     
     
-    # Setup VID for cut-based ID and trigger-emulating preselection
-    # https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=41
+    # Setup VID for cut-based ID and trigger-emulating preselection [1]
+    # and MVA-based ID [2]
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=41
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=30#VID_based_recipe_provides_pass_f
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
         setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     
-    # Delete module for MVA ID, which is added automatically but will
-    # cause problems in initialization because of not found weight
-    # files.  It is defined in this file [1].
-    # [1] https://github.com/ikrav/cmssw/blob/egm_id_80X_v2/RecoEgamma/ElectronIdentification/python/ElectronMVAValueMapProducer_cfi.py
-    del process.electronMVAValueMapProducer
-    
-    
     for idModule in [
         'cutBasedElectronID_Summer16_80X_V1_cff',
-        'cutBasedElectronHLTPreselecition_Summer16_V1_cff'
+        'cutBasedElectronHLTPreselecition_Summer16_V1_cff',
+        'mvaElectronID_Spring16_GeneralPurpose_V1_cff'
     ]:
         setupAllVIDIdsInModule(
             process,
@@ -75,6 +71,7 @@ def define_electrons(process):
         )
     
     process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
+    process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
     
     
     # Labels of maps with electron ID
@@ -82,7 +79,7 @@ def define_electrons(process):
     eleCutBasedIDMaps = [eleIDProducer + ':cutBasedElectronID-Summer16-80X-V1-' + p
         for p in ['veto', 'loose', 'medium', 'tight']] + \
         [eleIDProducer + ':cutBasedElectronHLTPreselection-Summer16-V1']
-    eleMVAIDMaps = []
+    eleMVAIDMaps = ['electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values']
     
     
     # Additional selections to be evaluated (nothing at the moment)
