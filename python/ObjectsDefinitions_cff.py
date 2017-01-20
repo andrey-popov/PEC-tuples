@@ -74,11 +74,20 @@ def define_electrons(process):
     process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
     
     
+    # Add also customized cut-based ID without requirements on isolation
+    setupAllVIDIdsInModule(
+        process,
+        'Analysis.PECTuples.cutBasedElectronID_nonIso_cff',
+        setupVIDElectronSelection
+    )
+    
+    
     # Labels of maps with electron ID
     eleIDProducer = 'egmGsfElectronIDs'
     eleCutBasedIDMaps = [eleIDProducer + ':cutBasedElectronID-Summer16-80X-V1-' + p
         for p in ['veto', 'loose', 'medium', 'tight']] + \
-        [eleIDProducer + ':cutBasedElectronHLTPreselection-Summer16-V1']
+        [eleIDProducer + ':cutBasedElectronHLTPreselection-Summer16-V1'] + \
+        [eleIDProducer + ':cutBasedElectronID-nonIso-tight']
     eleMVAIDMaps = ['electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values']
     
     
