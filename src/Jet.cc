@@ -1,13 +1,15 @@
 #include <Analysis/PECTuples/interface/Jet.h>
 
+#include <cmath>
 #include <cstdlib>
+#include <sstream>
 #include <stdexcept>
 
 
 pec::Jet::Jet() noexcept:
     CandidateWithID(),
     corrFactor(0), jecUncertainty(0), jerUncertainty(0),
-    bTags{0, 0}, cTags{0, 0},
+    bTags{0, 0}, cTags{0, 0}, bTagsDNN{0, 0, 0, 0},
     pileUpMVA(0),
     qgTag(0),
     area(0),
@@ -24,6 +26,7 @@ void pec::Jet::Reset()
     corrFactor = 0;
     jecUncertainty = jerUncertainty = 0;
     bTags[0] = bTags[1] = cTags[0] = cTags[1] = 0;
+    bTagsDNN[0] = bTagsDNN[1] = bTagsDNN[2] = bTagsDNN[3] = 0;
     pileUpMVA = 0;
     qgTag = 0;
     area = 0;
@@ -63,6 +66,30 @@ void pec::Jet::SetCTag(CTagAlgo algo, float value)
 }
 
 
+void pec::Jet::SetBTagDNN(float valueBB, float valueB, float valueCC, float valueC,
+  float valueUDSG)
+{
+    // A sanity check. The discriminators must add up either to 1 or to (-5). The latter happens
+    //when b-tags cannot be evaluated.
+    float const sum = valueBB + valueB + valueCC + valueC + valueUDSG;
+    
+    if (std::abs(sum - 1) > 1e-4 and std::abs(sum + 5) > 1e-4)
+    {
+        std::ostringstream message;
+        message << "pec::Jet::SetBTagDBB: Values of given DNN b-tagging discriminators sum up " <<
+          "to " << sum << ", while the sum must be either 1 or (-5).";
+        throw std::logic_error(message.str());
+    }
+    
+    
+    // Store just the necessary four discriminators
+    bTagsDNN[0] = valueBB;
+    bTagsDNN[1] = valueB;
+    bTagsDNN[2] = valueCC;
+    bTagsDNN[3] = valueC;
+}
+
+
 void pec::Jet::SetPileUpID(float pileUpMVA_)
 {
     pileUpMVA = pileUpMVA_;
@@ -98,7 +125,7 @@ void pec::Jet::SetFlavour(int hadronFlavour, int partonFlavour /*= 0*/, int meFl
     if ((std::abs(hadronFlavour) > 5 and hadronFlavour != 21) or
       (std::abs(partonFlavour) > 5 and partonFlavour != 21) or
       (std::abs(meFlavour) > 5 and meFlavour != 21))
-        throw std::runtime_error("Jet::SetFlavour: Illegal value for jet flavour is given.");
+        throw std::runtime_error("pec::Jet::SetFlavour: Illegal value for jet flavour is given.");
     
     
     unsigned hadronFlavourEncoded, partonFlavourEncoded, meFlavourEncoded;
@@ -149,6 +176,46 @@ float pec::Jet::JERUncertainty() const
 float pec::Jet::BTag(BTagAlgo algo) const
 {
     return bTags[unsigned(algo)];
+}
+
+
+float pec::Jet::BTagDNN(BTagDNNType type) const
+{
+    switch (type)
+    {
+        case BTagDNNType::BB:
+            return bTagsDNN[0];
+        
+        case BTagDNNType::B:
+            return bTagsDNN[1];
+        
+        case BTagDNNType::CC:
+            return bTagsDNN[2];
+        
+        case BTagDNNType::C:
+            return bTagsDNN[3];
+        
+        case BTagDNNType::UDSG:
+        {
+            float value = 1.f - (bTagsDNN[0] + bTagsDNN[1] + bTagsDNN[2] + bTagsDNN[3]);
+            
+            if (std::abs(value - 5) < 1e-4)
+            {
+                // There are no valid b-tags for this jet
+                value = -1.f;
+            }
+            
+            return value;
+        }
+        
+        default:
+        {
+            std::ostringstream message;
+            message << "pec::Jet::BTagDNN: Unhandled value of the enumeration given (" <<
+              unsigned(type) << ").";
+            throw std::logic_error(message.str());
+        }
+    }
 }
 
 

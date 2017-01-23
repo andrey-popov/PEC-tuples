@@ -209,6 +209,12 @@ process.RandomNumberGeneratorService = cms.Service('RandomNumberGeneratorService
 )
 
 
+# Information about geometry and magnetic field is needed to run DeepCSV
+# b-tagging.
+process.load('Configuration.Geometry.GeometryRecoDB_cff')
+process.load('Configuration.StandardSequences.MagneticField_cff')
+
+
 # Create processing paths.  There is one path per each channel (electron
 # or muon).
 process.elPath = cms.Path()

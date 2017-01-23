@@ -245,22 +245,31 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
             selection to be used in an analysis.
     """
     
-    # Reapply JEC if requested [1].  The corrections are read from the
-    # current global tag.
+    # Reapply JEC [1] and evaluate DeepCSV b-taggers [2].  Jet
+    # collection is updated regardless of the value of parameter
+    # reapplyJEC because of the b-taggers.
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=139#CorrPatJets
-    if reapplyJEC:
-        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
-        if runOnData:
-            jecLevels.append('L2L3Residual')
-        
-        from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-        updateJetCollection(
-            process, labelName = 'UpdatedJEC',
-            jetSource = cms.InputTag('slimmedJets'),
-            jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None')
-        )
+    # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/DeepFlavour?rev=6
+    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+    if runOnData:
+        jecLevels.append('L2L3Residual')
     
-    recorrectedJetsLabel = ('updatedPatJetsUpdatedJEC' if reapplyJEC else 'slimmedJets')
+    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+    updateJetCollection(
+        process, labelName = 'UpdatedJECBTags',
+        jetSource = cms.InputTag('slimmedJets'),
+        jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None'),
+        btagDiscriminators = [
+            'deepFlavourJetTags:probbb', 'deepFlavourJetTags:probb',
+            'deepFlavourJetTags:probcc', 'deepFlavourJetTags:probc',
+            'deepFlavourJetTags:probudsg'
+        ]
+    )
+    
+    # When b-tagging is rerun, JEC are first undone, b-taggind is
+    # discriminators are evaluated, and then another jet collection is
+    # produced.  This is the name that is used for the final collection.
+    recorrectedJetsLabel = 'updatedPatJetsTransientCorrectedUpdatedJECBTags'
     
     
     # Define analysis-level jets.  The produced collection will contain

@@ -37,3 +37,12 @@ git clone https://github.com/ikrav/RecoEgamma-ElectronIdentification.git data/Re
 cd data/RecoEgamma/ElectronIdentification/data
 git checkout egm_id_80X_v1
 cd $CMSSW_BASE/src
+
+
+# DeepCSV b-tagger [5]
+# [5] https://twiki.cern.ch/twiki/bin/viewauth/CMS/DeepFlavour?rev=6
+git cms-merge-topic -u mverzett:DeepFlavour-from-CMSSW_8_0_21
+mkdir RecoBTag/DeepFlavour/data
+cd !$
+wget http://home.fnal.gov/~verzetti//DeepFlavour/training/DeepFlavourNoSL.json
+cd $CMSSW_BASE/src

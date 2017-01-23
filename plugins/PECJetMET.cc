@@ -152,11 +152,20 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         
         storeJet.SetArea(j.jetArea());
         storeJet.SetCharge(j.jetCharge());
+        
+        
+        // Save b-tagging discriminators
         storeJet.SetBTag(pec::Jet::BTagAlgo::CSV,
           j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
         storeJet.SetBTag(pec::Jet::BTagAlgo::CMVA, j.bDiscriminator("pfCombinedMVAV2BJetTags"));
         storeJet.SetCTag(pec::Jet::CTagAlgo::CvsB, j.bDiscriminator("pfCombinedCvsBJetTags"));
         storeJet.SetCTag(pec::Jet::CTagAlgo::CvsL, j.bDiscriminator("pfCombinedCvsLJetTags"));
+        storeJet.SetBTagDNN(j.bDiscriminator("deepFlavourJetTags:probbb"),
+          j.bDiscriminator("deepFlavourJetTags:probb"),
+          j.bDiscriminator("deepFlavourJetTags:probcc"),
+          j.bDiscriminator("deepFlavourJetTags:probc"),
+          j.bDiscriminator("deepFlavourJetTags:probudsg"));
+        
         
         // Save pileup ID
         //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJetID?rev=29#Information_for_13_TeV_data_anal

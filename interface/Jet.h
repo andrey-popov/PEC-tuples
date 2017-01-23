@@ -17,18 +17,28 @@ namespace pec
 class Jet: public CandidateWithID
 {
 public:
-    /// Supported b-tagging algorithms
+    /// Supported simple b-tagging algorithms
     enum class BTagAlgo: unsigned
     {
         CSV = 0,
         CMVA = 1
     };
     
-    /// Supported c-tagging algorithms
+    /// Supported simple c-tagging algorithms
     enum class CTagAlgo: unsigned
     {
         CvsB = 0,
         CvsL = 1
+    };
+    
+    /// DNN b-tagging discriminators
+    enum class BTagDNNType: unsigned
+    {
+        BB = 0,
+        B = 1,
+        CC = 2,
+        C = 3,
+        UDSG = 4
     };
     
     /**
@@ -71,6 +81,9 @@ public:
     
     /// Sets value of the given c-tagging discriminator
     void SetCTag(CTagAlgo algo, float value);
+    
+    /// Sets DNN b-tagging discriminators
+    void SetBTagDNN(float valueBB, float valueB, float valueCC, float valueC, float valueUDSG);
     
     /// Sets value of the pile-up discriminator
     void SetPileUpID(float pileUpMVA);
@@ -133,6 +146,9 @@ public:
     /// Returns value of the requested b-tagging discriminator
     float BTag(BTagAlgo algo) const;
     
+    /// Returns requested DNN b-tagging discriminator
+    float BTagDNN(BTagDNNType type) const;
+    
     /// Returns value of the requested c-tagging discriminator
     float CTag(CTagAlgo algo) const;
     
@@ -192,6 +208,14 @@ private:
     
     /// Values of b-tagging  and c-tagging discriminators
     Float_t bTags[2], cTags[2];
+    
+    /**
+     * \brief Values of DNN b-tagging discriminators
+     * 
+     * Only values of the first four discriminators in the enumeration BTagDNNTypes are stored. The
+     * last discriminator can be computed knowing that their sum is unity.
+     */
+    Float_t bTagsDNN[4];
     
     /// Value of an MVA discriminator against pile-up
     Float_t pileUpMVA;
