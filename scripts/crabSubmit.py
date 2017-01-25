@@ -41,6 +41,7 @@ from httplib import HTTPException
 import imp
 import json
 import re
+import shutil
 import sys
 
 from CRABAPI.RawCommand import crabCommand
@@ -307,17 +308,34 @@ if __name__ == '__main__':
         
         
         # Submit the task
-        try:
-            print('Submitting task "{}"...'.format(name))
-            crabCommand('submit', config=config)
-        except HTTPException as e:
-            print('\033[0;31mFailed to submit\033[0m because of an HTTP exception:')
-            print(' ', str(e.headers))
-            print('Skip this task')
-        except ClientException as e:
-            print('\033[0;31mFailed to submit\033[0m because of a client exception:')
-            print(' ' + str(e))
-            print('Skip this task')
+        print('Submitting task "{}"...'.format(name))
+        
+        iAttempt = 0
+        nAttempts = 3
+        trySubmit = True
+        
+        while trySubmit:
+            iAttempt += 1
+            trySubmit = False
+            
+            try:
+                crabCommand('submit', config=config)
+            
+            except HTTPException as e:
+                print('\033[1;38;5;208mFailed to submit\033[0m because of an HTTP exception:')
+                print(' ', str(e.headers))
+                
+                if iAttempt <= nAttempts:
+                    print('Going to try again (attempt {} of {})...'.format(iAttempt, nAttempts))
+                    shutil.rmtree('crab_' + name)
+                    trySubmit = True
+                else:
+                    print('\033[1;31mGiving up on this task\033[0m')
+            
+            except ClientException as e:
+                print('\033[01;31mFailed to submit\033[0m because of a client exception:')
+                print(' ' + str(e))
+                print('\033[1;31mGiving up on this task\033[0m')
         
         # A blank line for better formatting
         print()
