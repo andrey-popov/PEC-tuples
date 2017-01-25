@@ -34,6 +34,7 @@ Multiline comments (/**/) are not supported.
 [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCrab
 """
 
+from __future__ import print_function
 import argparse
 from copy import deepcopy
 from httplib import HTTPException
@@ -60,7 +61,7 @@ def critical_error(formatString, *args, **kwargs):
     arguments using method str.format.
     """
     
-    print 'Error:', formatString.format(*args, **kwargs)
+    print('Error:', formatString.format(*args, **kwargs))
     sys.exit(1)
 
 
@@ -307,16 +308,16 @@ if __name__ == '__main__':
         
         # Submit the task
         try:
-            print 'Submitting task "{}"...'.format(name)
+            print('Submitting task "{}"...'.format(name))
             crabCommand('submit', config=config)
         except HTTPException as e:
-            print 'Failed to submit because of an HTTP exception:'
-            print ' ', str(e.headers)
-            print 'Skip this task'
+            print('\033[0;31mFailed to submit\033[0m because of an HTTP exception:')
+            print(' ', str(e.headers))
+            print('Skip this task')
         except ClientException as e:
-            print 'Failed to submit because of a client exception:'
-            print ' ' + str(e)
-            print 'Skip this task'
+            print('\033[0;31mFailed to submit\033[0m because of a client exception:')
+            print(' ' + str(e))
+            print('Skip this task')
         
         # A blank line for better formatting
-        print ''
+        print()
