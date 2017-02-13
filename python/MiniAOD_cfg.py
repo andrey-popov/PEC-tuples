@@ -112,14 +112,14 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Provide a default global tag if user has not given any.  At the moment
-# chosen according to [1].
-# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions?rev=585
+# Provide a default global tag if user has not given any.  Chosen as
+# according to recommendations for JEC [1].
+# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=125
 if len(options.globalTag) == 0:
     if runOnData:
-        options.globalTag = '80X_dataRun2_2016SeptRepro_v6'
+        options.globalTag = '80X_dataRun2_2016SeptRepro_v7'
     else:
-        options.globalTag = '80X_mcRun2_asymptotic_2016_TrancheIV_v7'
+        options.globalTag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
     
     print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
 
@@ -170,29 +170,32 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
-# Override JEC in global tags by preliminary versions for ReReco with
-# Summer16
-if runOnData:
-    jecDBFileName = 'Summer16_23Sep2016AllV2_DATA.db'
-    jecTag = 'JetCorrectorParametersCollection_Summer16_23Sep2016AllV2_DATA_AK4PFchs'
-else:
-    jecDBFileName = 'Summer16_23Sep2016V2_MC.db'
-    jecTag = 'JetCorrectorParametersCollection_Summer16_23Sep2016V2_MC_AK4PFchs'
-
+# Override JER factors from global tags with newer versions.  The
+# snippet is adapted from [1].
+# [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
 from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
-process.jecDB = cms.ESSource('PoolDBESSource',
+process.jerDB = cms.ESSource('PoolDBESSource',
     CondDBSetup,
-    connect = cms.string('sqlite_fip:Analysis/PECTuples/data/' + jecDBFileName),
+    connect = cms.string('sqlite_fip:Analysis/PECTuples/data/Spring16_25nsV10_MC.db'),
     toGet = cms.VPSet(
         cms.PSet(
-            record = cms.string('JetCorrectionsRecord'),
-            tag = cms.string(jecTag),
+            record = cms.string('JetResolutionRcd'),
+            tag = cms.string('JR_Spring16_25nsV10_MC_PtResolution_AK4PFchs'),
+            label = cms.untracked.string('AK4PFchs_pt')
+        ),
+        cms.PSet(
+            record = cms.string('JetResolutionRcd'),
+            tag = cms.string('JR_Spring16_25nsV10_MC_PhiResolution_AK4PFchs'),
+            label = cms.untracked.string('AK4PFchs_phi')
+        ),
+        cms.PSet(
+            record = cms.string('JetResolutionScaleFactorRcd'),
+            tag = cms.string('JR_Spring16_25nsV10_MC_SF_AK4PFchs'),
             label = cms.untracked.string('AK4PFchs')
-        )
+        ),
     )
 )
-
-process.jecDBPreference = cms.ESPrefer('PoolDBESSource', 'jecDB')
+process.jerDBPreference = cms.ESPrefer('PoolDBESSource', 'jerDB')
 
 
 # Set up random-number service.  CRAB overwrites the seeds

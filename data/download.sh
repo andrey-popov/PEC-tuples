@@ -3,9 +3,8 @@
 set -e
 
 
-# Files with preliminary JEC
-wget https://github.com/cms-jet/JECDatabase/raw/master/SQLiteFiles/Summer16_23Sep2016AllV2_DATA.db
-wget https://github.com/cms-jet/JECDatabase/raw/master/SQLiteFiles/Summer16_23Sep2016V2_MC.db
+# Files with preliminary JER
+wget https://github.com/cms-jet/JRDatabase/raw/master/SQLiteFiles/Spring16_25nsV10_MC.db
 
 
 # AFS directory containing additional data files for the PEC-tuples package

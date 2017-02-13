@@ -24,3 +24,7 @@ __init__.py
 # Files with notes
 *.txt
 *.tar.gz
+
+# Additional data files
+data/*.db
+
