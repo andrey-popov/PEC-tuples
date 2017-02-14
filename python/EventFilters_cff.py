@@ -67,3 +67,11 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     
     paths.append(process.badChargedCandidateFilter)
     
+    
+    # In re-reconstructed data reject events with spurious muons [1-2]
+    # [1] https://indico.cern.ch/event/602633/contributions/2462363/
+    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/2786.html
+    if runOnData:
+        process.load('RecoMET.METFilters.badGlobalMuonTaggersMiniAOD_cff')
+        paths.append(~process.badGlobalMuonTaggerMAOD)
+        paths.append(~process.cloneGlobalMuonTaggerMAOD)

@@ -276,7 +276,17 @@ from Analysis.PECTuples.ObjectsDefinitions_cff import (define_electrons, define_
 muQualityCuts = define_muons(process)
 (recorrectedJetsLabel, jetQualityCuts) = \
     define_jets(process, reapplyJEC=True, runOnData=runOnData)
-define_METs(process, runOnData=runOnData)
+
+# In the targeted version of MiniAOD MET and its uncertainties are
+# correct out of the box, so no need to recompute it.  However, a
+# special collection should be used in re-reconstructed data, which is
+# corrected for spurious muons and a problem in gain swith in
+# electrons [1].
+# [1] https://indico.cern.ch/event/602633/contributions/2462363/
+if runOnData:
+    metTag = cms.InputTag('slimmedMETsMuEGClean')
+else:
+    metTag = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
 
 
 # The loose event selection
@@ -382,7 +392,7 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
     jetSelection = jetQualityCuts,
-    met = cms.InputTag('slimmedMETs', processName=process.name_())
+    met = metTag
 )
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',
@@ -423,7 +433,7 @@ if not runOnData and options.saveGenJets:
         cut = cms.string('pt > 8.'),
         # ^The pt cut above is the same as in JME-13-005
         saveFlavourCounters = cms.bool(True),
-        met = cms.InputTag('slimmedMETs', processName=process.name_())
+        met = metTag
     )
     paths.append(process.pecGenJetMET)
 
