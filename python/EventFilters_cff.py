@@ -14,7 +14,7 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     recommended for analyses involving MET.  Follow instructions
     provided in [1] except for the filtering on primary vertices.  The
     latter is applied in the main configuration (and in a slightly
-    tigher version).
+    tighter version).
     
     Arguments:
         process: The process to which the filters are to be added.

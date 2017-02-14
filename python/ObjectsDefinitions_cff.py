@@ -35,8 +35,8 @@ def define_electrons(process):
             non-isolated electrons to be saved.
         patElectronsForEventSelection: Collection of loosely identified
             non-isolated electrons that pass a realistically tight
-            kinematical selection.  Exploited in the loose event
-            selection applied in the main configuration.
+            kinematic selection.  Exploited in the loose event selection
+            applied in the main configuration.
     """
     
     # Collection of electrons that will be stored in tuples
@@ -55,8 +55,10 @@ def define_electrons(process):
     # and MVA-based ID [2]
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=41
     # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=30#VID_based_recipe_provides_pass_f
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDElectronIdProducer,
-        setupAllVIDIdsInModule, setupVIDElectronSelection, DataFormat)
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (
+        switchOnVIDElectronIdProducer, setupAllVIDIdsInModule, setupVIDElectronSelection,
+        DataFormat
+    )
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     
     for idModule in [
@@ -126,8 +128,8 @@ def define_muons(process):
             muons to be saved.
         patMuonsForEventSelection: Collection of loosely identified
             non-isolated muons that pass a realistically tight
-            kinematical selection.  Exploited in the loose event
-            selection applied in the main configuration.
+            kinematic selection.  Exploited in the loose event selection
+            applied in the main configuration.
     """
     
     # Define a collection of muons to be used in the analysis.  It
@@ -144,7 +146,7 @@ def define_muons(process):
     
     
     # A collection to be used for the loose event selection in the main
-    # configuration.  Realistically tight kinematical cuts are applied.
+    # configuration.  Realistically tight kinematic cuts are applied.
     process.patMuonsForEventSelection = cms.EDFilter('PATMuonSelector',
         src = cms.InputTag('analysisPatMuons'),
         cut = cms.string('pt > 20. & abs(eta) < 2.5')
@@ -186,8 +188,10 @@ def define_photons(process):
     
     # Decisions of cut-based identification algorithm [1]
     # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2?rev=28
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (switchOnVIDPhotonIdProducer,
-        setupAllVIDIdsInModule, setupVIDPhotonSelection, DataFormat)
+    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (
+        switchOnVIDPhotonIdProducer, setupAllVIDIdsInModule, setupVIDPhotonSelection,
+        DataFormat
+    )
     switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
     
     for idModule in ['cutBasedPhotonID_Spring15_25ns_V1_cff']:
@@ -204,10 +208,6 @@ def define_photons(process):
     # Labels of maps with photon ID
     phoCutBasedIDMaps = ['egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-' + p
         for p in ['loose', 'medium', 'tight']]
-    
-    
-    # Information about geometry is needed to evaluate the ID
-    process.load('Configuration.StandardSequences.GeometryRecoDB_cff')
     
     
     # Additional selections to be evaluated
@@ -236,7 +236,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
         Return a tuple with the following elements:
         recorrectedJetsLabel: Label to access collection of jets with
             up-to-date JEC (reapplied or not, depending on the
-            configuration) and no kinamatical or quality selection.
+            configuration) and no kinematic or quality selection.
         jetQualityCuts: List of string-based quality selections whose
             decisions are to be saved.
     

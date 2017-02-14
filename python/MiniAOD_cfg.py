@@ -10,18 +10,17 @@ events are rejected using configuration provided in the module
 EventFilters_cff.
 
 After reconstructed objects are defined and the loose event selection is
-performed, relevant reconstructed objects as well as some
-generator-level properties are saved in a ROOT file with the help of a
-set of dedicated EDAnalyzers.  The job does not produce any EDM output.
+performed, relevant reconstructed objects as well as some generator-
+level properties are saved in a ROOT file with the help of a set of
+dedicated EDAnalyzers.  The job does not produce any EDM output.
 
-Behaviour can be controlled with a number of command-line options (see
+Behaviour can be controlled using a number of command-line options (see
 their list in the code below).
 """
 
-import sys
 import random
-import string
 import re
+import string
 
 
 # Create a process
@@ -31,7 +30,7 @@ process = cms.Process('Analysis')
 
 # Enable MessageLogger and reduce its verbosity
 process.load('FWCore.MessageLogger.MessageLogger_cfi')
-process.MessageLogger.cerr.FwkReport.reportEvery = 100
+process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 
 # Ask to print a summary in the log
@@ -121,7 +120,9 @@ if len(options.globalTag) == 0:
     else:
         options.globalTag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
     
-    print 'WARNING: No global tag provided. Will use the default one (' + options.globalTag + ')'
+    print 'WARNING: No global tag provided. Will use the default one: {}.'.format(
+        options.globalTag
+    )
 
 # Set the global tag
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
@@ -132,15 +133,15 @@ process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
 # Parse jet selection
 jetSelParsed = re.match(r'(\d+)j(\d+)', options.jetSel)
 if jetSelParsed is None:
-    print 'Cannot parse jet selection "' + options.jetSel + '". Aborted.'
-    sys.exit(1)
+    raise RuntimeError('Failed parse jet selection "{}".'.format(options.jetSel))
  
 minNumJets = int(jetSelParsed.group(1))
 jetPtThreshold = int(jetSelParsed.group(2))
 
 if minNumJets > 0:
-    print 'Will select events with at least', minNumJets,
-    print 'jets with pt >', jetPtThreshold, 'GeV/c.'
+    print 'Will select events with at least {} jets with pt > {} GeV.'.format(
+        minNumJets, jetPtThreshold
+    )
 
 
 # Define the input files
@@ -211,7 +212,7 @@ process.RandomNumberGeneratorService = cms.Service('RandomNumberGeneratorService
 
 
 # Information about geometry and magnetic field is needed to run DeepCSV
-# b-tagging.
+# b-tagging.  Geometry is also needed to evaluate electron ID.
 process.load('Configuration.Geometry.GeometryRecoDB_cff')
 process.load('Configuration.StandardSequences.MagneticField_cff')
 
@@ -268,14 +269,14 @@ paths.append(process.goodOfflinePrimaryVertices)
 
 
 # Define basic reconstructed objects
-from Analysis.PECTuples.ObjectsDefinitions_cff import (define_electrons, define_muons, define_jets,
-    define_METs)
+from Analysis.PECTuples.ObjectsDefinitions_cff import (
+    define_electrons, define_muons, define_jets, define_METs
+)
 
-(eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps) = \
+eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
     define_electrons(process)
 muQualityCuts = define_muons(process)
-(recorrectedJetsLabel, jetQualityCuts) = \
-    define_jets(process, reapplyJEC=True, runOnData=runOnData)
+recorrectedJetsLabel, jetQualityCuts = define_jets(process, reapplyJEC=False, runOnData=runOnData)
 
 # In the targeted version of MiniAOD MET and its uncertainties are
 # correct out of the box, so no need to recompute it.  However, a
