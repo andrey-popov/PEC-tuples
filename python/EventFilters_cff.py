@@ -64,16 +64,3 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
     )
     
     paths.append(process.badChargedCandidateFilter)
-    
-    
-    # In re-reconstructed data reject events with spurious muons [1-2]
-    # [1] https://indico.cern.ch/event/602633/contributions/2462363/
-    # [2] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/3527.html
-    if runOnData:
-        process.spuriousMuonFilter = cms.EDFilter('HLTHighLevel',
-            HLTPaths = cms.vstring('Flag_noBadMuons'),
-            andOr = cms.bool(False),  # AND mode
-            throw = cms.bool(True),
-            TriggerResultsTag = cms.InputTag('TriggerResults', '', 'PAT')
-        )
-        paths.append(process.spuriousMuonFilter)

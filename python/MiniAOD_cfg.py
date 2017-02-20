@@ -369,6 +369,17 @@ else:
 paths.append(process.pecTrigger)
 
 
+# Save flags marking events with duplicate and spurious muons [1-2]
+# [1] https://indico.cern.ch/event/602633/contributions/2462363/
+# [2] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/3527.html
+if runOnData:
+    process.eventFlags = cms.EDAnalyzer('EventFlags',
+        src = cms.InputTag('TriggerResults', '', 'PAT'),
+        flags = cms.vstring('Flag_duplicateMuons:DuplicateMuons', 'Flag_badMuons:BadMuons')
+    )
+    paths.append(process.eventFlags)
+
+
 # Save event ID and basic event content
 process.pecEventID = cms.EDAnalyzer('PECEventID')
 
