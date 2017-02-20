@@ -318,7 +318,7 @@ def define_METs(process, runOnData=False):
     """
     
     # Recalculate MET corrections [1]
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=57#Instructions_for_8_0_X_X_20_for
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=64#Instructions_for_8_0_X_X_26_patc
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
         runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD(

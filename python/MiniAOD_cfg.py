@@ -278,16 +278,17 @@ eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
 muQualityCuts = define_muons(process)
 recorrectedJetsLabel, jetQualityCuts = define_jets(process, reapplyJEC=False, runOnData=runOnData)
 
-# In the targeted version of MiniAOD MET and its uncertainties are
-# correct out of the box, so no need to recompute it.  However, a
-# special collection should be used in re-reconstructed data, which is
-# corrected for spurious muons and a problem in gain swith in
-# electrons [1].
+# In the targeted version of MiniAOD nominal MET is correct out of the
+# box.  However, a special collection need to be used in
+# re-reconstructed data to fix for spurious muons and a problem in gain
+# switch in electrons [1].  In simulation recompute MET because its
+# uncertainties are outdated.
 # [1] https://indico.cern.ch/event/602633/contributions/2462363/
 if runOnData:
     metTag = cms.InputTag('slimmedMETsMuEGClean')
 else:
-    metTag = cms.InputTag('slimmedMETs', processName=cms.InputTag.skipCurrentProcess())
+    define_METs(process, runOnData=runOnData)
+    metTag = cms.InputTag('slimmedMETs', processName=process.name_())
 
 
 # The loose event selection
