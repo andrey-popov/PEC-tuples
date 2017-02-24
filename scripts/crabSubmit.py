@@ -31,12 +31,16 @@ General.requestName if the shortcut does not exist.
 Input JSON file may contain single-line C++ style comments (//).
 Multiline comments (/**/) are not supported.
 
+It is possible to submit only a subset of all tasks defined in the JSON
+file applying a selection with option "filter".
+
 [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideCrab
 """
 
 from __future__ import print_function
 import argparse
 from copy import deepcopy
+import fnmatch
 from httplib import HTTPException
 import imp
 import json
@@ -52,6 +56,32 @@ import WMCore.Configuration
 class ConfigInvariantError(Exception):
     """Exception to indicate problems in configuration of a task."""
     pass
+
+
+class TaskFilter(object):
+    """Implement filtering for task names.
+    
+    The filtering is performed using with a list of masks that support
+    Unix-style wildcards.
+    """
+    
+    def __init__(self, masks):
+        """Construct from a collection of masks."""
+        
+        self.masks = [re.compile(fnmatch.translate(mask)) for mask in masks]
+    
+    
+    def __call__(self, name):
+        """Check given name against masks."""
+        
+        if not self.masks:
+            return True
+        
+        for mask in self.masks:
+            if mask.match(name):
+                return True
+        
+        return False
 
 
 def critical_error(formatString, *args, **kwargs):
@@ -160,13 +190,24 @@ if __name__ == '__main__':
         epilog=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     argParser.add_argument(
         'samples', metavar='samples.json',
-        help='JSON file with information about datasets'
+        help='JSON file with information about datasets.'
     )
     argParser.add_argument(
         '-t', '--template', metavar='crabConfg.py', default='crabConfig.py',
-        help='Path to template CRAB configuration'
+        help='Path to template CRAB configuration.'
+    )
+    argParser.add_argument(
+        '-f', '--filter', metavar='filter-mask', default=None,
+        help='Comma-separated list of masks to select tasks to be submitted. Unix-style ' \
+            'wildcards are supported.'
     )
     args = argParser.parse_args()
+    
+    if args.filter:
+        taskFilter = TaskFilter(args.filter.split(','))
+    else:
+        # Define a trivial filter for the sake of uniformity
+        taskFilter = TaskFilter([])
     
     
     # Read JSON file with parameters for samples
@@ -210,6 +251,12 @@ if __name__ == '__main__':
             name = extract_sample_name(parameterSet)
         except ConfigInvariantError:
             critical_error('Task #{} does not have a valid name.', index + 1)
+        
+        
+        # Do not perform any further validation if the task is not
+        # selected
+        if not taskFilter(name):
+            continue
         
         
         # Validate names of fields
@@ -258,6 +305,14 @@ if __name__ == '__main__':
     
     for parameterSet in parameterSets:
         
+        name = extract_sample_name(parameterSet)
+        
+        
+        # Skip tasks that are not selected
+        if not taskFilter(name):
+            continue
+        
+        
         # Build a full CRAB configuration for the current sample
         config = deepcopy(templateConfig)
         
@@ -273,8 +328,6 @@ if __name__ == '__main__':
         
         
         # Apply customization
-        name = extract_sample_name(parameterSet)
-        
         if 'General.requestName' not in parameterSet.keys():
             config.General.requestName = name
         
