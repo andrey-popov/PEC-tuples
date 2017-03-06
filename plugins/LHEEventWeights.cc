@@ -178,8 +178,8 @@ void LHEEventWeights::endRun(Run const &run, EventSetup const &)
     boost::regex weightRegex("^\\s*<weight\\s+[^>]*id=\"(\\w+)\"[^>]*>\\s*(\\S.*\\S)\\s*</weight>\\s*\n?$",
      boost::regex::extended);
     //^ The first group is the weight ID, the second group is the description
-    boost::regex groupStartRegex("^\\s*<weightgroup\\s+(.*)>\\s*\n?$", boost::regex::extended);
-    boost::regex groupEndRegex("^\\s*</weightgroup>\\s*\n?$", boost::regex::extended);
+    boost::regex groupStartRegex("^\\s*<weightgroup\\s+(.*)>\\s*(#.*)?\n?$", boost::regex::extended);
+    boost::regex groupEndRegex("^\\s*</weightgroup>\\s*(#.*)?\n?$", boost::regex::extended);
     boost::regex emptyLineRegex("^\\s*\n?$", boost::regex::extended);
     boost::regex tagRegex("^\\s*<.+>\\s*\n?$", boost::regex::extended);
     
