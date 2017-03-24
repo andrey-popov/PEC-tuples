@@ -8,6 +8,7 @@
 #include <FWCore/ParameterSet/interface/ConfigurationDescriptions.h>
 #include <FWCore/ParameterSet/interface/ParameterSetDescription.h>
 
+#include <DataFormats/METReco/interface/CorrMETData.h>
 #include <DataFormats/PatCandidates/interface/Jet.h>
 #include <DataFormats/PatCandidates/interface/MET.h>
 #include <CommonTools/Utils/interface/StringCutObjectSelector.h>
@@ -38,8 +39,10 @@
  * not necessarily symmetric, and the largest one is chosen as the uncertainty to store.
  * 
  * In addition to fully corrected MET and its systematic variations, this plugin saves raw MET and
- * MET from which corrections induced by stored jets are removed. The latter is useful to reapply
- * T1 corrections on top of PEC tuples.
+ * several other versions of (partly) uncorrected MET. First of them is MET from which T1
+ * corrections induced by stored jets are removed. User can provide a list of MET correction
+ * objects (same as used by the standard MET tool); for each of them the plugin stores fully
+ * corrected MET from which that correction is undone.
  */
 class PECJetMET: public edm::EDAnalyzer
 {
@@ -101,6 +104,9 @@ private:
      * JEC/JER factors and their uncertainties will not be saved.
      */
     bool const rawJetMomentaOnly;
+    
+    // MET corrections to undo when computing uncorrected METs
+    std::vector<edm::EDGetTokenT<CorrMETData>> metCorrectorTokens;
     
     
     /// An object to handle the output ROOT file

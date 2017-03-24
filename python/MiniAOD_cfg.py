@@ -394,7 +394,8 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
     jetSelection = jetQualityCuts,
-    met = metTag
+    met = metTag,
+    metCorrToUndo = cms.VInputTag(cms.InputTag('patPFMetT1T2Corr', 'type1'))
 )
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',

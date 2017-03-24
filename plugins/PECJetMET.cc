@@ -28,6 +28,9 @@ PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("contIDMaps"))
         contIDMapTokens.emplace_back(consumes<ValueMap<float>>(tag));
     
+    for (InputTag const &tag: cfg.getParameter<vector<InputTag>>("metCorrToUndo"))
+        metCorrectorTokens.emplace_back(consumes<CorrMETData>(tag));
+    
     
     // Currently plugin does not read any information from the ID maps. Throw an exception if any
     //are actually given.
@@ -49,16 +52,18 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
     edm::ParameterSetDescription desc;
     desc.add<bool>("runOnData")->
-     setComment("Indicates whether data or simulation is being processed.");
+      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("jets")->setComment("Collection of jets.");
-    desc.add<vector<string>>("jetSelection", vector<string>(0))->
-     setComment("User-defined selections for jets whose results will be stored in the output "
-     "tree.");
-    desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>(0))->
-     setComment("Maps with real-valued ID decisions to be stored.");
+    desc.add<vector<string>>("jetSelection", vector<string>())->
+      setComment("User-defined selections for jets whose results will be stored in the output "
+      "tree.");
+    desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>())->
+      setComment("Maps with real-valued ID decisions to be stored.");
     desc.add<bool>("rawJetMomentaOnly", false)->
-     setComment("Requests that only raw jet momenta are saved but not their corrections.");
+      setComment("Requests that only raw jet momenta are saved but not their corrections.");
     desc.add<InputTag>("met")->setComment("MET.");
+    desc.add<vector<InputTag>>("metCorrToUndo", vector<InputTag>())->
+      setComment("MET corrections to undo for (partly) uncorreted METs.");
     
     descriptions.add("jetMET", desc);
 }
@@ -210,7 +215,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         }
         
         
-        // Loose PF jet ID [1]. Accessors to energy factions take into account JEC, so there is no
+        // Loose PF jet ID [1]. Accessors to energy fractions take into account JEC, so there is no
         //need to undo the corrections.
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016?rev=1
         bool passPFID = false;
@@ -257,6 +262,14 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
     event.getByToken(metToken, metHandle);
     pat::MET const &met = metHandle->front();
     
+    
+    // Read MET correctors that will be used to undo the corrections
+    vector<Handle<CorrMETData>> metCorrectors(metCorrectorTokens.size());
+    
+    for (unsigned i = 0; i < metCorrectorTokens.size(); ++i)
+        event.getByToken(metCorrectorTokens.at(i), metCorrectors.at(i));
+    
+    
     storeMETSignificance = met.metSignificance();
     
     storeMETs.clear();
@@ -302,6 +315,18 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
     storeMET.SetPt(metUncorrT1.Mod());
     storeMET.SetPhi(metUncorrT1.Phi());
     storeUncorrMETs.emplace_back(storeMET);
+    
+    // (Partly) uncorrected MET for each given corrector
+    for (auto const &metCorrector: metCorrectors)
+    {
+        TVector2 const uncorrMET(
+          met.shiftedPx(pat::MET::NoShift, pat::MET::Type1) - metCorrector->mex,
+          met.shiftedPy(pat::MET::NoShift, pat::MET::Type1) - metCorrector->mey);
+        storeMET.Reset();
+        storeMET.SetPt(uncorrMET.Mod());
+        storeMET.SetPhi(uncorrMET.Phi());
+        storeUncorrMETs.emplace_back(storeMET);
+    }
     
     
     // Fill the output tree

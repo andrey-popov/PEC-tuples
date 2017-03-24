@@ -278,8 +278,8 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     process.analysisPatJets = cms.EDFilter('JERCJetSelector',
         src = cms.InputTag(recorrectedJetsLabel),
         jetTypeLabel = cms.string('AK4PFchs'),
-        preselection = cms.string('abs(eta) < 5.2'),
-        minPt = cms.double(20.),
+        preselection = cms.string(''),
+        minPt = cms.double(15.),
         includeJERCVariations = cms.bool(not runOnData),
         genJets = cms.InputTag('slimmedGenJets'),
         rho = cms.InputTag('fixedGridRhoFastjetAll')
