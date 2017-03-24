@@ -310,25 +310,46 @@ def define_METs(process, runOnData=False):
             simulation.
     
     Return value:
-        None.
-    
-    Among other things, add to the process producer slimmedMETs, which
-    overrides the namesake collection from MiniAOD.  User must use this
-    new collection.
+        InputTag that defines MET collection to be used.
     """
     
     # Recalculate MET corrections [1]
     # [1] https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription?rev=64#Instructions_for_8_0_X_X_26_patc
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import \
         runMetCorAndUncFromMiniAOD
-    runMetCorAndUncFromMiniAOD(
-        process,
-        isData=runOnData,
-        # electronColl='', muonColl='', photonColl='', tauColl='',
-        postfix=''
-    )
-    # ^Use default collections of leptons, taus, and photons.  Could
-    # have switched off calculation of the corresponding variations of
-    # MET by setting collection names to '', but PATMETSlimmer requires
-    # these variations [1].
-    # [1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_18/PhysicsTools/PatAlgos/plugins/PATMETSlimmer.cc#L80-L95
+    runMetCorAndUncFromMiniAOD(process, isData=runOnData, postfix='')
+    
+    
+    # In data apply an additional correction for the ECAL gain switch
+    # issue [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/ReMiniAOD03Feb2017Notes?rev=19#MET_Recipes
+    if runOnData:
+        from PhysicsTools.PatUtils.tools.corMETFromMuonAndEG import corMETFromMuonAndEG
+        corMETFromMuonAndEG(
+            process,
+            pfCandCollection='',
+            electronCollection='slimmedElectronsBeforeGSFix',
+            photonCollection='slimmedPhotonsBeforeGSFix',
+            corElectronCollection='slimmedElectrons',
+            corPhotonCollection='slimmedPhotons',
+            allMETEGCorrected=True,
+            muCorrection=False,
+            eGCorrection=True,
+            runOnMiniAOD=True,
+            postfix='MuEGClean'
+        )
+        
+        process.slimmedMETsMuEGClean = process.slimmedMETs.clone(
+            src = cms.InputTag('patPFMetT1MuEGClean'),
+            rawVariation = cms.InputTag('patPFMetRawMuEGClean'),
+            t1Uncertainties = cms.InputTag('patPFMetT1%sMuEGClean')
+        )
+        del process.slimmedMETsMuEGClean.caloMET
+    
+    
+    if runOnData:
+        metTag = cms.InputTag('slimmedMETsMuEGClean', processName=process.name_())
+    else:
+        metTag = cms.InputTag('slimmedMETs', processName=process.name_())
+    
+    return metTag
