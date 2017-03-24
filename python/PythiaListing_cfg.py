@@ -12,10 +12,6 @@ from FWCore.ParameterSet.VarParsing import VarParsing
 options = VarParsing('python')
 
 options.register(
-    'fileName', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'Name of the input file'
-)
-options.register(
     'run', 1, VarParsing.multiplicity.singleton, VarParsing.varType.int, 'Run number'
 )
 options.register(
@@ -24,12 +20,12 @@ options.register(
 
 options.parseArguments()
 
-if len(options.fileName) == 0:
+if len(options.inputFiles) == 0:
     raise RuntimeError, 'No input file is provided'
 
 
 process.source = cms.Source('PoolSource',
-    fileNames = cms.untracked.vstring(options.fileName))
+    fileNames = cms.untracked.vstring(options.inputFiles))
 
 if (options.event != 0):
     process.source.eventsToProcess = cms.untracked.VEventRange(
@@ -41,7 +37,7 @@ process.load('SimGeneral.HepPDTESSource.pythiapdt_cfi')
 process.printTree = cms.EDAnalyzer('ParticleListDrawer',
     maxEventsToPrint = cms.untracked.int32(1),
     printVertex = cms.untracked.bool(False),
-    src = cms.InputTag('genParticles')
+    src = cms.InputTag('prunedGenParticles')
 )
 
 process.p = cms.Path(process.printTree)
