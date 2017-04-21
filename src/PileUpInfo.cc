@@ -5,7 +5,8 @@ pec::PileUpInfo::PileUpInfo() noexcept:
     numPV(0),
     rho(0), rhoCentral(0),
     trueNumPU(0),
-    inTimeNumPU(0)
+    inTimeNumPU(0),
+    maxPtHat(0)
 {}
 
 
@@ -16,6 +17,7 @@ void pec::PileUpInfo::Reset()
     rhoCentral = 0;
     trueNumPU = 0;
     inTimeNumPU = 0;
+    maxPtHat = 0;
 }
 
 
@@ -49,6 +51,12 @@ void pec::PileUpInfo::SetInTimePU(unsigned n)
 }
 
 
+void pec::PileUpInfo::SetMaxPtHat(float maxPtHat_)
+{
+    maxPtHat = maxPtHat_;
+}
+
+
 unsigned pec::PileUpInfo::NumPV() const
 {
     return numPV;
@@ -76,4 +84,10 @@ float pec::PileUpInfo::TrueNumPU() const
 unsigned pec::PileUpInfo::InTimePU() const
 {
     return inTimeNumPU;
+}
+
+
+float pec::PileUpInfo::MaxPtHat() const
+{
+    return maxPtHat;
 }

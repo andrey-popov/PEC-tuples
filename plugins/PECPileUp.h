@@ -59,6 +59,9 @@ private:
      */
     edm::EDGetTokenT<edm::View<PileupSummaryInfo>> puSummaryToken;
     
+    /// Flag showing whether largest ptHat in pile-up should be stored
+    bool saveMaxPtHat;
+    
     
     /// An object to handle the output ROOT file
     edm::Service<TFileService> fileService;

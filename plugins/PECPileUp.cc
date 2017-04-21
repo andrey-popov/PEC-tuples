@@ -7,17 +7,24 @@
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
+#include <algorithm>
+
 
 using namespace edm;
 using namespace std;
 
 
 PECPileUp::PECPileUp(ParameterSet const &cfg):
-    runOnData(cfg.getParameter<bool>("runOnData"))
+    runOnData(cfg.getParameter<bool>("runOnData")),
+    saveMaxPtHat(cfg.getParameter<bool>("saveMaxPtHat"))
 {
+    if (runOnData)
+        saveMaxPtHat = false;
+    
+    
     // Register required input data
     primaryVerticesToken =
-     consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
+      consumes<reco::VertexCollection>(cfg.getParameter<InputTag>("primaryVertices"));
     puSummaryToken = consumes<View<PileupSummaryInfo>>(cfg.getParameter<InputTag>("puInfo"));
     rhoToken = consumes<double>(cfg.getParameter<InputTag>("rho"));
     rhoCentralToken = consumes<double>(cfg.getParameter<InputTag>("rhoCentral"));
@@ -28,16 +35,18 @@ void PECPileUp::fillDescriptions(ConfigurationDescriptions &descriptions)
 {
     ParameterSetDescription desc;
     desc.add<InputTag>("primaryVertices")->
-     setComment("Collection of reconstructed primary vertices.");
+      setComment("Collection of reconstructed primary vertices.");
     desc.add<InputTag>("rho", InputTag("fixedGridRhoFastjetAll"))->
-     setComment("Rho (mean angular pt density).");
+      setComment("Rho (mean angular pt density).");
     desc.add<InputTag>("rhoCentral", InputTag("fixedGridRhoFastjetCentral"))->
-     setComment("Rho in the central region.");
+      setComment("Rho in the central region.");
     desc.add<bool>("runOnData")->
-     setComment("Indicates whether data or simulation is being processed.");
+      setComment("Indicates whether data or simulation is being processed.");
     desc.add<InputTag>("puInfo", InputTag("addPileupInfo"))->
-     setComment("Pile-up information as simulated. If runOnData is true, this parameter is "
-     "ignored.");
+      setComment("Pile-up information as simulated. If runOnData is true, this parameter is "
+      "ignored.");
+    desc.add<bool>("saveMaxPtHat", false)->
+      setComment("Indicates whether largest ptHat in in-time pile-up should be stored.");
     
     descriptions.add("pileUp", desc);
 }
@@ -95,6 +104,13 @@ void PECPileUp::analyze(Event const &event, EventSetup const &)
             if (puSummary->at(i).getBunchCrossing() == 0)
             {
                 puInfo.SetInTimePU(puSummary->at(i).getPU_NumInteractions());
+                
+                if (saveMaxPtHat)
+                {
+                    auto const &ptHats = puSummary->at(i).getPU_pT_hats();
+                    puInfo.SetMaxPtHat(*max_element(ptHats.begin(), ptHats.end()));
+                }
+                
                 break;
             }
     }
