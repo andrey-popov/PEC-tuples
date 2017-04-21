@@ -51,7 +51,8 @@ public:
     /**
      * \brief Sets the largest ptHat of pile-up interactions in the nominal bunch crossing
      * 
-     * The method must be used for simulation only.
+     * The method must be used for simulation only. If an event contains no pileup interactions,
+     * set the value to zero.
      */
     void SetMaxPtHat(float maxPtHat);
     

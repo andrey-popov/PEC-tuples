@@ -108,7 +108,11 @@ void PECPileUp::analyze(Event const &event, EventSetup const &)
                 if (saveMaxPtHat)
                 {
                     auto const &ptHats = puSummary->at(i).getPU_pT_hats();
-                    puInfo.SetMaxPtHat(*max_element(ptHats.begin(), ptHats.end()));
+                    
+                    if (ptHats.size() > 0)
+                        puInfo.SetMaxPtHat(*max_element(ptHats.begin(), ptHats.end()));
+                    else
+                        puInfo.SetMaxPtHat(0.);
                 }
                 
                 break;
