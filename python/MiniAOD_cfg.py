@@ -56,9 +56,8 @@ options.register(
     'Leptonic channels to process'
 )
 options.register(
-    'jetSel', '0j30', VarParsing.multiplicity.singleton, VarParsing.varType.string,
-    'Selection on jets. E.g. 2j30 means that an event must contain at least 2 jets with '
-    'pt > 30 GeV/c'
+    'jetSel', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'Selection on jet pt and b-tagging discriminators'
 )
 options.register(
     'processIDs', '', VarParsing.multiplicity.singleton, VarParsing.varType.string,
@@ -130,20 +129,6 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, options.globalTag)
 
 
-# Parse jet selection
-jetSelParsed = re.match(r'(\d+)j(\d+)', options.jetSel)
-if jetSelParsed is None:
-    raise RuntimeError('Failed parse jet selection "{}".'.format(options.jetSel))
- 
-minNumJets = int(jetSelParsed.group(1))
-jetPtThreshold = int(jetSelParsed.group(2))
-
-if minNumJets > 0:
-    print 'Will select events with at least {} jets with pt > {} GeV.'.format(
-        minNumJets, jetPtThreshold
-    )
-
-
 # Define the input files
 process.source = cms.Source('PoolSource',
     inputCommands = cms.untracked.vstring('keep *', 'drop LHERunInfoProduct_*_*_*')
@@ -204,7 +189,7 @@ process.RandomNumberGeneratorService = cms.Service('RandomNumberGeneratorService
         initialSeed = cms.untracked.uint32(372),
         engineName = cms.untracked.string('TRandom3')
     ),
-    countGoodJets = cms.PSet(
+    jetsForEventSelection = cms.PSet(
         initialSeed = cms.untracked.uint32(3631),
         engineName = cms.untracked.string('TRandom3')
     )
@@ -281,17 +266,9 @@ if elChan:
 if muChan:
     process.muPath += process.countTightPatMuons
 
-if minNumJets > 0:
-    process.countGoodJets = cms.EDFilter('JERCJetSelector',
-        src = cms.InputTag('analysisPatJets'),
-        jetTypeLabel = cms.string('AK4PFchs'),
-        minPt = cms.double(jetPtThreshold),
-        includeJERCVariations = cms.bool(not runOnData),
-        genJets = cms.InputTag('slimmedGenJets'),
-        rho = cms.InputTag('fixedGridRhoFastjetAll'),
-        minNum = cms.uint32(minNumJets)
-    )
-    paths.append(process.countGoodJets)
+if options.jetSel:
+    from Analysis.PECTuples.Utils_cff import add_jet_selection
+    add_jet_selection(options.jetSel, process, paths, runOnData)
 
 
 # Apply event filters recommended for analyses involving MET
