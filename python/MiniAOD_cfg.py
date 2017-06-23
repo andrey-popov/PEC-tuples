@@ -222,20 +222,7 @@ process.load('Configuration.StandardSequences.MagneticField_cff')
 process.elPath = cms.Path()
 process.muPath = cms.Path()
 
-
-# A simple class to add modules to all the paths simultaneously
-class PathManager:
-    
-    def __init__(self, *paths):
-        self.paths = []
-        for p in paths:
-            self.paths.append(p)
-    
-    def append(self, *modules):
-        for p in self.paths:
-            for m in modules:
-                p += m
-
+from Analysis.PECTuples.Utils_cff import PathManager
 paths = PathManager(process.elPath, process.muPath)
 
 
