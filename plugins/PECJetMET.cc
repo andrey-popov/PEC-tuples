@@ -160,11 +160,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         
         
         // Save b-tagging discriminators
-        storeJet.SetBTag(pec::Jet::BTagAlgo::CSV,
-          j.bDiscriminator("pfCombinedInclusiveSecondaryVertexV2BJetTags"));
         storeJet.SetBTag(pec::Jet::BTagAlgo::CMVA, j.bDiscriminator("pfCombinedMVAV2BJetTags"));
-        storeJet.SetCTag(pec::Jet::CTagAlgo::CvsB, j.bDiscriminator("pfCombinedCvsBJetTags"));
-        storeJet.SetCTag(pec::Jet::CTagAlgo::CvsL, j.bDiscriminator("pfCombinedCvsLJetTags"));
         storeJet.SetBTagDNN(j.bDiscriminator("pfDeepCSVJetTags:probbb"),
           j.bDiscriminator("pfDeepCSVJetTags:probb"),
           j.bDiscriminator("pfDeepCSVJetTags:probcc"),
@@ -177,6 +173,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         storeJet.SetPileUpID(j.userFloat("pileupJetId:fullDiscriminant"));
         
         
+        #if 0
         // Calculate the jet pull angle
         double const y = rawP4.Rapidity();
         double const phi = rawP4.phi();
@@ -205,6 +202,7 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         //the polar angle only, it is not necessary
         
         storeJet.SetPullAngle(atan2(pullPhi, pullY));
+        #endif
         
 
         if (not runOnData)
