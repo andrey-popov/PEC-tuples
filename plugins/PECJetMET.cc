@@ -165,11 +165,11 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         storeJet.SetBTag(pec::Jet::BTagAlgo::CMVA, j.bDiscriminator("pfCombinedMVAV2BJetTags"));
         storeJet.SetCTag(pec::Jet::CTagAlgo::CvsB, j.bDiscriminator("pfCombinedCvsBJetTags"));
         storeJet.SetCTag(pec::Jet::CTagAlgo::CvsL, j.bDiscriminator("pfCombinedCvsLJetTags"));
-        storeJet.SetBTagDNN(j.bDiscriminator("deepFlavourJetTags:probbb"),
-          j.bDiscriminator("deepFlavourJetTags:probb"),
-          j.bDiscriminator("deepFlavourJetTags:probcc"),
-          j.bDiscriminator("deepFlavourJetTags:probc"),
-          j.bDiscriminator("deepFlavourJetTags:probudsg"));
+        storeJet.SetBTagDNN(j.bDiscriminator("pfDeepCSVJetTags:probbb"),
+          j.bDiscriminator("pfDeepCSVJetTags:probb"),
+          j.bDiscriminator("pfDeepCSVJetTags:probcc"),
+          j.bDiscriminator("pfDeepCSVJetTags:probc"),
+          j.bDiscriminator("pfDeepCSVJetTags:probudsg"));
         
         
         // Save pileup ID

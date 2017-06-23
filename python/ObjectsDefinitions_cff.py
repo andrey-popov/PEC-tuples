@@ -260,9 +260,9 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
         jetSource = cms.InputTag('slimmedJets'),
         jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None'),
         btagDiscriminators = [
-            'deepFlavourJetTags:probbb', 'deepFlavourJetTags:probb',
-            'deepFlavourJetTags:probcc', 'deepFlavourJetTags:probc',
-            'deepFlavourJetTags:probudsg'
+            'pfDeepCSVJetTags:probbb', 'pfDeepCSVJetTags:probb',
+            'pfDeepCSVJetTags:probcc', 'pfDeepCSVJetTags:probc',
+            'pfDeepCSVJetTags:probudsg'
         ]
     )
     
