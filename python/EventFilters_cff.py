@@ -7,7 +7,7 @@ accordingly.
 
 import FWCore.ParameterSet.Config as cms
 
-def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
+def apply_event_filters(process, paths, runOnData=False, isPromptReco=False, processName='PAT'):
     """Configure the process to reject anomalous events.
     
     Apply filters to reject anomalous or otherwise problematic events as
@@ -23,6 +23,8 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
             simulation.
         isPromptReco: Flag to distinguish PromptReco of data from
             ReReco.  Not used currently.
+        processName: Name of the process in which stored filter
+            decisions were computed.
     
     Return value:
         None.
@@ -40,7 +42,7 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False):
         ),
         andOr = cms.bool(False),  # AND mode
         throw = cms.bool(True),
-        TriggerResultsTag = cms.InputTag('TriggerResults', '', 'PAT')
+        TriggerResultsTag = cms.InputTag('TriggerResults', '', processName)
     )
     
     paths.append(process.applyEmulatedMETFilters)

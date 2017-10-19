@@ -293,7 +293,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     return recorrectedJetsLabel, jetQualityCuts
 
 
-def define_METs(process, runOnData=False):
+def define_METs(process, runOnData=False, legacy2016=False):
     """Define reconstructed MET.
     
     Configure recalculation of corrected MET and its systematic
@@ -308,6 +308,8 @@ def define_METs(process, runOnData=False):
         process: The process to which relevant MET producers are added.
         runOnData: Flag to distinguish processing of data and
             simulation.
+        legacy2016: Flags legacy 2016 data, for which corrections of the
+            ECAL gain switch are not needed.
     
     Return value:
         InputTag that defines MET collection to be used.
@@ -321,9 +323,9 @@ def define_METs(process, runOnData=False):
     
     
     # In data apply an additional correction for the ECAL gain switch
-    # issue [1]
+    # issue [1] unless legacy re-reconstruction is used
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/ReMiniAOD03Feb2017Notes?rev=19#MET_Recipes
-    if runOnData:
+    if runOnData and not legacy2016:
         from PhysicsTools.PatUtils.tools.corMETFromMuonAndEG import corMETFromMuonAndEG
         corMETFromMuonAndEG(
             process,
@@ -345,10 +347,9 @@ def define_METs(process, runOnData=False):
             t1Uncertainties = cms.InputTag('patPFMetT1%sMuEGClean')
         )
         del process.slimmedMETsMuEGClean.caloMET
-    
-    
-    if runOnData:
+        
         metTag = cms.InputTag('slimmedMETsMuEGClean', processName=process.name_())
+    
     else:
         metTag = cms.InputTag('slimmedMETs', processName=process.name_())
     
