@@ -67,14 +67,10 @@ options.register(
     'runOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Indicates whether the job processes data or simulation'
 )
-options.register(
-    'isPromptReco', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
-)
-options.register(
-    'isLegacy2016', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
-    'Flags legacy ReReco fo 2016 data. Ignored for simulation'
-)
+# options.register(
+#     'isPromptReco', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
+#     'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
+# )
 options.register(
     'disableTriggerFilter', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Switch off filtering on selected triggers'
@@ -114,14 +110,14 @@ elChan = (options.channels.find('e') != -1)
 muChan = (options.channels.find('m') != -1)
 
 
-# Provide a default global tag if user has not given any.  Chosen as
-# according to recommendations for JEC [1].
-# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=125
-if len(options.globalTag) == 0:
+# Provide a default global tag if user has not given any.  Chosen
+# according to [1].  They include outdated JEC Summer16_23Sep2016V4.
+# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2017_Nov_re_reco?rev=615
+if not options.globalTag:
     if runOnData:
-        options.globalTag = '80X_dataRun2_2016SeptRepro_v7'
+        options.globalTag = '94X_dataRun2_ReReco_EOY17_v2'
     else:
-        options.globalTag = '80X_mcRun2_asymptotic_2016_TrancheIV_v8'
+        options.globalTag = '94X_mc2017_realistic_v10'
     
     print 'WARNING: No global tag provided. Will use the default one: {}.'.format(
         options.globalTag
@@ -143,14 +139,11 @@ if len(options.inputFiles) > 0:
 else:
     # Default input files for testing
     if runOnData:
-        # An input file containing run 283885 from era 2016H.  This is a
-        # certified run with a significant integrated luminosity.
-        if options.isLegacy2016:
-            process.source.fileNames = cms.untracked.vstring('/store/data/Run2016H/SingleMuon/MINIAOD/07Aug17-v1/50000/000895BD-B682-E711-8680-008CFAF3543C.root')
-        else:
-            process.source.fileNames = cms.untracked.vstring('/store/data/Run2016H/SingleMuon/MINIAOD/03Feb2017_ver2-v1/110000/0A4364ED-83EA-E611-B619-002481CFE888.root')
+        # A file from era 2017F, which contains lumi sections from
+        # multiple certified runs, mostly 305064 and 305377.
+        process.source.fileNames = cms.untracked.vstring('/store/data/Run2017F/SingleMuon/MINIAOD/17Nov2017-v1/010000/547EF7C6-A2EC-E711-88E3-0CC47A7C356A.root')
     else:
-        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIISummer16MiniAODv2/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6-v1/50000/0693E0E7-97BE-E611-B32F-0CC47A78A3D8.root')
+        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAOD/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/50000/081541BD-E8DF-E711-AD98-02163E00C6E3.root')
 
 # process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
@@ -256,7 +249,7 @@ eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
     define_electrons(process)
 muQualityCuts = define_muons(process)
 recorrectedJetsLabel, jetQualityCuts = define_jets(process, reapplyJEC=False, runOnData=runOnData)
-metTag = define_METs(process, runOnData=runOnData, legacy2016=options.isLegacy2016)
+metTag = define_METs(process, runOnData=runOnData)
 
 
 # The loose event selection
@@ -281,8 +274,8 @@ if options.jetSel:
 # Apply event filters recommended for analyses involving MET
 from Analysis.PECTuples.EventFilters_cff import apply_event_filters
 apply_event_filters(
-    process, paths, runOnData=runOnData, isPromptReco=options.isPromptReco,
-    processName='RECO' if runOnData and options.isLegacy2016 else 'PAT'
+    process, paths, runOnData=runOnData,
+    processName='RECO' if runOnData else 'PAT'
 )
 
 
@@ -328,19 +321,6 @@ else:
     )
 
 paths.append(process.pecTrigger)
-
-
-# Save flags marking events with duplicate and spurious muons [1-2].
-# These flags are not available (and hopefully not needed) in legacy
-# re-reconstruction of 2016 data.
-# [1] https://indico.cern.ch/event/602633/contributions/2462363/
-# [2] https://hypernews.cern.ch/HyperNews/CMS/get/physTools/3527.html
-if runOnData and not options.isLegacy2016:
-    process.eventFlags = cms.EDAnalyzer('EventFlags',
-        src = cms.InputTag('TriggerResults', '', 'PAT'),
-        flags = cms.vstring('Flag_duplicateMuons:DuplicateMuons', 'Flag_badMuons:BadMuons')
-    )
-    paths.append(process.eventFlags)
 
 
 # Save event ID and basic event content

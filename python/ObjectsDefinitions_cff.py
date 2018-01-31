@@ -293,7 +293,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     return recorrectedJetsLabel, jetQualityCuts
 
 
-def define_METs(process, runOnData=False, legacy2016=False):
+def define_METs(process, runOnData=False):
     """Define reconstructed MET.
     
     Configure recalculation of corrected MET and its systematic
@@ -308,8 +308,6 @@ def define_METs(process, runOnData=False, legacy2016=False):
         process: The process to which relevant MET producers are added.
         runOnData: Flag to distinguish processing of data and
             simulation.
-        legacy2016: Flags legacy 2016 data, for which corrections of the
-            ECAL gain switch are not needed.
     
     Return value:
         InputTag that defines MET collection to be used.
@@ -321,36 +319,5 @@ def define_METs(process, runOnData=False, legacy2016=False):
         runMetCorAndUncFromMiniAOD
     runMetCorAndUncFromMiniAOD(process, isData=runOnData, postfix='')
     
-    
-    # In data apply an additional correction for the ECAL gain switch
-    # issue [1] unless legacy re-reconstruction is used
-    # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/ReMiniAOD03Feb2017Notes?rev=19#MET_Recipes
-    if runOnData and not legacy2016:
-        from PhysicsTools.PatUtils.tools.corMETFromMuonAndEG import corMETFromMuonAndEG
-        corMETFromMuonAndEG(
-            process,
-            pfCandCollection='',
-            electronCollection='slimmedElectronsBeforeGSFix',
-            photonCollection='slimmedPhotonsBeforeGSFix',
-            corElectronCollection='slimmedElectrons',
-            corPhotonCollection='slimmedPhotons',
-            allMETEGCorrected=True,
-            muCorrection=False,
-            eGCorrection=True,
-            runOnMiniAOD=True,
-            postfix='MuEGClean'
-        )
-        
-        process.slimmedMETsMuEGClean = process.slimmedMETs.clone(
-            src = cms.InputTag('patPFMetT1MuEGClean'),
-            rawVariation = cms.InputTag('patPFMetRawMuEGClean'),
-            t1Uncertainties = cms.InputTag('patPFMetT1%sMuEGClean')
-        )
-        del process.slimmedMETsMuEGClean.caloMET
-        
-        metTag = cms.InputTag('slimmedMETsMuEGClean', processName=process.name_())
-    
-    else:
-        metTag = cms.InputTag('slimmedMETs', processName=process.name_())
-    
+    metTag = cms.InputTag('slimmedMETs', processName=process.name_())
     return metTag
