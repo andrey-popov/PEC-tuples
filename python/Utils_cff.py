@@ -15,6 +15,13 @@ class PathManager:
         self.paths = list(paths)
     
     
+    def associate(self, *tasks):
+        """Associate each path with given tasks."""
+        
+        for p in self.paths:
+            p.associate(*tasks)
+    
+    
     def append(self, *modules):
         """Append one or more modules to each path."""
         
@@ -149,3 +156,27 @@ def add_jet_selection(selection, process, paths, runOnData, src='analysisPatJets
         )
         
         paths.append(process.countBTaggedJets)
+        
+        producers = cms.Task(process.bTaggedJetsForEventSelection)
+        paths.associate(producers)
+
+
+def get_task(process, taskName):
+    """Find and return a task with the given name.
+    
+    If the task does not exist, create it.
+    """
+    
+    if hasattr(process, taskName):
+        task = getattr(process, taskName)
+        
+        if not isinstance(task, cms.Task):
+            raise RuntimeError('Attribute "{}" of process "{}" is not a Task.'.format(
+                taskName, process.name_()
+            ))
+    
+    else:
+        setattr(process, taskName, cms.Task())
+        task = getattr(process, taskName)
+    
+    return task

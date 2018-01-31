@@ -8,7 +8,7 @@ objects.
 import FWCore.ParameterSet.Config as cms
 
 
-def define_electrons(process):
+def define_electrons(process, task):
     """Define reconstructed electrons.
     
     Configure reconstructed electrons to be used in an analysis,
@@ -17,6 +17,7 @@ def define_electrons(process):
     Arguments:
         process: The process to which relevant electron producers are
             added.
+        task: Task to which non-standard producers are attached.
     
     Return value:
         Return a tuple with the following elements:
@@ -105,12 +106,15 @@ def define_electrons(process):
     )
     
     
-    # Return values
+    # Add producers to the task
+    task.add(process.analysisPatElectrons, process.patElectronsForEventSelection)
+    
+    
     return eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps
 
 
 
-def define_muons(process):
+def define_muons(process, task):
     """Define reconstructed muons.
     
     Configure reconstructed muons to be used in an analysis, together
@@ -118,6 +122,7 @@ def define_muons(process):
     
     Arguments:
         process: The process to which relevant muon producers are added.
+        task: Task to which non-standard producers are attached.
     
     Return value:
         A list of string-based quality selections whose decisions are to
@@ -153,11 +158,14 @@ def define_muons(process):
     )
     
     
-    # Return values
+    # Add producers to the task
+    task.add(process.analysisPatMuons, process.patMuonsForEventSelection)
+    
+    
     return muQualityCuts
 
 
-def define_photons(process):
+def define_photons(process, task):
     """Define reconstructed photons.
     
     Configure reconstructed photons to be used in an analysis.
@@ -165,6 +173,7 @@ def define_photons(process):
     Arguments:
         process: The process to which relevant photon producers are
             added.
+        task: Task to which non-standard producers are attached.
     
     Return value:
         Return a tuple with the following elements:
@@ -216,11 +225,16 @@ def define_photons(process):
         '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)'
     )
     
+    
+    # Add producers to the task
+    task.add(process.analysisPatPhotons)
+    
+    
     return phoQualityCuts, phoCutBasedIDMaps
 
 
 
-def define_jets(process, reapplyJEC=False, runOnData=False):
+def define_jets(process, task, reapplyJEC=False, runOnData=False):
     """Define reconstructed jets.
     
     Configure reconstructed jets to be used in an analysis.  In
@@ -228,6 +242,7 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     
     Arguments:
         process: The process to which relevant jet producers are added.
+        task: Task to which non-standard producers are attached.
         reapplyJEC: Flag determining if JEC are to be reapplied or not.
         runOnData: Flag to distinguish processing of data and
             simulation.
@@ -290,10 +305,14 @@ def define_jets(process, reapplyJEC=False, runOnData=False):
     jetQualityCuts = cms.vstring()
     
     
+    # Add (non-standard) producers to the task
+    task.add(process.analysisPatJets)
+    
+    
     return recorrectedJetsLabel, jetQualityCuts
 
 
-def define_METs(process, runOnData=False):
+def define_METs(process, task, runOnData=False):
     """Define reconstructed MET.
     
     Configure recalculation of corrected MET and its systematic
@@ -306,6 +325,8 @@ def define_METs(process, runOnData=False):
     
     Arguments:
         process: The process to which relevant MET producers are added.
+        task: Task to which non-standard producers are attached.
+            Not used currently.
         runOnData: Flag to distinguish processing of data and
             simulation.
     

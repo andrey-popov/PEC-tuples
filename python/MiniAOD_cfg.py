@@ -35,8 +35,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 # Ask to print a summary in the log
 process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True),
-    allowUnscheduled = cms.untracked.bool(True)
+    wantSummary = cms.untracked.bool(True)
 )
 
 
@@ -240,16 +239,20 @@ process.goodOfflinePrimaryVertices = cms.EDFilter('FirstVertexFilter',
 paths.append(process.goodOfflinePrimaryVertices)
 
 
-# Define basic reconstructed objects
+# Define basic reconstructed objects.  Non-standard producers are
+# attached to a task.
 from Analysis.PECTuples.ObjectsDefinitions_cff import (
     define_electrons, define_muons, define_jets, define_METs
 )
+process.analysisTask = cms.Task()
 
 eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
-    define_electrons(process)
-muQualityCuts = define_muons(process)
-recorrectedJetsLabel, jetQualityCuts = define_jets(process, reapplyJEC=False, runOnData=runOnData)
-metTag = define_METs(process, runOnData=runOnData)
+    define_electrons(process, process.analysisTask)
+muQualityCuts = define_muons(process, process.analysisTask)
+recorrectedJetsLabel, jetQualityCuts = define_jets(
+    process, process.analysisTask, reapplyJEC=False, runOnData=runOnData
+)
+metTag = define_METs(process, process.analysisTask, runOnData=runOnData)
 
 
 # The loose event selection
@@ -392,6 +395,14 @@ if not runOnData and options.saveGenJets:
         met = metTag
     )
     paths.append(process.pecGenJetMET)
+
+
+# Associate with the paths the analysis-specific task and the task
+# filled by PAT tools automatically
+paths.associate(process.analysisTask)
+
+from PhysicsTools.PatAlgos.tools.helpers import getPatAlgosToolsTask
+paths.associate(getPatAlgosToolsTask(process))
 
 
 # If one of possible channels has not been requested by the user, clear
