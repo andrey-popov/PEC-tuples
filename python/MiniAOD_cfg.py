@@ -265,7 +265,7 @@ muQualityCuts = define_muons(process, process.analysisTask)
 recorrectedJetsLabel, jetQualityCuts = define_jets(
     process, process.analysisTask, reapplyJEC=False, runOnData=runOnData
 )
-metTag = define_METs(process, process.analysisTask, runOnData=runOnData)
+metTag = cms.InputTag('slimmedMETs')
 
 
 # The loose event selection
@@ -372,8 +372,8 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
     jetSelection = jetQualityCuts,
-    met = metTag,
-    metCorrToUndo = cms.VInputTag(cms.InputTag('patPFMetT1T2Corr', 'type1'))
+    met = metTag
+    # metCorrToUndo = cms.VInputTag(cms.InputTag('patPFMetT1T2Corr', 'type1'))
 )
 
 process.pecPileUp = cms.EDAnalyzer('PECPileUp',

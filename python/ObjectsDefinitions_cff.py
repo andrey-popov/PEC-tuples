@@ -264,30 +264,25 @@ def define_jets(process, task, reapplyJEC=False, runOnData=False):
             selection to be used in an analysis.
     """
     
-    # Reapply JEC [1] and evaluate DeepCSV b-taggers [2].  Jet
-    # collection is updated regardless of the value of parameter
-    # reapplyJEC because of the b-taggers.
+    # Reapply JEC [1] if requested.  The corrections are read from the
+    # global tag.
     # [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=139#CorrPatJets
-    # [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/DeepFlavour?rev=6
-    jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
-    if runOnData:
-        jecLevels.append('L2L3Residual')
+    if reapplyJEC:
+        jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
+        if runOnData:
+            jecLevels.append('L2L3Residual')
+        
+        from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
+        updateJetCollection(
+            process, labelName = 'UpdatedJEC',
+            jetSource = cms.InputTag('slimmedJets'),
+            jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None')
+        )
+        
+        recorrectedJetsLabel = 'updatedPatJetsUpdatedJEC'
     
-    from PhysicsTools.PatAlgos.tools.jetTools import updateJetCollection
-    updateJetCollection(
-        process, labelName = 'UpdatedJECBTags',
-        jetSource = cms.InputTag('slimmedJets'),
-        jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None'),
-        btagDiscriminators = [
-            'pfDeepCSVJetTags:probbb', 'pfDeepCSVJetTags:probb',
-            'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg'
-        ]
-    )
-    
-    # When b-tagging is rerun, JEC are first undone, b-tagging
-    # discriminators are evaluated, and then another jet collection is
-    # produced.  This is the name that is used for the final collection.
-    recorrectedJetsLabel = 'updatedPatJetsTransientCorrectedUpdatedJECBTags'
+    else:
+        recorrectedJetsLabel = 'slimmedJets'
     
     
     # Define analysis-level jets.  The produced collection will contain
