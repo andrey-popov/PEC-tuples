@@ -9,6 +9,7 @@
 #include <TVector2.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdlib>
 
@@ -161,11 +162,18 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         
         // Save b-tagging discriminators
         storeJet.SetBTag(pec::Jet::BTagAlgo::CMVA, j.bDiscriminator("pfCombinedMVAV2BJetTags"));
-        storeJet.SetBTagDNN(j.bDiscriminator("pfDeepCSVJetTags:probbb"),
-          j.bDiscriminator("pfDeepCSVJetTags:probb"),
-          j.bDiscriminator("pfDeepCSVJetTags:probcc"),
-          j.bDiscriminator("pfDeepCSVJetTags:probc"),
-          j.bDiscriminator("pfDeepCSVJetTags:probudsg"));
+        
+        // In DeepCSV the "cc" class has been dropped [1]. Since jet stores only four of the five
+        //given discriminators and makes assumptions about their sum, provide zero as the value of
+        //the "cc" discriminator, except for the cases when b tags cannot be evaluated. Then all
+        //five discriminators are set to (-1).
+        //[1] https://hypernews.cern.ch/HyperNews/CMS/get/btag/1503/1.html
+        array<float, 4> bTagsDNN{{j.bDiscriminator("pfDeepCSVJetTags:probbb"),
+          j.bDiscriminator("pfDeepCSVJetTags:probb"), j.bDiscriminator("pfDeepCSVJetTags:probc"),
+          j.bDiscriminator("pfDeepCSVJetTags:probudsg")}};
+        storeJet.SetBTagDNN(bTagsDNN[0], bTagsDNN[1],
+          (bTagsDNN[0] != -1.f) ? 0.f : -1.f,
+          bTagsDNN[2], bTagsDNN[3]);
         
         
         // Save pileup ID

@@ -280,12 +280,11 @@ def define_jets(process, task, reapplyJEC=False, runOnData=False):
         jetCorrections = ('AK4PFchs', cms.vstring(jecLevels), 'None'),
         btagDiscriminators = [
             'pfDeepCSVJetTags:probbb', 'pfDeepCSVJetTags:probb',
-            'pfDeepCSVJetTags:probcc', 'pfDeepCSVJetTags:probc',
-            'pfDeepCSVJetTags:probudsg'
+            'pfDeepCSVJetTags:probc', 'pfDeepCSVJetTags:probudsg'
         ]
     )
     
-    # When b-tagging is rerun, JEC are first undone, b-taggind is
+    # When b-tagging is rerun, JEC are first undone, b-tagging
     # discriminators are evaluated, and then another jet collection is
     # produced.  This is the name that is used for the final collection.
     recorrectedJetsLabel = 'updatedPatJetsTransientCorrectedUpdatedJECBTags'
