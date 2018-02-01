@@ -166,9 +166,7 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEv
 # Override JER factors from global tags with newer versions.  The
 # snippet is adapted from [1].
 # [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
-from CondCore.DBCommon.CondDBSetup_cfi import CondDBSetup
 process.jerDB = cms.ESSource('PoolDBESSource',
-    CondDBSetup,
     connect = cms.string('sqlite_fip:Analysis/PECTuples/data/Spring16_25nsV10_MC.db'),
     toGet = cms.VPSet(
         cms.PSet(
