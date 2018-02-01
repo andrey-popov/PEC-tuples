@@ -52,10 +52,11 @@ def define_electrons(process, task):
     eleEmbeddedCutBasedIDLabels = []
     
     
-    # Setup VID for cut-based ID and trigger-emulating preselection [1]
-    # and MVA-based ID [2]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=41
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=30#VID_based_recipe_provides_pass_f
+    # Setup VID for cut-based and MVA ID [1-2].  Also include old
+    # HLT-emulating preselection, although it is not clear if it is
+    # needed still.
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=53
+    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=38#VID_based_recipe_provides_pass_f
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import (
         switchOnVIDElectronIdProducer, setupAllVIDIdsInModule, setupVIDElectronSelection,
         DataFormat
@@ -63,9 +64,9 @@ def define_electrons(process, task):
     switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
     
     for idModule in [
-        'cutBasedElectronID_Summer16_80X_V1_cff',
+        'cutBasedElectronID_Fall17_94X_V1_cff',
         'cutBasedElectronHLTPreselecition_Summer16_V1_cff',
-        'mvaElectronID_Spring16_GeneralPurpose_V1_cff'
+        'mvaElectronID_Fall17_iso_V1_cff'
     ]:
         setupAllVIDIdsInModule(
             process,
@@ -87,11 +88,11 @@ def define_electrons(process, task):
     
     # Labels of maps with electron ID
     eleIDProducer = 'egmGsfElectronIDs'
-    eleCutBasedIDMaps = [eleIDProducer + ':cutBasedElectronID-Summer16-80X-V1-' + p
+    eleCutBasedIDMaps = [eleIDProducer + ':cutBasedElectronID-Fall17-94X-V1-' + p
         for p in ['veto', 'loose', 'medium', 'tight']] + \
         [eleIDProducer + ':cutBasedElectronHLTPreselection-Summer16-V1'] + \
         [eleIDProducer + ':cutBasedElectronID-nonIso-tight']
-    eleMVAIDMaps = ['electronMVAValueMapProducer:ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values']
+    eleMVAIDMaps = ['electronMVAValueMapProducer:ElectronMVAEstimatorRun2Fall17IsoV1Values']
     
     
     # Additional selections to be evaluated (nothing at the moment)
@@ -107,7 +108,10 @@ def define_electrons(process, task):
     
     
     # Add producers to the task
-    task.add(process.analysisPatElectrons, process.patElectronsForEventSelection)
+    task.add(
+        process.analysisPatElectrons, process.patElectronsForEventSelection,
+        process.egmGsfElectronIDs, process.electronMVAValueMapProducer
+    )
     
     
     return eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps
@@ -196,14 +200,14 @@ def define_photons(process, task):
     
     
     # Decisions of cut-based identification algorithm [1]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2?rev=28
+    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2?rev=43
     from PhysicsTools.SelectorUtils.tools.vid_id_tools import (
         switchOnVIDPhotonIdProducer, setupAllVIDIdsInModule, setupVIDPhotonSelection,
         DataFormat
     )
     switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
     
-    for idModule in ['cutBasedPhotonID_Spring15_25ns_V1_cff']:
+    for idModule in ['cutBasedPhotonID_Fall17_94X_V1_TrueVtx_cff']:
         setupAllVIDIdsInModule(
             process,
             'RecoEgamma.PhotonIdentification.Identification.' +
@@ -215,7 +219,7 @@ def define_photons(process, task):
     
     
     # Labels of maps with photon ID
-    phoCutBasedIDMaps = ['egmPhotonIDs:cutBasedPhotonID-Spring15-25ns-V1-standalone-' + p
+    phoCutBasedIDMaps = ['egmPhotonIDs:cutBasedPhotonID-Fall17-94X-V1-' + p
         for p in ['loose', 'medium', 'tight']]
     
     
@@ -227,7 +231,7 @@ def define_photons(process, task):
     
     
     # Add producers to the task
-    task.add(process.analysisPatPhotons)
+    task.add(process.analysisPatPhotons, process.egmPhotonIDs)
     
     
     return phoQualityCuts, phoCutBasedIDMaps

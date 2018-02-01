@@ -66,6 +66,10 @@ options.register(
     'runOnData', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
     'Indicates whether the job processes data or simulation'
 )
+options.register(
+    'period', '2017', VarParsing.multiplicity.singleton, VarParsing.varType.string,
+    'Data-taking period'
+)
 # options.register(
 #     'isPromptReco', False, VarParsing.multiplicity.singleton, VarParsing.varType.bool,
 #     'In case of data, distinguishes PromptReco and ReReco. Ignored for simulation'
@@ -101,6 +105,12 @@ options.setType('outputFile', VarParsing.varType.string)
 options.setDefault('outputFile', 'sample.root')
 
 options.parseArguments()
+
+
+# Check provided data-taking period.  At the moment only '2017' is
+# supported.
+if options.period not in ['2017']:
+    raise RuntimeError('Data-taking period "{}" is not supported.'.format(options.period))
 
 
 # Make shortcuts to access some of the configuration options easily
@@ -329,10 +339,19 @@ paths.append(process.pecTrigger)
 # Save event ID and basic event content
 process.pecEventID = cms.EDAnalyzer('PECEventID')
 
+effAreasTemplate = 'RecoEgamma/ElectronIdentification/data/{}/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_{}.txt'
+
+if options.period == '2017':
+    effAreas = effAreasTemplate.format('Fall17', '92X')
+elif options.period == '2016':
+    effAreas = effAreasTemplate.format('Summer16', '80X')
+else:
+    effAreas = ''
+
 process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     src = cms.InputTag('analysisPatElectrons'),
     rho = cms.InputTag('fixedGridRhoFastjetAll'),
-    effAreas = cms.FileInPath('RecoEgamma/ElectronIdentification/data/Summer16/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_80X.txt'),
+    effAreas = cms.FileInPath(effAreas),
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
     embeddedBoolIDs = cms.vstring(eleEmbeddedCutBasedIDLabels),
     boolIDMaps = cms.VInputTag(eleCutBasedIDMaps),
