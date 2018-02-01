@@ -46,6 +46,14 @@
  */
 class PECJetMET: public edm::EDAnalyzer
 {
+private:
+    /// Supported versions of jet ID
+    enum class JetID
+    {
+        Ver2016,
+        Ver2017
+    };
+    
 public:
     /**
      * \brief Constructor
@@ -104,6 +112,9 @@ private:
      * JEC/JER factors and their uncertainties will not be saved.
      */
     bool const rawJetMomentaOnly;
+    
+    /// Version of jet ID to be evaluated
+    JetID jetIDVersion;
     
     // MET corrections to undo when computing uncorrected METs
     std::vector<edm::EDGetTokenT<CorrMETData>> metCorrectorTokens;

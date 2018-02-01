@@ -43,6 +43,21 @@ PECJetMET::PECJetMET(edm::ParameterSet const &cfg):
     }
     
     
+    // Read version of jet ID
+    string const jetIDLabel = cfg.getParameter<string>("jetIDVersion");
+    
+    if (jetIDLabel == "2017")
+        jetIDVersion = JetID::Ver2017;
+    else if (jetIDLabel == "2016")
+        jetIDVersion = JetID::Ver2016;
+    else
+    {
+        cms::Exception excp("Configuration");
+        excp << "Jet ID version \"" << jetIDLabel << "\" is not known.";
+        excp.raise();
+    }
+    
+    
     // Construct string-based selectors
     for (string const &selection: cfg.getParameter<vector<string>>("jetSelection"))
         jetSelectors.emplace_back(selection);
@@ -60,6 +75,7 @@ void PECJetMET::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
       "tree.");
     desc.add<vector<InputTag>>("contIDMaps", vector<InputTag>())->
       setComment("Maps with real-valued ID decisions to be stored.");
+    desc.add<string>("jetIDVersion")->setComment("Version of jet ID to evaluate.");
     desc.add<bool>("rawJetMomentaOnly", false)->
       setComment("Requests that only raw jet momenta are saved but not their corrections.");
     desc.add<InputTag>("met")->setComment("MET.");
@@ -221,29 +237,54 @@ void PECJetMET::analyze(Event const &event, EventSetup const &)
         }
         
         
-        // Loose PF jet ID [1]. Accessors to energy fractions take into account JEC, so there is no
-        //need to undo the corrections.
+        // Loose PF jet ID [1-2]. Accessors to energy fractions take into account JEC, so there is
+        //no need to undo the corrections.
         //[1] https://twiki.cern.ch/twiki/bin/view/CMS/JetID13TeVRun2016?rev=1
+        //[2] https://indico.cern.ch/event/697258/contributions/2861096/attachments/1587829/2511362/JetID_run2017_rereco_23012018.pdf, slide 25
         bool passPFID = false;
         double const absEta = std::abs(rawP4.Eta());
         
-        if (absEta <= 2.7)
+        if (jetIDVersion == JetID::Ver2016)
         {
-            bool const commonCriteria = (j.neutralHadronEnergyFraction() < 0.99 and
-              j.neutralEmEnergyFraction() < 0.99 and
-              (j.chargedMultiplicity() + j.neutralMultiplicity() > 1));
-            
-            if (absEta <= 2.4)
-                passPFID = (commonCriteria and j.chargedHadronEnergyFraction() > 0. and
-                  j.chargedMultiplicity() > 0 and j.chargedEmEnergyFraction() < 0.99);
+            if (absEta <= 2.7)
+            {
+                bool const commonCriteria = (j.neutralHadronEnergyFraction() < 0.99 and
+                  j.neutralEmEnergyFraction() < 0.99 and
+                  (j.chargedMultiplicity() + j.neutralMultiplicity() > 1));
+                
+                if (absEta <= 2.4)
+                    passPFID = (commonCriteria and j.chargedHadronEnergyFraction() > 0. and
+                      j.chargedMultiplicity() > 0 and j.chargedEmEnergyFraction() < 0.99);
+                else
+                    passPFID = commonCriteria;
+            }
+            else if (absEta <= 3.)
+                passPFID = (j.neutralMultiplicity() > 2 and
+                  j.neutralHadronEnergyFraction() < 0.98 and j.neutralEmEnergyFraction() > 0.01);
             else
-                passPFID = commonCriteria;
+                passPFID = (j.neutralMultiplicity() > 10 and j.neutralEmEnergyFraction() < 0.9);
         }
-        else if (absEta <= 3.)
-            passPFID = (j.neutralMultiplicity() > 2 and
-              j.neutralHadronEnergyFraction() < 0.98 and j.neutralEmEnergyFraction() > 0.01);
-        else
-            passPFID = (j.neutralMultiplicity() > 10 and j.neutralEmEnergyFraction() < 0.9);
+        else if (jetIDVersion == JetID::Ver2017)
+        {
+            if (absEta <= 2.7)
+            {
+                bool const commonCriteria = (j.neutralHadronEnergyFraction() < 0.9 and
+                  j.neutralEmEnergyFraction() < 0.9  and j.muonEnergyFraction() < 0.8 and
+                  j.neutralMultiplicity() > 1);
+                
+                if (absEta <= 2.4)
+                    passPFID = (commonCriteria and j.chargedHadronEnergyFraction() > 0. and
+                      j.chargedMultiplicity() > 0 and j.chargedEmEnergyFraction() < 0.8);
+                else
+                    passPFID = commonCriteria;
+            }
+            else if (absEta <= 3.)
+                passPFID = (j.neutralMultiplicity() > 2 and
+                  j.neutralEmEnergyFraction() < 0.99);
+            else
+                passPFID = (j.neutralMultiplicity() > 10 and j.neutralEmEnergyFraction() < 0.9 and
+                  j.neutralHadronEnergyFraction() > 0.02);
+        }
         
         storeJet.SetBit(1, passPFID);
         
