@@ -295,29 +295,50 @@ apply_event_filters(
 )
 
 
-# Save decisions of selected triggers.  The lists are based on menu [1],
-# which was used in the re-HLT campaign with RunIISpring16MiniAODv2.
-# Events that are not accepted by any of the considered triggers are
-# rejected since they cannot be used in an analysis.
-# [1] /frozen/2016/25ns10e33/v2.1/HLT/V3
-triggerNames = [
-    # Single-lepton paths
-    'Mu45_eta2p1', 'Mu50', 'Mu55',
-    'IsoMu20', 'IsoTkMu20', 'IsoMu22', 'IsoTkMu22', 'IsoMu22_eta2p1', 'IsoTkMu22_eta2p1',
-    'IsoMu24', 'IsoTkMu24', 'IsoMu27', 'IsoTkMu27',
-    'Ele23_WPLoose_Gsf', 'Ele24_eta2p1_WPLoose_Gsf',
-    'Ele25_WPTight_Gsf', 'Ele25_eta2p1_WPLoose_Gsf', 'Ele25_eta2p1_WPTight_Gsf',
-    'Ele27_WPLoose_Gsf', 'Ele27_WPTight_Gsf',
-    'Ele27_eta2p1_WPLoose_Gsf', 'Ele27_eta2p1_WPTight_Gsf',
-    'Ele32_eta2p1_WPTight_Gsf', 'Ele35_WPLoose_Gsf',
-    # Dilepton paths
-    'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
-    'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL',
-    'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
-    'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
-    # Cross-triggers
-    'Ele27_eta2p1_WPLoose_Gsf_HT200'
-]
+# Save decisions of selected triggers.  Events that are not accepted by
+# any of the considered triggers are rejected unless the dedicated
+# command line option prevents this.
+if options.period == '2017':
+    # The list is based on menu [1], which was used for the
+    # RunIIFall17MiniAOD campaign.
+    # [1] /frozen/2017/2e34/v4.0/HLT/V5
+    triggerNames = [
+        # Single-lepton paths
+        'Mu50', 'Mu55',
+        'IsoMu20', 'IsoMu24', 'IsoMu27', 'IsoMu30',
+        'Ele27_WPTight_Gsf', 'Ele32_WPTight_Gsf', 'Ele35_WPTight_Gsf', 'Ele38_WPTight_Gsf',
+        # Dilepton paths
+        'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8',
+        'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL', 'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+        'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+        'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+        'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ',
+        # Cross-triggers
+        'Ele28_eta2p1_WPTight_Gsf_HT150', 'Ele30_eta2p1_WPTight_Gsf_CentralPFJet35_EleCleaned'
+    ]
+
+elif options.period == '2016':
+    # The list is based on menu [1], which was used in the re-HLT
+    # campaign with RunIISpring16MiniAODv2
+    # [1] /frozen/2016/25ns10e33/v2.1/HLT/V3
+    triggerNames = [
+        # Single-lepton paths
+        'Mu45_eta2p1', 'Mu50', 'Mu55',
+        'IsoMu20', 'IsoTkMu20', 'IsoMu22', 'IsoTkMu22', 'IsoMu22_eta2p1', 'IsoTkMu22_eta2p1',
+        'IsoMu24', 'IsoTkMu24', 'IsoMu27', 'IsoTkMu27',
+        'Ele23_WPLoose_Gsf', 'Ele24_eta2p1_WPLoose_Gsf',
+        'Ele25_WPTight_Gsf', 'Ele25_eta2p1_WPLoose_Gsf', 'Ele25_eta2p1_WPTight_Gsf',
+        'Ele27_WPLoose_Gsf', 'Ele27_WPTight_Gsf',
+        'Ele27_eta2p1_WPLoose_Gsf', 'Ele27_eta2p1_WPTight_Gsf',
+        'Ele32_eta2p1_WPTight_Gsf', 'Ele35_WPLoose_Gsf',
+        # Dilepton paths
+        'Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL',
+        'Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL',
+        'Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ', 'Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ',
+        'Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ',
+        # Cross-triggers
+        'Ele27_eta2p1_WPLoose_Gsf_HT200'
+    ]
 
 if runOnData:
     process.pecTrigger = cms.EDFilter('SlimTriggerResults',
