@@ -29,40 +29,26 @@ def apply_event_filters(process, paths, runOnData=False, isPromptReco=False, pro
     Return value:
         None.
     
-    [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=103
+    [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/MissingETOptionalFiltersRun2?rev=115#Moriond_2018
     """
     
     # Decisions of most filters are stored in MiniAOD as trigger
     # results, which are true for good events.  It is sufficient to
     # simply check the corresponding bits.
+    precomputedFilters = [
+        'Flag_globalTightHalo2016Filter', 'Flag_HBHENoiseFilter', 'Flag_HBHENoiseIsoFilter',
+        'Flag_EcalDeadCellTriggerPrimitiveFilter', 'Flag_BadPFMuonFilter',
+        'Flag_BadChargedCandidateFilter', 'Flag_ecalBadCalibFilter'
+    ]
+    
+    if runOnData:
+        precomputedFilters.append('Flag_eeBadScFilter')
+    
     process.applyEmulatedMETFilters = cms.EDFilter('HLTHighLevel',
-        HLTPaths = cms.vstring(
-            'Flag_HBHENoiseFilter', 'Flag_HBHENoiseIsoFilter', 'Flag_globalTightHalo2016Filter',
-            'Flag_EcalDeadCellTriggerPrimitiveFilter', 'Flag_eeBadScFilter'
-        ),
+        HLTPaths = cms.vstring(precomputedFilters),
         andOr = cms.bool(False),  # AND mode
         throw = cms.bool(True),
         TriggerResultsTag = cms.InputTag('TriggerResults', '', processName)
     )
     
     paths.append(process.applyEmulatedMETFilters)
-    
-    
-    # Filter for "bad" muons
-    from RecoMET.METFilters.BadPFMuonFilter_cfi import BadPFMuonFilter
-    process.badPFMuonFilter = BadPFMuonFilter.clone(
-        muons = cms.InputTag('slimmedMuons'),
-        PFCandidates = cms.InputTag('packedPFCandidates')
-    )
-    
-    paths.append(process.badPFMuonFilter)
-    
-    
-    # Filter for "bad" charged hadrons
-    from RecoMET.METFilters.BadChargedCandidateFilter_cfi import BadChargedCandidateFilter
-    process.badChargedCandidateFilter = BadChargedCandidateFilter.clone(
-        muons = cms.InputTag('slimmedMuons'),
-        PFCandidates = cms.InputTag('packedPFCandidates')
-    )
-    
-    paths.append(process.badChargedCandidateFilter)
