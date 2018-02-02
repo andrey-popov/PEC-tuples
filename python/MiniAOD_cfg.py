@@ -238,7 +238,8 @@ if not runOnData:
     process.eventCounter = cms.EDAnalyzer('EventCounter',
         generator = cms.InputTag('generator'),
         saveAltLHEWeights = cms.bool(options.saveAltLHEWeights),
-        lheEventProduct = cms.InputTag(options.labelLHEEventProduct)
+        lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
+        puInfo = cms.InputTag('slimmedAddPileupInfo')
     )
     paths.append(process.eventCounter)
 

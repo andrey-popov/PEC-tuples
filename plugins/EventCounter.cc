@@ -1,5 +1,6 @@
 #include "EventCounter.h"
 
+#include <DataFormats/Common/interface/View.h>
 #include <FWCore/Utilities/interface/InputTag.h>
 #include <FWCore/Framework/interface/MakerMacros.h>
 
@@ -54,6 +55,11 @@ EventCounter::EventCounter(edm::ParameterSet const &cfg):
         lheEventInfoToken =
           consumes<LHEEventProduct>(cfg.getParameter<edm::InputTag>("lheEventProduct"));
     }
+    
+    
+    if (cfg.exists("puInfo"))
+        puSummaryToken = consumes<edm::View<PileupSummaryInfo>>(
+          cfg.getParameter<edm::InputTag>("puInfo"));
 }
 
 
@@ -92,6 +98,23 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
         for (unsigned i = 0; i < altWeights.size(); ++i)
             sumAltWeightCollection[i].Fill(altWeights[i].wgt * factor);
     }
+    
+    
+    // Fill pileup profile if requested
+    if (not puSummaryToken.isUninitialized())
+    {
+        edm::Handle<edm::View<PileupSummaryInfo>> puSummary;
+        event.getByToken(puSummaryToken, puSummary);
+        
+        pileupProfile->Fill(puSummary->front().getTrueNumInteractions());
+    }
+}
+
+
+void EventCounter::beginJob()
+{
+    if (not puSummaryToken.isUninitialized())
+        pileupProfile = fileService->make<TH1D>("PileupProfile", "Pileup profile", 1000, 0., 100.);
 }
 
 
@@ -130,6 +153,8 @@ void EventCounter::fillDescriptions(edm::ConfigurationDescriptions &descriptions
       setComment("Requests saving mean values of alternative LHE-level weights.");
     desc.add<edm::InputTag>("lheEventProduct", edm::InputTag("externalLHEProducer"))->
       setComment("Tag to access LHEEventProduct. Ignored if saveAltLHEWeights is False.");
+    desc.addOptional<edm::InputTag>("puInfo")->
+      setComment("Pileup summary. Providing this requests storing of pileup profile.");
     
     descriptions.add("eventCounter", desc);
 }
