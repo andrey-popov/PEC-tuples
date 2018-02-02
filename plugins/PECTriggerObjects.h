@@ -2,6 +2,7 @@
 
 #include <Analysis/PECTuples/interface/Candidate.h>
 
+#include <DataFormats/Common/interface/TriggerResults.h>
 #include <DataFormats/PatCandidates/interface/TriggerObjectStandAlone.h>
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
@@ -67,6 +68,9 @@ public:
 private:
     /// Token to access trigger objects
     edm::EDGetTokenT<edm::View<pat::TriggerObjectStandAlone>> triggerObjectsToken;
+    
+    /// Token to access trigger and filter names
+    edm::EDGetTokenT<edm::TriggerResults> triggerResToken;
     
     /// Buffers to store trigger objects that pass selected filters
     std::vector<FilterBuffer> buffers;

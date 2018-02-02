@@ -13,6 +13,8 @@ PECTriggerObjects::PECTriggerObjects(edm::ParameterSet const &cfg)
 {
     triggerObjectsToken = consumes<edm::View<pat::TriggerObjectStandAlone>>(
       cfg.getParameter<edm::InputTag>("triggerObjects"));
+    triggerResToken =
+      consumes<edm::TriggerResults>(cfg.getParameter<edm::InputTag>("triggerResults"));
     
     
     auto const &filterNames = cfg.getParameter<std::vector<std::string>>("filters");
@@ -33,8 +35,13 @@ void PECTriggerObjects::analyze(edm::Event const &event, edm::EventSetup const &
     edm::Handle<edm::View<pat::TriggerObjectStandAlone>> triggerObjects;
     event.getByToken(triggerObjectsToken, triggerObjects);
     
+    edm::Handle<edm::TriggerResults> triggerRes;
+    event.getByToken(triggerResToken, triggerRes);
+    
     for (auto const &obj: *triggerObjects)
     {
+        const_cast<pat::TriggerObjectStandAlone &>(obj).unpackFilterLabels(event, *triggerRes);
+        
         pec::Candidate cand;
         cand.SetPt(obj.pt());
         cand.SetEta(obj.eta());
@@ -64,6 +71,8 @@ void PECTriggerObjects::beginJob()
 void PECTriggerObjects::fillDescriptions(edm::ConfigurationDescriptions &descriptions)
 {
     edm::ParameterSetDescription desc;
+    desc.add<edm::InputTag>("triggerResults", edm::InputTag("TriggerResults"))->
+      setComment("Trigger results.");
     desc.add<edm::InputTag>("triggerObjects")->setComment("PAT trigger objects.");
     desc.add<std::vector<std::string>>("filters")->setComment("Filters to be stored.");
     descriptions.add("triggerObjects", desc);
