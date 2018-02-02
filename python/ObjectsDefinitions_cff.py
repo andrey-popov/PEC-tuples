@@ -43,7 +43,7 @@ def define_electrons(process, task):
     # Collection of electrons that will be stored in tuples
     process.analysisPatElectrons = cms.EDFilter('PATElectronSelector',
         src = cms.InputTag('slimmedElectrons'),
-        cut = cms.string('pt > 20. & (abs(eta) < 2.5 | abs(superCluster.eta) < 2.5)')
+        cut = cms.string('pt > 15. & (abs(eta) < 2.5 | abs(superCluster.eta) < 2.5)')
     )
     
     
