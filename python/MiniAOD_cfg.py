@@ -172,21 +172,21 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEv
 # snippet is adapted from [1].
 # [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
 process.jerDB = cms.ESSource('PoolDBESSource',
-    connect = cms.string('sqlite_fip:Analysis/PECTuples/data/Spring16_25nsV10_MC.db'),
+    connect = cms.string('sqlite_fip:Analysis/PECTuples/data/Summer16_25nsV1_MC.db'),
     toGet = cms.VPSet(
         cms.PSet(
             record = cms.string('JetResolutionRcd'),
-            tag = cms.string('JR_Spring16_25nsV10_MC_PtResolution_AK4PFchs'),
+            tag = cms.string('JR_Summer16_25nsV1_MC_PtResolution_AK4PFchs'),
             label = cms.untracked.string('AK4PFchs_pt')
         ),
         cms.PSet(
             record = cms.string('JetResolutionRcd'),
-            tag = cms.string('JR_Spring16_25nsV10_MC_PhiResolution_AK4PFchs'),
+            tag = cms.string('JR_Summer16_25nsV1_MC_PhiResolution_AK4PFchs'),
             label = cms.untracked.string('AK4PFchs_phi')
         ),
         cms.PSet(
             record = cms.string('JetResolutionScaleFactorRcd'),
-            tag = cms.string('JR_Spring16_25nsV10_MC_SF_AK4PFchs'),
+            tag = cms.string('JR_Summer16_25nsV1_MC_SF_AK4PFchs'),
             label = cms.untracked.string('AK4PFchs')
         ),
     )

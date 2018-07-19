@@ -4,7 +4,7 @@ set -e
 
 
 # Files with preliminary JER
-wget https://github.com/cms-jet/JRDatabase/raw/master/SQLiteFiles/Spring16_25nsV10_MC.db
+wget https://github.com/cms-jet/JRDatabase/raw/master/SQLiteFiles/Summer16_25nsV1_MC.db
 
 
 # AFS directory containing additional data files for the PEC-tuples package
