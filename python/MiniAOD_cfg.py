@@ -125,13 +125,13 @@ muChan = (options.channels.find('m') != -1)
 
 
 # Provide a default global tag if user has not given any.  Chosen
-# according to [1].  They include outdated JEC Summer16_23Sep2016V4.
-# [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideFrontierConditions#Global_Tags_for_2017_Nov_re_reco?rev=615
+# according to [1].  They include JEC Fall17_17Nov2017_V6.
+# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=137
 if not options.globalTag:
     if runOnData:
-        options.globalTag = '94X_dataRun2_ReReco_EOY17_v2'
+        options.globalTag = '94X_dataRun2_v6'
     else:
-        options.globalTag = '94X_mc2017_realistic_v10'
+        options.globalTag = '94X_mc2017_realistic_v13'
     
     print 'WARNING: No global tag provided. Will use the default one: {}.'.format(
         options.globalTag
