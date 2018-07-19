@@ -40,8 +40,6 @@ void PECTriggerObjects::analyze(edm::Event const &event, edm::EventSetup const &
     
     for (auto const &obj: *triggerObjects)
     {
-        const_cast<pat::TriggerObjectStandAlone &>(obj).unpackFilterLabels(event, *triggerRes);
-        
         pec::Candidate cand;
         cand.SetPt(obj.pt());
         cand.SetEta(obj.eta());
