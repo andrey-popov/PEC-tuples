@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Recent 94X release
-release="CMSSW_9_4_3"
+release="CMSSW_9_4_13_patch13"
 scramv1 project CMSSW $release  # cmsrel alias expanded
 
 cd $release/src
@@ -16,7 +16,7 @@ git cms-init --upstream-only
 git cms-merge-topic lsoffi:CMSSW_9_4_0_pre3_TnP
 git cms-merge-topic guitargeek:ElectronID_MVA2017_940pre3
 
-scram b -j 10
+scram b -j 4
 
 # Weights for electron MVA ID [1]
 # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=53#Recipe_for_regular_users_for_92X
@@ -26,3 +26,4 @@ cd data/RecoEgamma/ElectronIdentification/data
 git checkout CMSSW_9_4_0_pre3_TnP
 
 cd $CMSSW_BASE/src
+
