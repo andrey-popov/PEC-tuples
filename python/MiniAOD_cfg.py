@@ -423,7 +423,7 @@ process.pecJetMET = cms.EDAnalyzer('PECJetMET',
     runOnData = cms.bool(runOnData),
     jets = cms.InputTag('analysisPatJets'),
     jetSelection = jetQualityCuts,
-    jetIDVersion = cms.string('2017'),
+    jetIDVersion = cms.string(options.period),
     met = metTag
     # metCorrToUndo = cms.VInputTag(cms.InputTag('patPFMetT1T2Corr', 'type1'))
 )
