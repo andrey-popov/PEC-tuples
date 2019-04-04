@@ -8,26 +8,65 @@ objects.
 import FWCore.ParameterSet.Config as cms
 
 
-def define_electrons(process, task):
-    """Define reconstructed electrons.
-    
-    Configure reconstructed electrons to be used in an analysis,
-    together with the relevant identification requirements.
+def setup_egamma_preconditions(process, task, period):
+    """Perform common setup for electrons and photons.
+
+    This function must be called before calls to define_electrons and/or
+    define_photons.
     
     Arguments:
         process: The process to which relevant electron producers are
             added.
         task: Task to which non-standard producers are attached.
+        period: Data-taking period, '2016' or '2017'.
+    """
+    
+    # Follow instructions from [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2?rev=14
+    from RecoEgamma.EgammaTools.EgammaPostRecoTools import setupEgammaPostRecoSeq
+
+    if period == '2016':
+        setupEgammaPostRecoSeq(
+            process, runEnergyCorrections=False, era='2016-Legacy'
+        )
+    elif period == '2017':
+        setupEgammaPostRecoSeq(process, era='2017-Nov17ReReco')
+
+
+    # Add producers and filters from a sequence created as a side effect
+    # to the task to allow for the unscheduled execution
+    for module_name in process.egammaPostRecoSeq.moduleNames():
+        module = getattr(process, module_name)
+
+        if (isinstance(module, cms.EDProducer)
+                or isinstance(module, cms.EDAnalyzer)):
+            task.add(module)
+
+
+def define_electrons(process, task, period):
+    """Define reconstructed electrons.
+    
+    Configure reconstructed electrons to be used in an analysis,
+    together with the relevant identification requirements.  Function
+    setup_egamma_preconditions must be called before this one.
+    
+    Arguments:
+        process: The process to which relevant electron producers are
+            added.
+        task: Task to which non-standard producers are attached.
+        period: Data-taking period, '2016' or '2017'.
     
     Return value:
         Return a tuple with the following elements:
-        eleQualityCuts: List of string-based quality selections whose
+        quality_cuts: List of string-based quality selections whose
             decisions are to be saved.
-        eleEmbeddedCutBasedIDLabels: Labels of boolean electron IDs
+        embedded_cut_based_id_labels: Labels of boolean electron IDs
             embedded in pat::Electron whose decisions are to be saved.
-        eleCutBasedIDMaps: Tags to access maps with boolean electron IDs
+        embedded_mva_id_labels: Labels of continuous electron IDs
+            embedded in pat::Electron whose decitions are to be saved.
+        cut_based_id_maps: Tags to access maps with boolean electron IDs
             whose decisions are to be saved.
-        eleMVAIDMaps: Tags to access maps with continuous electron IDs
+        mva_id_maps: Tags to access maps with continuous electron IDs
             whose decisions are to be saved.
     
     In addition to constructing the return values, add producers that
@@ -46,57 +85,33 @@ def define_electrons(process, task):
         cut = cms.string('pt > 15. & (abs(eta) < 2.5 | abs(superCluster.eta) < 2.5)')
     )
     
-    
-    # Labels to access embedded cut-based ID.  They are not used at the
-    # moment, and all IDs are evaluated on the fly.
-    eleEmbeddedCutBasedIDLabels = []
-    
-    
-    # Setup VID for cut-based and MVA ID [1-2].  Also include old
-    # HLT-emulating preselection, although it is not clear if it is
-    # needed still.
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=53
-    # [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=38#VID_based_recipe_provides_pass_f
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (
-        switchOnVIDElectronIdProducer, setupAllVIDIdsInModule, setupVIDElectronSelection,
-        DataFormat
-    )
-    switchOnVIDElectronIdProducer(process, DataFormat.MiniAOD)
-    
-    for idModule in [
-        'cutBasedElectronID_Fall17_94X_V1_cff',
-        'cutBasedElectronHLTPreselecition_Summer16_V1_cff',
-        'mvaElectronID_Fall17_iso_V1_cff'
-    ]:
-        setupAllVIDIdsInModule(
-            process,
-            'RecoEgamma.ElectronIdentification.Identification.' +
-            idModule, setupVIDElectronSelection
-        )
-    
-    process.egmGsfElectronIDs.physicsObjectSrc = 'analysisPatElectrons'
-    process.electronMVAValueMapProducer.srcMiniAOD = 'analysisPatElectrons'
+    # Labels to access embedded ID, as recommended in [1]
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations?rev=12#Electrons_IDs
+    if period == '2016':
+        embedded_cut_based_id_labels = [
+            'cutBasedElectronID-Summer16-80X-V1-' + wp
+            for wp in ['veto', 'loose', 'medium', 'tight']
+        ]
+        embedded_mva_id_labels = [
+            'ElectronMVAEstimatorRun2Spring16GeneralPurposeV1Values'
+        ]
+    elif period == '2017':
+        embedded_cut_based_id_labels = [
+            'cutBasedElectronID-Fall17-94X-V2-' + wp
+            for wp in ['veto', 'loose', 'medium', 'tight']
+        ]
+        embedded_mva_id_labels = [
+            'ElectronMVAEstimatorRun2Fall17IsoV1Values'
+        ]
     
     
-    # Add also customized cut-based ID without requirements on isolation
-    setupAllVIDIdsInModule(
-        process,
-        'Analysis.PECTuples.cutBasedElectronID_nonIso_cff',
-        setupVIDElectronSelection
-    )
-    
-    
-    # Labels of maps with electron ID
-    eleIDProducer = 'egmGsfElectronIDs'
-    eleCutBasedIDMaps = [eleIDProducer + ':cutBasedElectronID-Fall17-94X-V1-' + p
-        for p in ['veto', 'loose', 'medium', 'tight']] + \
-        [eleIDProducer + ':cutBasedElectronHLTPreselection-Summer16-V1'] + \
-        [eleIDProducer + ':cutBasedElectronID-nonIso-tight']
-    eleMVAIDMaps = ['electronMVAValueMapProducer:ElectronMVAEstimatorRun2Fall17IsoV1Values']
+    # Labels of maps with electron ID (nothing at the moment)
+    cut_based_id_maps = []
+    mva_id_maps = []
     
     
     # Additional selections to be evaluated (nothing at the moment)
-    eleQualityCuts = cms.vstring()
+    quality_cuts = cms.vstring()
     
     
     # Define electrons to be used for the loose event selection in the
@@ -110,11 +125,11 @@ def define_electrons(process, task):
     # Add producers to the task
     task.add(
         process.analysisPatElectrons, process.patElectronsForEventSelection,
-        process.egmGsfElectronIDs, process.electronMVAValueMapProducer
     )
     
     
-    return eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps
+    return (quality_cuts, embedded_cut_based_id_labels, embedded_mva_id_labels,
+            cut_based_id_maps, mva_id_maps)
 
 
 
@@ -172,7 +187,8 @@ def define_muons(process, task):
 def define_photons(process, task):
     """Define reconstructed photons.
     
-    Configure reconstructed photons to be used in an analysis.
+    Configure reconstructed photons to be used in an analysis.  Function
+    setup_egamma_preconditions must be called before this one.
     
     Arguments:
         process: The process to which relevant photon producers are
@@ -181,9 +197,11 @@ def define_photons(process, task):
     
     Return value:
         Return a tuple with the following elements:
-        phoQualityCuts: List of string-based quality selections whose
+        quality_cuts: List of string-based quality selections whose
             decisions are to be saved.
-        phoCutBasedIDMaps: Tags to access maps with boolean photon IDs
+        embedded_cut_based_id_labels: Labels of embedded cut-based IDs
+            whose decisions are to be saved.
+        cut_based_id_maps: Tags to access maps with boolean photon IDs
             whose decisions are to be saved.
     
     In addition to constructing the return values, add producers that
@@ -199,42 +217,31 @@ def define_photons(process, task):
     )
     
     
-    # Decisions of cut-based identification algorithm [1]
-    # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedPhotonIdentificationRun2?rev=43
-    from PhysicsTools.SelectorUtils.tools.vid_id_tools import (
-        switchOnVIDPhotonIdProducer, setupAllVIDIdsInModule, setupVIDPhotonSelection,
-        DataFormat
-    )
-    switchOnVIDPhotonIdProducer(process, DataFormat.MiniAOD)
-    
-    for idModule in ['cutBasedPhotonID_Fall17_94X_V1_TrueVtx_cff']:
-        setupAllVIDIdsInModule(
-            process,
-            'RecoEgamma.PhotonIdentification.Identification.' +
-            idModule, setupVIDPhotonSelection
-        )
-    
-    process.photonIDValueMapProducer.srcMiniAOD = 'analysisPatPhotons'
-    process.egmPhotonIDs.physicsObjectSrc = 'analysisPatPhotons'
-    
-    
-    # Labels of maps with photon ID
-    phoCutBasedIDMaps = ['egmPhotonIDs:cutBasedPhotonID-Fall17-94X-V1-' + p
-        for p in ['loose', 'medium', 'tight']]
+    # Labels to access embedded ID, as recommended in [1].  They are
+    # suitable for both 2016 and 2017
+    # [1] https://twiki.cern.ch/twiki/bin/view/CMS/EgammaRunIIRecommendations?rev=12#Photon_IDs
+    embedded_cut_based_id_labels = [
+        'cutBasedPhotonID-Fall17-94X-V2-' + wp
+        for wp in ['veto', 'loose', 'medium', 'tight']
+    ]
+
+
+    # Labels of maps with photon ID (nothing at the moment)
+    cut_based_id_maps = []
     
     
     # Additional selections to be evaluated
-    phoQualityCuts = cms.vstring(
+    quality_cuts = cms.vstring(
         # EE-EB gap
         '(abs(superCluster.eta) < 1.4442 | abs(superCluster.eta) > 1.5660)'
     )
     
     
     # Add producers to the task
-    task.add(process.analysisPatPhotons, process.egmPhotonIDs)
+    task.add(process.analysisPatPhotons)
     
     
-    return phoQualityCuts, phoCutBasedIDMaps
+    return quality_cuts, embedded_cut_based_id_labels, cut_based_id_maps
 
 
 

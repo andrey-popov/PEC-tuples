@@ -150,7 +150,7 @@ void PECElectrons::analyze(Event const &event, EventSetup const &)
         
         for (unsigned i = 0; i < nEmbeddedContIDs; ++i)
             storeElectron.SetContinuousID(nUsedContIDs + i,
-              el.electronID(embeddedContIDLabels.at(i)));
+              el.userFloat(embeddedContIDLabels.at(i)));
         
         nUsedContIDs += nEmbeddedContIDs;
         

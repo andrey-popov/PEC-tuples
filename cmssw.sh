@@ -10,20 +10,9 @@ eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
 git cms-init --upstream-only
 
-# Electron ID [1-2]
-# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=53#Recipe_for_regular_users_for_92X
-# [2] https://twiki.cern.ch/twiki/bin/view/CMS/MultivariateElectronIdentificationRun2?rev=38#Recommended_MVA_Recipe_for_regul
-git cms-merge-topic lsoffi:CMSSW_9_4_0_pre3_TnP
-git cms-merge-topic guitargeek:ElectronID_MVA2017_940pre3
+# Electron and photon ID [1]
+# https://twiki.cern.ch/twiki/bin/view/CMS/EgammaMiniAODV2?rev=14#2017_MiniAOD_V2
+git cms-merge-topic cms-egamma:EgammaPostRecoTools
 
 scram b -j 4
-
-# Weights for electron MVA ID [1]
-# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=53#Recipe_for_regular_users_for_92X
-cd $CMSSW_BASE/external/$SCRAM_ARCH
-git clone https://github.com/lsoffi/RecoEgamma-ElectronIdentification.git data/RecoEgamma/ElectronIdentification/data
-cd data/RecoEgamma/ElectronIdentification/data
-git checkout CMSSW_9_4_0_pre3_TnP
-
-cd $CMSSW_BASE/src
 

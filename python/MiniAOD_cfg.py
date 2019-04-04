@@ -278,12 +278,16 @@ paths.append(process.goodOfflinePrimaryVertices)
 # Define basic reconstructed objects.  Non-standard producers are
 # attached to a task.
 from Analysis.PECTuples.ObjectsDefinitions_cff import (
+    setup_egamma_preconditions,
     define_electrons, define_muons, define_jets, define_METs
 )
 process.analysisTask = cms.Task()
 
-eleQualityCuts, eleEmbeddedCutBasedIDLabels, eleCutBasedIDMaps, eleMVAIDMaps = \
-    define_electrons(process, process.analysisTask)
+setup_egamma_preconditions(process, process.analysisTask, options.period)
+ele_quality_cuts, ele_embedded_cut_based_id_labels, \
+    ele_embedded_mva_id_labels, ele_cut_based_id_maps, \
+    ele_mva_id_maps = define_electrons(
+            process, process.analysisTask, options.period)
 muQualityCuts = define_muons(process, process.analysisTask)
 recorrectedJetsLabel, jetQualityCuts = define_jets(
     process, process.analysisTask, reapplyJEC=False, runOnData=runOnData
@@ -400,10 +404,11 @@ process.pecElectrons = cms.EDAnalyzer('PECElectrons',
     rho = cms.InputTag('fixedGridRhoFastjetAll'),
     effAreas = cms.FileInPath(effAreas),
     primaryVertices = cms.InputTag('offlineSlimmedPrimaryVertices'),
-    embeddedBoolIDs = cms.vstring(eleEmbeddedCutBasedIDLabels),
-    boolIDMaps = cms.VInputTag(eleCutBasedIDMaps),
-    contIDMaps = cms.VInputTag(eleMVAIDMaps),
-    selection = eleQualityCuts
+    embeddedBoolIDs = cms.vstring(ele_embedded_cut_based_id_labels),
+    boolIDMaps = cms.VInputTag(ele_cut_based_id_maps),
+    embeddedContIDs = cms.vstring(ele_embedded_mva_id_labels),
+    contIDMaps = cms.VInputTag(ele_mva_id_maps),
+    selection = ele_quality_cuts
 )
 
 process.pecMuons = cms.EDAnalyzer('PECMuons',
