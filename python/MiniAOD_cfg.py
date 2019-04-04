@@ -114,8 +114,10 @@ options.parseArguments()
 
 # Check provided data-taking period.  At the moment only '2017' is
 # supported.
-if options.period not in ['2017']:
-    raise RuntimeError('Data-taking period "{}" is not supported.'.format(options.period))
+if options.period not in ['2016', '2017']:
+    raise RuntimeError(
+        'Data-taking period "{}" is not supported.'.format(options.period)
+    )
 
 
 # Make shortcuts to access some of the configuration options easily
@@ -125,13 +127,21 @@ muChan = (options.channels.find('m') != -1)
 
 
 # Provide a default global tag if user has not given any.  Chosen
-# according to [1].  They include JEC Fall17_17Nov2017_V6.
-# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JECDataMC?rev=137
+# according to [1].
+# [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable?rev=10
 if not options.globalTag:
-    if runOnData:
-        options.globalTag = '94X_dataRun2_v6'
-    else:
-        options.globalTag = '94X_mc2017_realistic_v13'
+    if options.period == '2016':
+        # The global tags below include JEC Summer16_07Aug2017_V11
+        if runOnData:
+            options.globalTag = '94X_dataRun2_v10'
+        else:
+            options.globalTag = '94X_mcRun2_asymptotic_v3'
+    elif options.period == '2017':
+        # The global tags below include JEC Fall17_17Nov2017B_V32
+        if runOnData:
+            options.globalTag = '94X_dataRun2_v11'
+        else:
+            options.globalTag = '94X_mc2017_realistic_v17'
     
     print 'WARNING: No global tag provided. Will use the default one: {}.'.format(
         options.globalTag
@@ -152,12 +162,24 @@ if len(options.inputFiles) > 0:
     process.source.fileNames = cms.untracked.vstring(options.inputFiles)
 else:
     # Default input files for testing
-    if runOnData:
-        # A file from era 2017F, which contains lumi sections from
-        # multiple certified runs, mostly 305064 and 305377.
-        process.source.fileNames = cms.untracked.vstring('/store/data/Run2017F/SingleMuon/MINIAOD/17Nov2017-v1/010000/547EF7C6-A2EC-E711-88E3-0CC47A7C356A.root')
-    else:
-        process.source.fileNames = cms.untracked.vstring('/store/mc/RunIIFall17MiniAOD/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/94X_mc2017_realistic_v10-v1/50000/081541BD-E8DF-E711-AD98-02163E00C6E3.root')
+    test_file = None
+
+    if options.period == '2016':
+        if runOnData:
+            # A file from era 2016H, which contains multiple certified
+            # runs, including 283885.
+            test_file = '/store/data/Run2016H/SingleMuon/MINIAOD/17Jul2018-v1/00000/5881064E-528B-E811-9D0A-001E67A404B5.root'
+        else:
+            test_file = '/store/mc/RunIISummer16MiniAODv3/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/MINIAODSIM/PUMoriond17_94X_mcRun2_asymptotic_v3-v1/120000/F230E98E-3DBF-E811-8DB8-44A84225CDA4.root'
+    elif options.period == '2017':
+        if runOnData:
+            # A file from era 2017F, which contains lumi sections from
+            # multiple certified runs, mostly 305064 and 305377.
+            test_file = '/store/data/Run2017F/SingleMuon/MINIAOD/31Mar2018-v1/80000/FE5970A8-E636-E811-B99E-0CC47A7C347A.root'
+        else:
+            test_file = '/store/mc/RunIIFall17MiniAODv2/TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8/MINIAODSIM/PU2017_12Apr2018_94X_mc2017_realistic_v14-v2/80000/F072BD86-72BA-E811-98B4-0CC47A1E0DC8.root'
+
+    process.source.fileNames = cms.untracked.vstring(test_file)
 
 # process.source.fileNames = cms.untracked.vstring('/store/relval/...')
 
