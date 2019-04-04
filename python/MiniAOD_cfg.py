@@ -131,13 +131,15 @@ muChan = (options.channels.find('m') != -1)
 # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PdmVAnalysisSummaryTable?rev=10
 if not options.globalTag:
     if options.period == '2016':
-        # The global tags below include JEC Summer16_07Aug2017_V11
+        # The global tags below include JEC Summer16_07Aug2017_V11 and
+        # JER Summer16_25nsV1
         if runOnData:
             options.globalTag = '94X_dataRun2_v10'
         else:
             options.globalTag = '94X_mcRun2_asymptotic_v3'
     elif options.period == '2017':
-        # The global tags below include JEC Fall17_17Nov2017B_V32
+        # The global tags below include JEC Fall17_17Nov2017B_V32 and
+        # JER Fall17_V3
         if runOnData:
             options.globalTag = '94X_dataRun2_v11'
         else:
@@ -190,30 +192,30 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
-# Override JER factors from global tags with newer versions.  The
-# snippet is adapted from [1].
-# [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
-process.jerDB = cms.ESSource('PoolDBESSource',
-    connect = cms.string('sqlite_fip:Analysis/PECTuples/data/Summer16_25nsV1_MC.db'),
-    toGet = cms.VPSet(
-        cms.PSet(
-            record = cms.string('JetResolutionRcd'),
-            tag = cms.string('JR_Summer16_25nsV1_MC_PtResolution_AK4PFchs'),
-            label = cms.untracked.string('AK4PFchs_pt')
-        ),
-        cms.PSet(
-            record = cms.string('JetResolutionRcd'),
-            tag = cms.string('JR_Summer16_25nsV1_MC_PhiResolution_AK4PFchs'),
-            label = cms.untracked.string('AK4PFchs_phi')
-        ),
-        cms.PSet(
-            record = cms.string('JetResolutionScaleFactorRcd'),
-            tag = cms.string('JR_Summer16_25nsV1_MC_SF_AK4PFchs'),
-            label = cms.untracked.string('AK4PFchs')
-        ),
-    )
-)
-process.jerDBPreference = cms.ESPrefer('PoolDBESSource', 'jerDB')
+# # Override JER factors from global tags with newer versions.  The
+# # snippet is adapted from [1].
+# # [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
+# process.jerDB = cms.ESSource('PoolDBESSource',
+#     connect = cms.string('sqlite_fip:Analysis/PECTuples/data/Summer16_25nsV1_MC.db'),
+#     toGet = cms.VPSet(
+#         cms.PSet(
+#             record = cms.string('JetResolutionRcd'),
+#             tag = cms.string('JR_Summer16_25nsV1_MC_PtResolution_AK4PFchs'),
+#             label = cms.untracked.string('AK4PFchs_pt')
+#         ),
+#         cms.PSet(
+#             record = cms.string('JetResolutionRcd'),
+#             tag = cms.string('JR_Summer16_25nsV1_MC_PhiResolution_AK4PFchs'),
+#             label = cms.untracked.string('AK4PFchs_phi')
+#         ),
+#         cms.PSet(
+#             record = cms.string('JetResolutionScaleFactorRcd'),
+#             tag = cms.string('JR_Summer16_25nsV1_MC_SF_AK4PFchs'),
+#             label = cms.untracked.string('AK4PFchs')
+#         ),
+#     )
+# )
+# process.jerDBPreference = cms.ESPrefer('PoolDBESSource', 'jerDB')
 
 
 # Set up random-number service.  CRAB overwrites the seeds
