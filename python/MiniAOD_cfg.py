@@ -317,7 +317,7 @@ if options.jetSel:
 # Apply event filters recommended for analyses involving MET
 from Analysis.PECTuples.EventFilters_cff import apply_event_filters
 apply_event_filters(
-    process, paths, runOnData=runOnData,
+    process, paths, options.period, runOnData=runOnData,
     processName='RECO' if runOnData else 'PAT'
 )
 
