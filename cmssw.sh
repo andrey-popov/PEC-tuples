@@ -8,7 +8,7 @@ cd $release/src
 eval `scramv1 runtime -sh`  # this is cmsenv alias expanded
 
 
-git cms-init
+git cms-init --upstream-only
 
 # Electron ID [1-2]
 # [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/CutBasedElectronIdentificationRun2?rev=53#Recipe_for_regular_users_for_92X
