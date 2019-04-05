@@ -38,6 +38,22 @@ PECGenerator::PECGenerator(ParameterSet const &cfg):
             excp.raise();
         }
     }
+
+    auto const psWeightSetLabel = cfg.getParameter<string>("savePSWeights");
+
+    if (psWeightSetLabel == "all")
+        psWeightSet = PSWeightSet::All;
+    else if (psWeightSetLabel == "main")
+        psWeightSet = PSWeightSet::Main;
+    else if (psWeightSetLabel == "none")
+        psWeightSet = PSWeightSet::None;
+    else
+    {
+        cms::Exception excp("Configuration");
+        excp << "Value \"" << psWeightSetLabel << "\" is no supported for configuration " <<
+          "parameter \"savePSWeights\".";
+        excp.raise();
+    }
 }
 
 
@@ -50,6 +66,9 @@ void PECGenerator::fillDescriptions(ConfigurationDescriptions &descriptions)
       setComment("Tag to access LHEEventProduct. An empty value (\"\") is allowed.");
     desc.add<bool>("saveAltLHEWeights", true)->
       setComment("Requests saving alternative LHE-level weights.");
+    desc.add<string>("savePSWeights", "none")->
+      setComment("Requests saving of PS weights. Supported options are \"all\", \"main\", and "
+                 "\"none\".");
     
     descriptions.add("generator", desc);
 }
@@ -105,7 +124,26 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
         vector<gen::WeightsInfo> const &altWeights = lheEventInfo->weights();
         
         for (auto const &altWeight: altWeights)
-            generatorInfo.AddAltWeight(altWeight.wgt * factor);
+            generatorInfo.AddAltLheWeight(altWeight.wgt * factor);
+    }
+
+    vector<double> const &genWeights = generator->weights();
+
+    if (psWeightSet != PSWeightSet::None and genWeights.size() > 1)
+    {
+        if (psWeightSet == PSWeightSet::Main)
+        {
+            // The four weights that correspond to independent factor 2 variations in ISR and FSR,
+            //as done for NanoAOD [1]
+            //[1] https://github.com/cms-sw/cmssw/blob/e580f628505e08ac1577040d47fa2f041125e250/PhysicsTools/NanoAOD/plugins/GenWeightsTableProducer.cc#L240-L248
+            for (unsigned index = 6; index < 10; ++index)
+                generatorInfo.AddAltPsWeight(genWeights.at(index));
+        }
+        else
+        {
+            for (auto const &weight: genWeights)
+                generatorInfo.AddAltPsWeight(weight);
+        }
     }
         
     

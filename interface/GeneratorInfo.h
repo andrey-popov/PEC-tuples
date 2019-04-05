@@ -37,8 +37,11 @@ public:
     /// Sets the nominal generator-level weight
     void SetNominalWeight(float weight);
     
-    /// Adds an alternative generator-level event weight to the end of the collection
-    void AddAltWeight(float weight);
+    /// Adds an alternative LHE event weight to the end of the collection
+    void AddAltLheWeight(float weight);
+    
+    /// Adds an alternative PS event weight to the end of the collection
+    void AddAltPsWeight(float weight);
     
     /**
      * \brief Sets momentum fraction carried by an initial parton
@@ -83,8 +86,11 @@ public:
     /// Returns the nominal generator-level weight
     float NominalWeight() const;
     
-    /// Returns alternative weights
-    std::vector<Float_t> const &AltWeights() const;
+    /// Returns alternative LHE weights
+    std::vector<Float_t> const &AltLheWeights() const;
+
+    /// Returns alternative PS weights
+    std::vector<Float_t> const &AltPsWeights() const;
     
     /**
      * \brief Returns momentum fraction carried by an initial parton
@@ -111,8 +117,11 @@ private:
     /// Nominal generator-level weight
     Float_t nominalWeight;
     
-    /// Alternative generator-level weights
-    std::vector<Float_t> altWeights;
+    /// Alternative LHE weights
+    std::vector<Float_t> altLheWeights;
+
+    /// Alternative PS weights
+    std::vector<Float_t> altPsWeights;
     
     /// Momenta fractions carried by initial-state partons
     Float_t pdfX[2];

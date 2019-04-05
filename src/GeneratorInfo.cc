@@ -17,7 +17,8 @@ void pec::GeneratorInfo::Reset()
 {
     processId = 0;
     nominalWeight = 0;
-    altWeights.clear();
+    altLheWeights.clear();
+    altPsWeights.clear();
     pdfId = 0;
     pdfX[0] = pdfX[1] = 0;
     pdfQScale = 0;
@@ -36,9 +37,15 @@ void pec::GeneratorInfo::SetNominalWeight(float weight)
 }
 
 
-void pec::GeneratorInfo::AddAltWeight(float weight)
+void pec::GeneratorInfo::AddAltLheWeight(float weight)
 {
-    altWeights.emplace_back(weight);
+    altLheWeights.emplace_back(weight);
+}
+
+
+void pec::GeneratorInfo::AddAltPsWeight(float weight)
+{
+    altPsWeights.emplace_back(weight);
 }
 
 
@@ -118,9 +125,15 @@ float pec::GeneratorInfo::NominalWeight() const
 }
 
 
-std::vector<Float_t> const &pec::GeneratorInfo::AltWeights() const
+std::vector<Float_t> const &pec::GeneratorInfo::AltLheWeights() const
 {
-    return altWeights;
+    return altLheWeights;
+}
+
+
+std::vector<Float_t> const &pec::GeneratorInfo::AltPsWeights() const
+{
+    return altPsWeights;
 }
 
 

@@ -445,7 +445,8 @@ if not runOnData:
     process.pecGenerator = cms.EDAnalyzer('PECGenerator',
         generator = cms.InputTag('generator'),
         saveAltLHEWeights = cms.bool(options.saveAltLHEWeights),
-        lheEventProduct = cms.InputTag(options.labelLHEEventProduct)
+        lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
+        savePSWeights = cms.string('main')
     )
     paths.append(process.pecGenerator)
 
