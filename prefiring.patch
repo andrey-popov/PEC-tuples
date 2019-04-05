@@ -1,0 +1,28 @@
+--- L1Prefiring/EventWeightProducer/plugins/L1ECALPrefiringWeightProducer.cc	2019-04-05 16:22:05.826133963 +0200
++++ L1Prefiring/EventWeightProducer/plugins/L1ECALPrefiringWeightProducer.cc	2019-04-05 17:01:39.239679471 +0200
+@@ -26,6 +26,7 @@
+ #include "FWCore/Framework/interface/Event.h"
+ #include "FWCore/Framework/interface/MakerMacros.h"
+ 
++#include "FWCore/ParameterSet/interface/FileInPath.h"
+ #include "FWCore/ParameterSet/interface/ParameterSet.h"
+ #include "FWCore/Utilities/interface/StreamID.h"
+ 
+@@ -77,7 +78,7 @@
+ 
+ 
+   TFile *  file_prefiringmaps_;
+-  std::string fname =  iConfig.getParameter<std::string>( "L1Maps" );
++  std::string fname =  iConfig.getParameter<edm::FileInPath>( "L1Maps" ).fullPath();
+   file_prefiringmaps_ = new TFile(  fname.c_str(),"read" );
+   TString mapphotonfullname= "L1prefiring_photonptvseta_"+ dataera_; 
+   h_prefmap_photon =(TH2F*) file_prefiringmaps_->Get(mapphotonfullname);
+@@ -256,7 +257,7 @@
+   
+   desc.add<edm::InputTag>("ThePhotons", edm::InputTag("slimmedPhotons"));
+   desc.add<edm::InputTag>("TheJets", edm::InputTag("slimmedJets"));
+-  desc.add<std::string>("L1Maps", "L1PrefiringMaps_new.root");
++  desc.add<edm::FileInPath>("L1Maps");
+   desc.add<std::string>("DataEra", "2017BtoF");
+   desc.add<bool>("UseJetEMPt", true);
+   desc.add<double>("PrefiringRateSystematicUncty",0.2);

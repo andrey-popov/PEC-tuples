@@ -389,6 +389,34 @@ else:
 paths.append(process.pecTrigger)
 
 
+# L1 ECAL pre-firing weights
+# https://twiki.cern.ch/twiki/bin/viewauth/CMS/L1ECALPrefiringWeightRecipe?rev=9
+if not runOnData and options.period in ['2016', '2017']:
+    process.prefiringWeight = cms.EDProducer('L1ECALPrefiringWeightProducer',
+        ThePhotons = cms.InputTag("slimmedPhotons"),
+        TheJets = cms.InputTag("slimmedJets"),
+        L1Maps = cms.FileInPath(
+            'L1Prefiring/EventWeightProducer/data/L1PrefiringMaps_new.root'
+        ),
+        DataEra = cms.string(
+            '2016BtoH' if options.period == '2016' else '2017BtoF'
+        ),
+        UseJetEMPt = cms.bool(False),
+        PrefiringRateSystematicUncty = cms.double(0.2)
+    )
+    process.eventWeights = cms.EDAnalyzer('EventWeights',
+        sources = cms.VInputTag(
+            'prefiringWeight:NonPrefiringProb',
+            'prefiringWeight:NonPrefiringProbUp',
+            'prefiringWeight:NonPrefiringProbDown'
+        ),
+        storeNames = cms.vstring(
+            'prefiring_nominal', 'prefiring_up', 'prefiring_down'
+        )
+    )
+    paths.append(process.prefiringWeight, process.eventWeights)
+
+
 # Save event ID and basic event content
 process.pecEventID = cms.EDAnalyzer('PECEventID')
 
