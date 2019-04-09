@@ -25,12 +25,8 @@ import string
 import FWCore.ParameterSet.Config as cms
 
 
-# Create a process.  The era is chosen according to what was used for
-# the RunIIFall17MiniAOD campaign, and it is used to choose b-tagging
-# configuration [1].
-# [1] https://hypernews.cern.ch/HyperNews/CMS/get/btag/1483/1.html
-from Configuration.StandardSequences.Eras import eras
-process = cms.Process('Analysis', eras.Run2_2017)
+# Create a process
+process = cms.Process('Analysis')
 
 
 # Enable MessageLogger and reduce its verbosity
