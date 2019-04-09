@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Recent 94X release
-release="CMSSW_9_4_13_patch13"
+# Recent 10_2_X release
+release="CMSSW_10_2_13"
 scramv1 project CMSSW $release  # cmsrel alias expanded
 
 cd $release/src

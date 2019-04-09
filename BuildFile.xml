@@ -3,7 +3,7 @@
 
 <flags  LCG_DICT_HEADER = "classes.h" />
 <flags  LCG_DICT_XML = "classes_def.xml" />
-<flags  CXXFLAGS = "-std=c++14 -O2" />
+<flags  CXXFLAGS = "-std=c++17 -O2" />
 
 <export>
     <lib  name = "1" />
