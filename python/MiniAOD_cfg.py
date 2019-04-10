@@ -188,6 +188,17 @@ else:
 process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEvents))
 
 
+# Set indices of alternative generator-level weights to be stored.
+# The vector is parsed with C++ class IndexIntervals.
+if not runOnData:
+    if options.saveAltLHEWeights:
+        # Save weights for scale variations [1]
+        # [1] https://github.com/andrey-popov/PEC-tuples/issues/86#issuecomment-481698177
+        alt_lhe_weight_indices = cms.vint32(1, 8)
+    else:
+        alt_lhe_weight_indices = cms.vint32()
+
+
 # # Override JER factors from global tags with newer versions.  The
 # # snippet is adapted from [1].
 # # [1] https://github.com/cms-met/cmssw/blob/8b17ab5d8b28236e2d2215449f074cceccc4f132/PhysicsTools/PatAlgos/test/corMETFromMiniAOD.py
@@ -257,7 +268,7 @@ if not runOnData and options.processIDs:
 if not runOnData:
     process.eventCounter = cms.EDAnalyzer('EventCounter',
         generator = cms.InputTag('generator'),
-        saveAltLHEWeights = cms.bool(options.saveAltLHEWeights),
+        saveAltLHEWeights = alt_lhe_weight_indices,
         lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
         puInfo = cms.InputTag('slimmedAddPileupInfo')
     )
@@ -462,7 +473,7 @@ paths.append(process.pecEventID, process.pecElectrons, process.pecMuons, process
 if not runOnData:
     process.pecGenerator = cms.EDAnalyzer('PECGenerator',
         generator = cms.InputTag('generator'),
-        saveAltLHEWeights = cms.bool(options.saveAltLHEWeights),
+        saveAltLHEWeights = alt_lhe_weight_indices,
         lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
         savePSWeights = cms.string('main')
     )

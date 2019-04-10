@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IndexIntervals.h"
+
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
 #include <FWCore/ParameterSet/interface/ParameterSet.h>
@@ -56,8 +58,8 @@ private:
  * optionally, pileup profile
  * 
  * This plugin stores the total number of processed events and the mean nominal generator-level
- * event weight. If configured to do so, it also saves mean values of each type of alternative
- * LHE-level weights. These quantities are stored in a trivial tree containing a single entry.
+ * event weight. If configured to do so, it also saves mean values of selected alternative LHE-level
+ * weights. These quantities are stored in a trivial tree containing a single entry.
  * 
  * In addition, when an input tag with PileupSummaryInfo is provided in the configuration, the
  * plugin fills a histogram with pileup profile.
@@ -94,9 +96,9 @@ private:
     /// Token to access per-event LHE weights
     edm::EDGetTokenT<LHEEventProduct> lheEventInfoToken;
     
-    /// Flag requesting saving of mean LHE-level event weights
-    bool saveAltLHEWeights;
-    
+    /// Indices of LHE event weights to be stored
+    IndexIntervals lheWeightIndices;
+
     /**
      * \brief Token to access pileup information
      * 
@@ -111,11 +113,11 @@ private:
     SignedKahanSum sumNominalWeight;
     
     /**
-     * \brief Sums of alternative weights, for each type of weight
+     * \brief Sums of alternative LHE weights, for each type of weight
      * 
      * This vector is reinitialized when the first event is processed.
      */
-    std::vector<SignedKahanSum> sumAltWeightCollection;
+    std::vector<SignedKahanSum> sumAltLheWeightCollection;
     
     /**
      * \brief Non-owning pointer to a histogram with pileup profile

@@ -9,6 +9,8 @@
 <!-- <use  name = "LHAPDF" /> -->
 <use  name = "root" />
 
+<use  name = "boost" />
+
 <library  name = "AnalysisPECTuples_plugins" file = "*.cc">
     <flags  EDM_PLUGIN = "1" />
     <flags  CXXFLAGS = "-O2 -std=c++17" />

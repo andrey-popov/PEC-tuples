@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Analysis/PECTuples/interface/GeneratorInfo.h>
+#include "IndexIntervals.h"
 
 #include <FWCore/Framework/interface/EDAnalyzer.h>
 #include <FWCore/Framework/interface/Event.h>
@@ -72,8 +73,8 @@ private:
     /// Flag requesting to read LHE event record
     bool readLHEEventRecord;
     
-    /// Flag indicating whether LHE-level variations of event weights should be stored
-    bool saveAltLHEWeights;
+    /// Indices of LHE event weights to be stored
+    IndexIntervals lheWeightIndices;
 
     /// Determines what subset of PS weights should be stored
     PSWeightSet psWeightSet;

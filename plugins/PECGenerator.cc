@@ -11,7 +11,7 @@ using namespace std;
 
 
 PECGenerator::PECGenerator(ParameterSet const &cfg):
-    saveAltLHEWeights(cfg.getParameter<bool>("saveAltLHEWeights"))
+    lheWeightIndices(cfg.getParameter<std::vector<int>>("saveAltLHEWeights"))
 {
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     
@@ -30,7 +30,7 @@ PECGenerator::PECGenerator(ParameterSet const &cfg):
     {
         readLHEEventRecord = false;
         
-        if (saveAltLHEWeights)
+        if (not lheWeightIndices.Empty())
         {
             cms::Exception excp("Configuration");
             excp << "A valid value for lheEventProduct must be provided in order to access " <<
@@ -64,8 +64,9 @@ void PECGenerator::fillDescriptions(ConfigurationDescriptions &descriptions)
       setComment("Tag to access GenEventInfoProduct.");
     desc.add<InputTag>("lheEventProduct", InputTag("externalLHEProducer"))->
       setComment("Tag to access LHEEventProduct. An empty value (\"\") is allowed.");
-    desc.add<bool>("saveAltLHEWeights", true)->
-      setComment("Requests saving alternative LHE-level weights.");
+    desc.add<std::vector<int>>("saveAltLHEWeights", std::vector<int>())->
+      setComment("Intervals of indices of alternative LHE-level weights to be stored. "
+        "Parsed using class IndexIntervals.");
     desc.add<string>("savePSWeights", "none")->
       setComment("Requests saving of PS weights. Supported options are \"all\", \"main\", and "
                  "\"none\".");
@@ -112,7 +113,7 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
     // Event weights
     generatorInfo.SetNominalWeight(generator->weight());
     
-    if (readLHEEventRecord and saveAltLHEWeights)
+    if (readLHEEventRecord and not lheWeightIndices.Empty())
     {
         // Alternative LHE weights will be rescaled by the ratio between the nominal weight above
         //and the nominal LHE weight, as instructed here [1]
@@ -120,11 +121,11 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
         double const factor = generator->weight() / lheEventInfo->originalXWGTUP();
         
         
-        // Save the alternative weights
+        // Save selected alternative weights
         vector<gen::WeightsInfo> const &altWeights = lheEventInfo->weights();
-        
-        for (auto const &altWeight: altWeights)
-            generatorInfo.AddAltLheWeight(altWeight.wgt * factor);
+
+        for (int i: lheWeightIndices.GetIndices(0, altWeights.size() - 1))
+            generatorInfo.AddAltLheWeight(altWeights[i].wgt * factor);
     }
 
     vector<double> const &genWeights = generator->weights();

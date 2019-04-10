@@ -43,14 +43,13 @@ double SignedKahanSum::GetSum() const
 }
 
 
-
 EventCounter::EventCounter(edm::ParameterSet const &cfg):
-    saveAltLHEWeights(cfg.getParameter<bool>("saveAltLHEWeights")),
+    lheWeightIndices(cfg.getParameter<std::vector<int>>("saveAltLHEWeights")),
     nEventProcessed(0)
 {
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<edm::InputTag>("generator"));
     
-    if (saveAltLHEWeights)
+    if (not lheWeightIndices.Empty())
     {
         lheEventInfoToken =
           consumes<LHEEventProduct>(cfg.getParameter<edm::InputTag>("lheEventProduct"));
@@ -77,7 +76,7 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
     
     
     // Update sums of alternative event weights if requested
-    if (saveAltLHEWeights)
+    if (not lheWeightIndices.Empty())
     {
         edm::Handle<LHEEventProduct> lheEventInfo;
         event.getByToken(lheEventInfoToken, lheEventInfo);
@@ -86,8 +85,9 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
         
         
         // If this is the first event being processed, create summators for the alternative weights
-        if (sumAltWeightCollection.empty())
-            sumAltWeightCollection.resize(altWeights.size());
+        if (sumAltLheWeightCollection.empty())
+            sumAltLheWeightCollection.resize(
+              lheWeightIndices.NumberIndices(0, altWeights.size() - 1));
         
         
         // Add alternative weights to the corresponding sums rescaling them with the ratio between
@@ -95,8 +95,14 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
         //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/LHEReaderCMSSW?rev=7#How_to_use_weights
         double const factor = generator->weight() / lheEventInfo->originalXWGTUP();
         
-        for (unsigned i = 0; i < altWeights.size(); ++i)
-            sumAltWeightCollection[i].Fill(altWeights[i].wgt * factor);
+        unsigned writeIndex = 0;
+
+        for (int readIndex: lheWeightIndices.GetIndices(0, altWeights.size() - 1))
+        {
+            double const weight = altWeights[readIndex].wgt * factor;
+            sumAltLheWeightCollection[writeIndex].Fill(weight);
+            ++writeIndex;
+        }
     }
     
     
@@ -129,14 +135,14 @@ void EventCounter::endJob()
     tree->Branch("MeanNominalWeight", &bfMeanNominalWeight);
     
     
-    std::vector<Float_t> bfMeanAltWeightCollection;
+    std::vector<Float_t> bfMeanAltLheWeightCollection;
     
-    if (saveAltLHEWeights)
+    if (not lheWeightIndices.Empty())
     {
-        for (auto const &summator: sumAltWeightCollection)
-            bfMeanAltWeightCollection.emplace_back(summator.GetSum() / nEventProcessed);
+        for (auto const &summator: sumAltLheWeightCollection)
+            bfMeanAltLheWeightCollection.emplace_back(summator.GetSum() / nEventProcessed);
         
-        tree->Branch("MeanAltWeights", &bfMeanAltWeightCollection);
+        tree->Branch("MeanAltLheWeights", &bfMeanAltLheWeightCollection);
     }
     
     
@@ -149,8 +155,9 @@ void EventCounter::fillDescriptions(edm::ConfigurationDescriptions &descriptions
     edm::ParameterSetDescription desc;
     desc.add<edm::InputTag>("generator", edm::InputTag("generator"))->
       setComment("Tag to access GenEventInfoProduct.");
-    desc.add<bool>("saveAltLHEWeights", true)->
-      setComment("Requests saving mean values of alternative LHE-level weights.");
+    desc.add<std::vector<int>>("saveAltLHEWeights", std::vector<int>())->
+      setComment("Intervals of indices of alternative LHE-level weights to be stored. "
+        "Parsed using class IndexIntervals.");
     desc.add<edm::InputTag>("lheEventProduct", edm::InputTag("externalLHEProducer"))->
       setComment("Tag to access LHEEventProduct. Ignored if saveAltLHEWeights is False.");
     desc.addOptional<edm::InputTag>("puInfo")->
