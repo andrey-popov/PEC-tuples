@@ -191,12 +191,18 @@ process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(options.maxEv
 # Set indices of alternative generator-level weights to be stored.
 # The vector is parsed with C++ class IndexIntervals.
 if not runOnData:
+    # Alternative LHE weights
     if options.saveAltLHEWeights:
         # Save weights for scale variations [1]
         # [1] https://github.com/andrey-popov/PEC-tuples/issues/86#issuecomment-481698177
         alt_lhe_weight_indices = cms.vint32(1, 8)
     else:
         alt_lhe_weight_indices = cms.vint32()
+
+    # Alternative parton shower weights. Only store variations in the
+    # main ISR and FSR scales [1].
+    # [1] https://github.com/cms-sw/cmssw/blob/e580f628505e08ac1577040d47fa2f041125e250/PhysicsTools/NanoAOD/plugins/GenWeightsTableProducer.cc#L240-L248
+    alt_ps_weight_indices = cms.vint32(6, 9)
 
 
 # # Override JER factors from global tags with newer versions.  The
@@ -270,6 +276,7 @@ if not runOnData:
         generator = cms.InputTag('generator'),
         saveAltLHEWeights = alt_lhe_weight_indices,
         lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
+        saveAltPSWeights = alt_ps_weight_indices,
         puInfo = cms.InputTag('slimmedAddPileupInfo')
     )
     paths.append(process.eventCounter)
@@ -475,7 +482,7 @@ if not runOnData:
         generator = cms.InputTag('generator'),
         saveAltLHEWeights = alt_lhe_weight_indices,
         lheEventProduct = cms.InputTag(options.labelLHEEventProduct),
-        savePSWeights = cms.string('main')
+        saveAltPSWeights = alt_ps_weight_indices
     )
     paths.append(process.pecGenerator)
 

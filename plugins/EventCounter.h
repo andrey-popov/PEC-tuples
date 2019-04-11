@@ -99,6 +99,9 @@ private:
     /// Indices of LHE event weights to be stored
     IndexIntervals lheWeightIndices;
 
+    /// Indices of PS event weights to be stored
+    IndexIntervals psWeightIndices;
+
     /**
      * \brief Token to access pileup information
      * 
@@ -118,6 +121,13 @@ private:
      * This vector is reinitialized when the first event is processed.
      */
     std::vector<SignedKahanSum> sumAltLheWeightCollection;
+    
+    /**
+     * \brief Sums of alternative PS weights, for each type of weight
+     * 
+     * This vector is reinitialized when the first event is processed.
+     */
+    std::vector<SignedKahanSum> sumAltPsWeightCollection;
     
     /**
      * \brief Non-owning pointer to a histogram with pileup profile

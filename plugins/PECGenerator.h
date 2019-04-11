@@ -35,15 +35,6 @@
  */
 class PECGenerator: public edm::EDAnalyzer
 {
-private:
-    /// Supported options for the completeness of the set of PS weights to be save
-    enum class PSWeightSet
-    {
-        None,  ///< Don't store any
-        Main,  ///< Only idependent factor 2 variations in ISR and FSR
-        All    ///< All available weights
-    };
-
 public:
     /// Constructor
     PECGenerator(edm::ParameterSet const &cfg);
@@ -76,8 +67,8 @@ private:
     /// Indices of LHE event weights to be stored
     IndexIntervals lheWeightIndices;
 
-    /// Determines what subset of PS weights should be stored
-    PSWeightSet psWeightSet;
+    /// Indices of PS event weights to be stored
+    IndexIntervals psWeightIndices;
     
     
     /// An object to handle the output ROOT file

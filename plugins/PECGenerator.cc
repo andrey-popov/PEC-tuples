@@ -11,7 +11,8 @@ using namespace std;
 
 
 PECGenerator::PECGenerator(ParameterSet const &cfg):
-    lheWeightIndices(cfg.getParameter<std::vector<int>>("saveAltLHEWeights"))
+    lheWeightIndices(cfg.getParameter<std::vector<int>>("saveAltLHEWeights")),
+    psWeightIndices(cfg.getParameter<std::vector<int>>("saveAltPSWeights"))
 {
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<InputTag>("generator"));
     
@@ -38,22 +39,6 @@ PECGenerator::PECGenerator(ParameterSet const &cfg):
             excp.raise();
         }
     }
-
-    auto const psWeightSetLabel = cfg.getParameter<string>("savePSWeights");
-
-    if (psWeightSetLabel == "all")
-        psWeightSet = PSWeightSet::All;
-    else if (psWeightSetLabel == "main")
-        psWeightSet = PSWeightSet::Main;
-    else if (psWeightSetLabel == "none")
-        psWeightSet = PSWeightSet::None;
-    else
-    {
-        cms::Exception excp("Configuration");
-        excp << "Value \"" << psWeightSetLabel << "\" is no supported for configuration " <<
-          "parameter \"savePSWeights\".";
-        excp.raise();
-    }
 }
 
 
@@ -67,9 +52,9 @@ void PECGenerator::fillDescriptions(ConfigurationDescriptions &descriptions)
     desc.add<std::vector<int>>("saveAltLHEWeights", std::vector<int>())->
       setComment("Intervals of indices of alternative LHE-level weights to be stored. "
         "Parsed using class IndexIntervals.");
-    desc.add<string>("savePSWeights", "none")->
-      setComment("Requests saving of PS weights. Supported options are \"all\", \"main\", and "
-                 "\"none\".");
+    desc.add<std::vector<int>>("saveAltPSWeights", std::vector<int>())->
+      setComment("Intervals of indices of alternative PS weights to be stored. "
+        "Parsed using class IndexIntervals.");
     
     descriptions.add("generator", desc);
 }
@@ -130,21 +115,10 @@ void PECGenerator::analyze(Event const &event, EventSetup const &)
 
     vector<double> const &genWeights = generator->weights();
 
-    if (psWeightSet != PSWeightSet::None and genWeights.size() > 1)
+    if (not psWeightIndices.Empty() and genWeights.size() > 1)
     {
-        if (psWeightSet == PSWeightSet::Main)
-        {
-            // The four weights that correspond to independent factor 2 variations in ISR and FSR,
-            //as done for NanoAOD [1]
-            //[1] https://github.com/cms-sw/cmssw/blob/e580f628505e08ac1577040d47fa2f041125e250/PhysicsTools/NanoAOD/plugins/GenWeightsTableProducer.cc#L240-L248
-            for (unsigned index = 6; index < 10; ++index)
-                generatorInfo.AddAltPsWeight(genWeights.at(index));
-        }
-        else
-        {
-            for (auto const &weight: genWeights)
-                generatorInfo.AddAltPsWeight(weight);
-        }
+        for (int i: psWeightIndices.GetIndices(0, genWeights.size() - 1))
+            generatorInfo.AddAltPsWeight(genWeights[i]);
     }
         
     

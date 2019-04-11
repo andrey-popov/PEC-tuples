@@ -45,6 +45,7 @@ double SignedKahanSum::GetSum() const
 
 EventCounter::EventCounter(edm::ParameterSet const &cfg):
     lheWeightIndices(cfg.getParameter<std::vector<int>>("saveAltLHEWeights")),
+    psWeightIndices(cfg.getParameter<std::vector<int>>("saveAltPSWeights")),
     nEventProcessed(0)
 {
     generatorToken = consumes<GenEventInfoProduct>(cfg.getParameter<edm::InputTag>("generator"));
@@ -75,7 +76,7 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
     sumNominalWeight.Fill(generator->weight());
     
     
-    // Update sums of alternative event weights if requested
+    // Update sums of alternative LHE event weights if requested
     if (not lheWeightIndices.Empty())
     {
         edm::Handle<LHEEventProduct> lheEventInfo;
@@ -101,6 +102,27 @@ void EventCounter::analyze(edm::Event const &event, edm::EventSetup const &)
         {
             double const weight = altWeights[readIndex].wgt * factor;
             sumAltLheWeightCollection[writeIndex].Fill(weight);
+            ++writeIndex;
+        }
+    }
+
+
+    // Update sums of alternative PS event weights if requested and if they are available
+    std::vector<double> const &psWeights = generator->weights();
+
+    if (not psWeightIndices.Empty() and psWeights.size() > 1)
+    {
+        // If this is the first event being processed, create summators for the alternative weights
+        if (sumAltPsWeightCollection.empty())
+            sumAltPsWeightCollection.resize(
+              psWeightIndices.NumberIndices(0, psWeights.size() - 1));
+        
+        
+        unsigned writeIndex = 0;
+
+        for (int readIndex: psWeightIndices.GetIndices(0, psWeights.size() - 1))
+        {
+            sumAltPsWeightCollection[writeIndex].Fill(psWeights[readIndex]);
             ++writeIndex;
         }
     }
@@ -144,6 +166,17 @@ void EventCounter::endJob()
         
         tree->Branch("MeanAltLheWeights", &bfMeanAltLheWeightCollection);
     }
+
+
+    std::vector<Float_t> bfMeanAltPsWeightCollection;
+    
+    if (not psWeightIndices.Empty())
+    {
+        for (auto const &summator: sumAltPsWeightCollection)
+            bfMeanAltPsWeightCollection.emplace_back(summator.GetSum() / nEventProcessed);
+        
+        tree->Branch("MeanAltPsWeights", &bfMeanAltPsWeightCollection);
+    }
     
     
     tree->Fill();
@@ -160,6 +193,9 @@ void EventCounter::fillDescriptions(edm::ConfigurationDescriptions &descriptions
         "Parsed using class IndexIntervals.");
     desc.add<edm::InputTag>("lheEventProduct", edm::InputTag("externalLHEProducer"))->
       setComment("Tag to access LHEEventProduct. Ignored if saveAltLHEWeights is False.");
+    desc.add<std::vector<int>>("saveAltPSWeights", std::vector<int>())->
+      setComment("Intervals of indices of alternative PS weights to be stored. "
+        "Parsed using class IndexIntervals.");
     desc.addOptional<edm::InputTag>("puInfo")->
       setComment("Pileup summary. Providing this requests storing of pileup profile.");
     
